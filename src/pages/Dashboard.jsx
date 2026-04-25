@@ -421,7 +421,13 @@ const Dashboard = () => {
       .from('clients')
       .select('*, partners(full_name)')
       .order('created_at', { ascending: false });
-    if (!error) setAdminClients(data);
+    
+    if (error) {
+      console.error("Fetch Admin Clients Error:", error);
+      alert("Gagal mengambil data: " + error.message);
+    } else {
+      setAdminClients(data || []);
+    }
     setIsAdminLoading(false);
   };
 
