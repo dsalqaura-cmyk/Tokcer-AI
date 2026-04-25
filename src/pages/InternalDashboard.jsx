@@ -367,9 +367,9 @@ const InternalDashboard = ({ onLogout }) => {
                     </thead>
                     <tbody>
                       {(activeAppTab === 'app-subs' 
-                        ? adminClients.filter(c => c.status?.toLowerCase() === 'pending') 
-                        : activeAppTab === 'new-partner' ? MOCK_PARTNERS.filter(p => p.status?.toLowerCase() === 'pending') 
-                        : MOCK_USERS.filter(u => u.status?.toLowerCase() === 'pending' || u.status?.toLowerCase() === 'warning')
+                        ? adminClients.filter(c => !c.status || c.status.toLowerCase() === 'pending') 
+                        : activeAppTab === 'new-partner' ? MOCK_PARTNERS.filter(p => !p.status || p.status.toLowerCase() === 'pending') 
+                        : MOCK_USERS.filter(u => !u.status || u.status.toLowerCase() === 'pending' || u.status.toLowerCase() === 'warning')
                       ).map((item, i) => (
                         <tr key={i} className="bg-zinc-950/50 hover:bg-zinc-800/50 transition-all group">
                           <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800">
