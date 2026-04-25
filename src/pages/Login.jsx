@@ -10,30 +10,42 @@ const Login = () => {
   const [role, setRole] = useState('user'); // 'user' or 'partner'
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
+  const [fullName, setFullName] = useState('');
   const navigate = useNavigate();
 
   const translations = {
     id: {
-      loginTitle: "Login Dashboard",
-      loginDesc: "Masuk untuk kelola tokomu.",
+      loginTitle: isRegister ? "Daftar Akun Baru" : "Login Dashboard",
+      loginDesc: isRegister ? "Mulai kelola tokomu dengan AI." : "Masuk untuk kelola tokomu.",
       emailLabel: "Email Akses",
       passwordLabel: "Password",
+      fullNameLabel: "Nama Lengkap",
       forgotPass: "Lupa Password?",
-      loginBtn: "Masuk ke Sistem",
-      loggingIn: "Masuk...",
+      loginBtn: isRegister ? "Daftar Sekarang" : "Masuk ke Sistem",
+      loggingIn: isRegister ? "Mendaftar..." : "Masuk...",
       asUser: "Sebagai User",
       asPartner: "Sebagai Partner",
+      noAccount: "Belum punya akun?",
+      haveAccount: "Sudah punya akun?",
+      signUp: "Daftar di sini",
+      signIn: "Login di sini",
     },
     en: {
-      loginTitle: "Dashboard Login",
-      loginDesc: "Sign in to manage your shop.",
+      loginTitle: isRegister ? "Create New Account" : "Dashboard Login",
+      loginDesc: isRegister ? "Start managing your shop with AI." : "Sign in to manage your shop.",
       emailLabel: "Access Email",
       passwordLabel: "Password",
+      fullNameLabel: "Full Name",
       forgotPass: "Forgot Password?",
-      loginBtn: "Sign In",
-      loggingIn: "Signing in...",
+      loginBtn: isRegister ? "Sign Up Now" : "Sign In",
+      loggingIn: isRegister ? "Signing up..." : "Signing in...",
       asUser: "As User",
       asPartner: "As Partner",
+      noAccount: "Don't have an account?",
+      haveAccount: "Already have an account?",
+      signUp: "Sign up here",
+      signIn: "Login here",
     }
   };
 
@@ -44,12 +56,36 @@ const Login = () => {
     localStorage.setItem('tokcer_lang', newLang);
   };
 
-  const handleLogin = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     
-    // Temporary check for admin credentials
+    if (isRegister) {
+      // Handle Sign Up
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role
+          }
+        }
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+      } else {
+        alert(lang === 'id' ? 'Registrasi berhasil! Silakan login.' : 'Registration successful! Please login.');
+        setIsRegister(false);
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Handle Login
     if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
       localStorage.setItem('tokcer_admin_auth', 'true');
       setLoading(false);
@@ -100,7 +136,7 @@ const Login = () => {
       <div className="relative bg-zinc-900 w-full max-w-[calc(100%-2rem)] md:max-w-sm p-6 md:p-8 rounded-2xl shadow-2xl border border-zinc-800 my-20">
         <div className="mb-6 md:mb-8 text-center">
           <div className="w-12 h-12 bg-orange-950/50 rounded-xl flex items-center justify-center border border-orange-900/50 mx-auto mb-4">
-            <iconify-icon icon="solar:user-linear" className="text-2xl text-orange-500"></iconify-icon>
+            <iconify-icon icon={isRegister ? "solar:user-plus-linear" : "solar:user-linear"} className="text-2xl text-orange-500"></iconify-icon>
           </div>
           <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight">{t('loginTitle')}</h3>
           <p className="text-[10px] md:text-xs text-zinc-400 mt-1">{t('loginDesc')}</p>
@@ -130,7 +166,21 @@ const Login = () => {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleAuth} className="space-y-4">
+          {isRegister && (
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t('fullNameLabel')}</label>
+              <input 
+                type="text" 
+                required
+                className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
+                placeholder="Andi Pratama"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t('emailLabel')}</label>
             <input 
@@ -146,7 +196,9 @@ const Login = () => {
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="block text-xs font-medium text-zinc-400">{t('passwordLabel')}</label>
-              <a href="#" className="text-[10px] font-medium text-orange-500 hover:text-orange-400 transition-colors">{t('forgotPass')}</a>
+              {!isRegister && (
+                <a href="#" className="text-[10px] font-medium text-orange-500 hover:text-orange-400 transition-colors">{t('forgotPass')}</a>
+              )}
             </div>
             <input 
               type="password" 
@@ -167,6 +219,18 @@ const Login = () => {
             {loading ? t('loggingIn') : t('loginBtn')}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-xs text-zinc-500">
+            {isRegister ? t('haveAccount') : t('noAccount')}{' '}
+            <button 
+              onClick={() => setIsRegister(!isRegister)}
+              className="text-orange-500 font-bold hover:text-orange-400 transition-colors"
+            >
+              {isRegister ? t('signIn') : t('signUp')}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
