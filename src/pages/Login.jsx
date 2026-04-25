@@ -220,16 +220,16 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-xs text-zinc-500">
-            {isRegister ? t('haveAccount') : t('noAccount')}{' '}
-            <button 
-              onClick={() => setIsRegister(!isRegister)}
-              className="text-orange-500 font-bold hover:text-orange-400 transition-colors"
-            >
-              {isRegister ? t('signIn') : t('signUp')}
-            </button>
+        <div className="mt-8 pt-6 border-t border-zinc-800 text-center">
+          <p className="text-xs text-zinc-500 mb-3">
+            {isRegister ? t('haveAccount') : t('noAccount')}
           </p>
+          <button 
+            onClick={() => setIsRegister(!isRegister)}
+            className="w-full py-2.5 rounded-xl border border-zinc-800 text-orange-500 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-orange-500/5 transition-all"
+          >
+            {isRegister ? t('signIn') : t('signUp')}
+          </button>
         </div>
       </div>
     </div>
