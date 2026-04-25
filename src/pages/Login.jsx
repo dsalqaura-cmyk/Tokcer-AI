@@ -164,13 +164,6 @@ const Login = () => {
             <iconify-icon icon="solar:hand-stars-linear"></iconify-icon>
             {t('asPartner')}
           </button>
-          <button 
-            onClick={() => setRole('admin')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${role === 'admin' ? 'bg-orange-600 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
-          >
-            <iconify-icon icon="solar:shield-user-linear"></iconify-icon>
-            {t('asAdmin')}
-          </button>
         </div>
         
         {error && (

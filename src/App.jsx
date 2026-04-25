@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import PartnerDashboard from './pages/PartnerDashboard';
 import InternalDashboard from './pages/InternalDashboard';
+import AdminLogin from './pages/AdminLogin';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -35,9 +36,10 @@ const ProtectedRoute = ({ children }) => {
   }
 
   const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+  const isPathAdmin = window.location.pathname.startsWith('/admin');
 
   if (!session && !isAdmin) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={isPathAdmin ? "/admin-login" : "/login"} replace />;
   }
 
   return children;
@@ -49,6 +51,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route 
           path="/dashboard" 
           element={
