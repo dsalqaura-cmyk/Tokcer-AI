@@ -115,6 +115,7 @@ const translations = {
     wlSuccessTitle: "Berhasil Mendaftar!",
     wlSuccessDesc: "Terima kasih telah bergabung! Kami akan segera menghubungi Anda melalui email/WhatsApp.",
     wlErrDuplicate: "Email sudah terdaftar di waitlist!",
+    wlErrEmail: "Format email tidak valid!",
     wlErrGeneral: "Terjadi kesalahan, silakan coba lagi."
   },
   en: {
@@ -231,6 +232,7 @@ const translations = {
     wlSuccessTitle: "Successfully Registered!",
     wlSuccessDesc: "Thank you for joining! We will contact you soon via email/WhatsApp.",
     wlErrDuplicate: "Email already registered in the waitlist!",
+    wlErrEmail: "Invalid email format!",
     wlErrGeneral: "An error occurred, please try again."
   }
 };

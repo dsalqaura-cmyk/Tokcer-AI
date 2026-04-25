@@ -16,11 +16,21 @@ const WaitlistModal = ({ isOpen, onClose }) => {
     setStatus(null);
 
     const formData = new FormData(e.target);
+    const email = formData.get('email');
+    
+    // Regex validasi email yang lebih ketat
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      setLoading(false);
+      setStatus(t('wlErrEmail'));
+      return;
+    }
+
     const platforms = formData.getAll('platform[]');
     
     const data = {
       nama: formData.get('nama'),
-      email: formData.get('email'),
+      email: email,
       phone: formData.get('phone'),
       affiliate_id: formData.get('affiliate_id') || null,
       business_type: formData.get('business_type') || null,
