@@ -24,8 +24,9 @@ const Login = () => {
       forgotPass: "Lupa Password?",
       loginBtn: isRegister ? "Daftar Sekarang" : "Masuk ke Sistem",
       loggingIn: isRegister ? "Mendaftar..." : "Masuk...",
-      asUser: "Sebagai User",
-      asPartner: "Sebagai Partner",
+      asUser: "Pelanggan",
+      asPartner: "Partner",
+      asAdmin: "Admin Tokcer",
       noAccount: "Belum punya akun?",
       haveAccount: "Sudah punya akun?",
       signUp: "Daftar di sini",
@@ -40,8 +41,9 @@ const Login = () => {
       forgotPass: "Forgot Password?",
       loginBtn: isRegister ? "Sign Up Now" : "Sign In",
       loggingIn: isRegister ? "Signing up..." : "Signing in...",
-      asUser: "As User",
-      asPartner: "As Partner",
+      asUser: "Customer",
+      asPartner: "Partner",
+      asAdmin: "Tokcer Admin",
       noAccount: "Don't have an account?",
       haveAccount: "Already have an account?",
       signUp: "Sign up here",
@@ -100,7 +102,9 @@ const Login = () => {
     if (error) {
       setError(error.message);
     } else {
-      navigate(role === 'user' ? '/dashboard' : '/partner-dashboard');
+      if (role === 'admin') navigate('/dashboard');
+      else if (role === 'partner') navigate('/partner-dashboard');
+      else navigate('/dashboard');
     }
   };
 
@@ -154,6 +158,13 @@ const Login = () => {
           >
             <iconify-icon icon="solar:hand-stars-linear"></iconify-icon>
             {t('asPartner')}
+          </button>
+          <button 
+            onClick={() => setRole('admin')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${role === 'admin' ? 'bg-orange-600 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
+          >
+            <iconify-icon icon="solar:shield-user-linear"></iconify-icon>
+            {t('asAdmin')}
           </button>
         </div>
         
