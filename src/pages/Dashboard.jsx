@@ -708,9 +708,6 @@ const Dashboard = () => {
     );
   };
 
-    );
-  };
-
   const renderAdminApproval = () => {
     return (
       <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
