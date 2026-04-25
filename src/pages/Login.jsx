@@ -85,12 +85,9 @@ const Login = () => {
       return;
     }
 
-    // Handle Login
+    // Handle Admin Bypass Flag
     if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
       localStorage.setItem('tokcer_admin_auth', 'true');
-      setLoading(false);
-      navigate(role === 'user' ? '/dashboard' : '/partner-dashboard');
-      return;
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({

@@ -332,11 +332,22 @@ const PartnerDashboard = () => {
     setLoading(true);
 
     try {
-      // 1. Get current partner ID from session
+      // 1. Get current partner ID from session or use Admin bypass
       const { data: { session } } = await supabase.auth.getSession();
-      const partnerId = session?.user?.id;
+      const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+      let partnerId = session?.user?.id;
 
-      if (!partnerId) {
+      // If Admin but no session, we need to find the Admin's ID in the DB
+      if (!partnerId && isAdmin) {
+        const { data: adminUser } = await supabase
+          .from('partners')
+          .select('id')
+          .eq('affiliate_id', 'TKC-BOSS') // Kita asumsikan ini ID admin kita
+          .single();
+        partnerId = adminUser?.id;
+      }
+
+      if (!partnerId && !isAdmin) {
         alert(lang === 'id' ? 'Anda harus login sebagai partner!' : 'You must be logged in as a partner!');
         setLoading(false);
         return;
