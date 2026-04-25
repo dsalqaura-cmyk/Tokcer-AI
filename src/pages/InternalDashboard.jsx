@@ -52,9 +52,10 @@ const InternalDashboard = ({ onLogout }) => {
 
   const fetchClients = async () => {
     setIsLoading(true);
+    // Explicitly select ID to ensure it's there
     const { data, error } = await supabase
       .from('clients')
-      .select('*, partners(full_name)')
+      .select('id, shop_name, email, status, plan, tier, pic, ref, payment_method, partners(full_name)')
       .order('created_at', { ascending: false });
     if (!error) setAdminClients(data);
     setIsLoading(false);
@@ -70,12 +71,12 @@ const InternalDashboard = ({ onLogout }) => {
   }, []);
 
   const handleApprove = async (client) => {
-    const confirm = window.confirm(`Approve pendaftaran untuk ${client.shop_name}?`);
+    const confirm = window.confirm(`DEBUG: Approve ${client.shop_name}?\nID: ${client.id}\nFULL DATA: ${JSON.stringify(client)}`);
     if (!confirm) return;
 
     setIsLoading(true);
     try {
-      console.log('Attempting to approve client:', client);
+      console.log('Attempting to approve client ID:', client.id);
       const { data, error } = await supabase
         .from('clients')
         .update({ status: 'active', commission_amount: 100000 })
@@ -84,6 +85,7 @@ const InternalDashboard = ({ onLogout }) => {
 
       if (error) {
         console.error('Supabase Error:', error);
+        alert('Supabase Error: ' + JSON.stringify(error));
         throw error;
       }
       
@@ -92,7 +94,7 @@ const InternalDashboard = ({ onLogout }) => {
       if (data && data.length > 0) {
         alert(`Berhasil! Status ${client.shop_name} sekarang adalah ACTIVE.`);
       } else {
-        alert(`Peringatan: Tidak ada data yang diupdate. Cek apakah ID ${client.id} benar.`);
+        alert(`Peringatan: Tidak ada data yang diupdate.\nID: ${client.id}\nStatus yang dicari: active`);
       }
       
       await fetchClients();
