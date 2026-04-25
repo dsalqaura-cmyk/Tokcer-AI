@@ -75,16 +75,30 @@ const InternalDashboard = ({ onLogout }) => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      console.log('Attempting to approve client:', client);
+      const { data, error } = await supabase
         .from('clients')
         .update({ status: 'active', commission_amount: 100000 })
-        .eq('id', client.id);
+        .eq('id', client.id)
+        .select();
 
-      if (error) throw error;
-      alert(`Berhasil! Akun untuk ${client.shop_name} telah diaktifkan.`);
-      fetchClients();
+      if (error) {
+        console.error('Supabase Error:', error);
+        throw error;
+      }
+      
+      console.log('Update result:', data);
+      
+      if (data && data.length > 0) {
+        alert(`Berhasil! Status ${client.shop_name} sekarang adalah ACTIVE.`);
+      } else {
+        alert(`Peringatan: Tidak ada data yang diupdate. Cek apakah ID ${client.id} benar.`);
+      }
+      
+      await fetchClients();
       setShowModal(false);
     } catch (err) {
+      console.error('Approve Error:', err);
       alert("Error: " + err.message);
     } finally {
       setIsLoading(false);
