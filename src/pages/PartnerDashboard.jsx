@@ -586,11 +586,24 @@ const PartnerDashboard = () => {
               </div>
               <button 
                 onClick={handleLogout}
-                className="flex items-center justify-center gap-3 w-full py-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 hover:bg-rose-500/20 transition-all duration-300 text-[10px] font-black uppercase tracking-widest"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all uppercase tracking-[0.2em]"
               >
-                <iconify-icon icon="solar:logout-3-bold-duotone" className="text-xl"></iconify-icon>
+                <iconify-icon icon="solar:logout-2-linear" className="text-lg"></iconify-icon>
                 {t('logout')}
               </button>
+
+              {user?.email === 'admin@tokcer-ai.com' && (
+                <div className="mt-8 pt-8 border-t border-zinc-900">
+                  <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-4 px-2">Superadmin Mode</p>
+                  <button 
+                    onClick={() => navigate('/dashboard')}
+                    className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-[10px] font-black text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-xl shadow-orange-600/20 transition-all uppercase tracking-[0.2em]"
+                  >
+                    <iconify-icon icon="solar:shield-user-bold" className="text-lg"></iconify-icon>
+                    Approval Dashboard
+                  </button>
+                </div>
+              )}
             </div>
           </aside>
         </div>

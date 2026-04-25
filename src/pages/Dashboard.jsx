@@ -2075,6 +2075,18 @@ const Dashboard = () => {
             >
               <iconify-icon icon="solar:global-linear" className="text-lg"></iconify-icon> {t('marketIntel')}
             </button>
+            {user?.email === 'admin@tokcer-ai.com' && (
+              <div className="mt-4 pt-4 border-t border-zinc-800/50">
+                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2 px-3">Superadmin Tools</p>
+                <button 
+                  onClick={() => navigate('/partner-dashboard')}
+                  className="w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm font-bold text-white bg-zinc-800 hover:bg-orange-600/20 border border-zinc-700 transition-all"
+                >
+                  <iconify-icon icon="solar:hand-stars-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
+                  Partner Dashboard
+                </button>
+              </div>
+            )}
           </nav>
         </div>
 
@@ -2124,7 +2136,7 @@ const Dashboard = () => {
                   <div className="h-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: '42%'}}></div>
                 </div>
               </div>
-              <p className="text-[9px] text-zinc-600 mt-2">Berlaku hingga 30 Mei 2025</p>
+                        <p className="text-[9px] text-zinc-600 mt-2">Berlaku hingga 30 Mei 2025</p>
             </div>
           </div>
 
@@ -2139,6 +2151,19 @@ const Dashboard = () => {
             <iconify-icon icon="solar:logout-2-linear" className="text-xl"></iconify-icon>
             {t('logout')}
           </button>
+
+          {user?.email === 'admin@tokcer-ai.com' && (
+            <div className="mt-6 pt-6 border-t border-zinc-800/50">
+              <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-3 px-2">Superadmin Mode</p>
+              <button 
+                onClick={() => navigate(window.location.pathname === '/partner-dashboard' ? '/dashboard' : '/partner-dashboard')}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black text-white bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/20 transition-all uppercase tracking-widest"
+              >
+                <iconify-icon icon="solar:shield-user-bold" className="text-lg"></iconify-icon>
+                {window.location.pathname === '/partner-dashboard' ? 'Client Dashboard' : 'Partner Dashboard'}
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
