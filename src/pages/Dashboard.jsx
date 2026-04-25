@@ -2066,25 +2066,6 @@ const Dashboard = () => {
             >
               <iconify-icon icon="solar:global-linear" className="text-lg"></iconify-icon> {t('marketIntel')}
             </button>
-            {user?.email === 'admin@tokcer-ai.com' && (
-              <div className="mt-4 pt-4 border-t border-zinc-800/50 space-y-2">
-                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2 px-3">Superadmin Mode</p>
-                <button 
-                  onClick={() => navigate('/partner-dashboard')}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-zinc-800 hover:bg-orange-600/20 border border-zinc-700 transition-all"
-                >
-                  <iconify-icon icon="solar:hand-stars-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
-                  Partner Dashboard
-                </button>
-                <button 
-                  onClick={() => navigate('/internal-admin')}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-zinc-800 hover:bg-blue-600/20 border border-zinc-700 transition-all"
-                >
-                  <iconify-icon icon="solar:shield-keyhole-bold-duotone" className="text-lg text-blue-500"></iconify-icon>
-                  Internal Dashboard
-                </button>
-              </div>
-            )}
           </nav>
         </div>
 
