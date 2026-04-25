@@ -186,6 +186,24 @@ const InternalDashboard = ({ onLogout }) => {
             </div>
           </div>
           <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest text-center mb-4 italic">Core Command v2.4.1</p>
+          
+          <div className="space-y-2 mb-4">
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-orange-500/10 text-orange-500 border border-orange-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-500 hover:text-white transition-all"
+            >
+              <iconify-icon icon="solar:shop-bold-duotone" className="text-lg"></iconify-icon>
+              Client Dashboard
+            </button>
+            <button 
+              onClick={() => navigate('/partner-dashboard')}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-orange-500/10 text-orange-500 border border-orange-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-500 hover:text-white transition-all"
+            >
+              <iconify-icon icon="solar:hand-stars-bold-duotone" className="text-lg"></iconify-icon>
+              Partner Dashboard
+            </button>
+          </div>
+
           <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
             <iconify-icon icon="solar:logout-3-bold-duotone" className="text-lg"></iconify-icon>
             Exit System
