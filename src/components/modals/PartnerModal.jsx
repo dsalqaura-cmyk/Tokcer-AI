@@ -26,7 +26,7 @@ const PartnerModal = ({ isOpen, onClose }) => {
       promo_strategy: formData.get('promo_strategy')
     };
 
-    const { error } = await supabase.from('partners').insert([data]);
+    const { error } = await supabase.from('partner_applications').insert([data]);
 
     setLoading(false);
 
