@@ -37,30 +37,66 @@ const PartnerDashboard = () => {
   });
 
   const [partnerData, setPartnerData] = useState({
-    id: "TKC-AFF-0001",
-    name: "Budi Santoso",
-    tier: "Gold",
-    activeUsers: 3,
-    cancelledUsers: 1,
-    mtdPace: 9458000,
-    projectedEndMonth: 38500000,
-    subscribers: [
-      { id: "USR-001", name: "Toko Makmur Jaya", email: "toko.makmur@gmail.com", plan: "Elite", status: "active", commission: 179500, closingDate: new Date(Date.now() - 1000 * 60 * 30) },
-      { id: "USR-002", name: "Rizky Fashion Store", email: "rizky.fashion@gmail.com", plan: "Pro", status: "active", commission: 100000, closingDate: new Date(Date.now() - 1000 * 60 * 60 * 26) },
-      { id: "USR-003", name: "Dapur Ibu Siti", email: "dapur.siti@gmail.com", plan: "Ultimate", status: "active", commission: 374600, closingDate: new Date(Date.now() - 1000 * 60 * 60 * 72) },
-      { id: "USR-004", name: "Batik Solo Indah", email: "batik.solo@gmail.com", plan: "Pro", status: "cancelled", commission: 100000, closingDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5) },
-    ],
-    leaderboard: [
-      { id: "TKC-AFF-0001", name: "Budi Santoso", tier: "Gold", closing: 7, omzet: 4979000, rank: 1 },
-      { id: "TKC-AFF-0002", name: "Sari Dewi", tier: "Silver", closing: 5, omzet: 3485000, rank: 2 },
-      { id: "TKC-AFF-0003", name: "Eko Prasetyo", tier: "Bronze", closing: 2, omzet: 994000, rank: 3 },
-    ],
-    paymentHistory: [
-      { period: "April 2026", amount: 654100, status: "pending" },
-      { period: "Maret 2026", amount: 1033600, status: "paid" },
-      { period: "Februari 2026", amount: 850000, status: "paid" },
-    ]
+    id: "-",
+    name: "Loading...",
+    tier: "-",
+    activeUsers: 0,
+    cancelledUsers: 0,
+    mtdPace: 0,
+    projectedEndMonth: 0,
+    subscribers: [],
+    leaderboard: [],
+    paymentHistory: []
   });
+
+  const fetchData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // 1. Fetch Partner Profile
+      const { data: profile } = await supabase
+        .from('partners')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      // 2. Fetch Clients/Subscribers
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('partner_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (profile) {
+        setPartnerData(prev => ({
+          ...prev,
+          id: profile.affiliate_id || "-",
+          name: profile.full_name || session.user.email,
+          tier: profile.tier || "Bronze",
+          subscribers: clients || []
+        }));
+
+        // Hitung statistik
+        const active = (clients || []).filter(c => c.status === 'active').length;
+        const cancelled = (clients || []).filter(c => c.status === 'cancelled').length;
+        const totalCommission = (clients || []).filter(c => c.status === 'active').reduce((acc, curr) => acc + (curr.commission_amount || 0), 0);
+
+        setPartnerData(prev => ({
+          ...prev,
+          activeUsers: active,
+          cancelledUsers: cancelled,
+          mtdPace: totalCommission
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching partner data:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) fetchData();
+  }, [user]);
 
   // Helper: get current ISO week number (Mon-Fri cycle)
   const getWeekInfo = () => {
@@ -291,31 +327,101 @@ const PartnerDashboard = () => {
     navigate('/login');
   };
 
-  const handleOnboardSubmit = (e) => {
+  const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-    if (!onboardForm.paymentProof) {
-      alert(lang === 'id' ? 'Bukti bayar wajib di-upload sebelum submit!' : 'Payment proof is required before submitting!');
-      return;
+    setLoading(true);
+
+    try {
+      // 1. Get current partner ID from session
+      const { data: { session } } = await supabase.auth.getSession();
+      const partnerId = session?.user?.id;
+
+      if (!partnerId) {
+        alert(lang === 'id' ? 'Anda harus login sebagai partner!' : 'You must be logged in as a partner!');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Prepare client data
+      const clientData = {
+        partner_id: partnerId,
+        shop_name: onboardForm.shopName,
+        email: onboardForm.email,
+        whatsapp: onboardForm.whatsapp,
+        plan: onboardForm.plan,
+        payment_method: onboardForm.paymentMethod,
+        // Untuk sementara paymentProof hanya simpan nama file, 
+        // idealnya ini diupload ke Supabase Storage (kita bisa buat nanti)
+        payment_proof_url: onboardForm.paymentProof ? onboardForm.paymentProof.name : null
+      };
+
+      // 3. Insert to Supabase
+      const { error } = await supabase.from('clients').insert([clientData]);
+
+      if (error) throw error;
+
+      alert(lang === 'id' ? 'Pelanggan berhasil didaftarkan! Status: Pending Verifikasi.' : 'Client registered successfully! Status: Pending Verification.');
+      
+      // 4. Reset Form
+      setOnboardForm({
+        shopName: '',
+        email: '',
+        whatsapp: '',
+        plan: 'pro',
+        paymentMethod: 'transfer',
+        paymentProof: null
+      });
+      
+      // 5. Refresh data
+      fetchData();
+
+    } catch (err) {
+      console.error(err);
+      alert(lang === 'id' ? 'Gagal mendaftarkan pelanggan: ' + err.message : 'Failed to register client: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    alert(lang === 'id' ? 'Onboarding berhasil disubmit! Tim kami akan memverifikasi pembayaran.' : 'Onboarding submitted successfully! Our team will verify the payment.');
-    setOnboardForm({
-      shopName: '',
-      email: '',
-      whatsapp: '',
-      plan: 'pro',
-      paymentMethod: 'transfer',
-      paymentProof: null
-    });
   };
 
-  const handleSupportSubmit = (e) => {
+  const handleSupportSubmit = async (e) => {
     e.preventDefault();
-    alert("Support report submitted successfully!");
-    setSupportForm({
-      category: 'data',
-      description: '',
-      screenshot: null
-    });
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase.from('support_tickets').insert([{
+        partner_id: session.user.id,
+        category: supportForm.category,
+        description: supportForm.description,
+        screenshot_url: supportForm.screenshot ? supportForm.screenshot.name : null
+      }]);
+      if (error) throw error;
+      alert("Support report submitted successfully!");
+      setSupportForm({ category: 'data', description: '', screenshot: null });
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleIdeaSubmit = async (e) => {
+    e.preventDefault();
+    const ideaText = e.target.querySelector('textarea').value;
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase.from('partner_ideas').insert([{
+        partner_id: session.user.id,
+        idea_text: ideaText
+      }]);
+      if (error) throw error;
+      alert("Idea submitted!");
+      e.target.reset();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatCurrency = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
@@ -723,7 +829,7 @@ const PartnerDashboard = () => {
 
             <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-1 bg-orange-600/50"></div>
-              <form className="space-y-8" onSubmit={(e) => { e.preventDefault(); alert("Idea submitted!"); }}>
+              <form className="space-y-8" onSubmit={handleIdeaSubmit}>
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] px-1">{t('visionPrompt')}</label>
                   <textarea 
@@ -734,7 +840,7 @@ const PartnerDashboard = () => {
                   ></textarea>
                 </div>
 
-                <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/20 transition-all transform hover:-translate-y-1">
+                <button type="submit" disabled={loading} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/20 transition-all transform hover:-translate-y-1">
                   {t('submitIdea')}
                 </button>
               </form>
@@ -789,7 +895,7 @@ const PartnerDashboard = () => {
               <div className="relative group overflow-hidden bg-orange-600/10 backdrop-blur-md border border-orange-500/20 p-5 rounded-2xl">
                 <div className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-3">{t('estCommission')}</div>
                 <div className="text-3xl font-black text-white font-mono tracking-tighter">
-                  {formatCurrency(partnerData.subscribers.filter(s => s.status === 'active').reduce((acc, curr) => acc + curr.commission, 0))}
+                  {formatCurrency(partnerData.mtdPace)}
                 </div>
               </div>
             </div>
@@ -823,10 +929,10 @@ const PartnerDashboard = () => {
                           <td className="px-4 sm:px-8 py-4 sm:py-6">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-100 font-black text-[10px] sm:text-xs border border-zinc-700 group-hover:border-orange-500/50 transition-colors">
-                                {s.name.charAt(0)}
+                                {s.shop_name?.charAt(0) || '?'}
                               </div>
                               <div className="flex flex-col min-w-0">
-                                <span className="font-bold text-zinc-100 text-xs sm:text-sm truncate group-hover:text-white transition-colors">{s.name}</span>
+                                <span className="font-bold text-zinc-100 text-xs sm:text-sm truncate group-hover:text-white transition-colors">{s.shop_name}</span>
                                 <span className="text-[8px] sm:text-[10px] text-zinc-400 font-medium truncate">{s.email}</span>
                               </div>
                             </div>
@@ -847,12 +953,12 @@ const PartnerDashboard = () => {
                             </span>
                           </td>
                           <td className="px-4 sm:px-8 py-4 sm:py-6">
-                            <span className={`text-[10px] sm:text-xs font-bold ${getRelativeTime(s.closingDate) === (lang === 'id' ? 'baru saja' : 'just now') ? 'text-emerald-400' : 'text-zinc-400'}`}>
-                              {getRelativeTime(s.closingDate)}
+                            <span className={`text-[10px] sm:text-xs font-bold ${getRelativeTime(s.created_at) === (lang === 'id' ? 'baru saja' : 'just now') ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                              {getRelativeTime(s.created_at)}
                             </span>
                           </td>
                           <td className="px-4 sm:px-8 py-4 sm:py-6 text-right font-mono font-black text-zinc-100 text-[10px] sm:text-sm group-hover:text-emerald-300 transition-colors">
-                            {formatCurrency(s.commission)}
+                            {formatCurrency(s.commission_amount)}
                           </td>
                         </tr>
                       ))}
