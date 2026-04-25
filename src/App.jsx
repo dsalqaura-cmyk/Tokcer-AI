@@ -66,7 +66,7 @@ function App() {
           } 
         />
         <Route 
-          path="/internal-admin" 
+          path="/admin" 
           element={
             <ProtectedRoute>
               <InternalDashboard />

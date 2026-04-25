@@ -2161,7 +2161,7 @@ const Dashboard = () => {
                   Partner Dashboard
                 </button>
                 <button 
-                  onClick={() => navigate('/internal-admin')}
+                  onClick={() => navigate('/admin')}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[10px] font-black text-white bg-zinc-800 hover:bg-blue-500/20 border border-zinc-700 transition-all uppercase tracking-widest"
                 >
                   <iconify-icon icon="solar:shield-user-bold" className="text-lg text-blue-500"></iconify-icon>

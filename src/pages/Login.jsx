@@ -91,7 +91,9 @@ const Login = () => {
     if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
       localStorage.setItem('tokcer_admin_auth', 'true');
       setLoading(false);
-      navigate('/internal-admin');
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'partner') navigate('/partner-dashboard');
+      else navigate('/dashboard');
       return;
     }
 
@@ -105,7 +107,7 @@ const Login = () => {
     if (error) {
       setError(error.message);
     } else {
-      if (role === 'admin') navigate('/internal-admin');
+      if (role === 'admin') navigate('/admin');
       else if (role === 'partner') navigate('/partner-dashboard');
       else navigate('/dashboard');
     }
