@@ -2149,26 +2149,6 @@ const Dashboard = () => {
             <iconify-icon icon="solar:logout-2-linear" className="text-xl"></iconify-icon>
             {t('logout')}
           </button>
-
-            {user?.email === 'admin@tokcer-ai.com' && (
-              <div className="mt-6 pt-6 border-t border-zinc-800/50 space-y-2">
-                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-3 px-2">Superadmin Mode</p>
-                <button 
-                  onClick={() => navigate('/partner-dashboard')}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[10px] font-black text-white bg-zinc-800 hover:bg-orange-500/20 border border-zinc-700 transition-all uppercase tracking-widest"
-                >
-                  <iconify-icon icon="solar:hand-stars-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
-                  Partner Dashboard
-                </button>
-                <button 
-                  onClick={() => navigate('/admin')}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[10px] font-black text-white bg-zinc-800 hover:bg-blue-500/20 border border-zinc-700 transition-all uppercase tracking-widest"
-                >
-                  <iconify-icon icon="solar:shield-user-bold" className="text-lg text-blue-500"></iconify-icon>
-                  Internal Dashboard
-                </button>
-              </div>
-            )}
         </div>
       </aside>
 
