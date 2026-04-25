@@ -1,0 +1,41 @@
+name: Deploy Tokcer AI
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v4
+
+    - name: ⚙️ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    - name: 🔨 Install dependencies
+      run: npm ci
+
+    - name: 🏗️ Build Project
+      run: |
+        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          npm run build
+        else
+          npx vite build --mode staging
+        fi
+
+    - name: 📂 Sync files to Server
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./dist/
+        server-dir: ${{ github.ref == 'refs/heads/main' && './public_html/' || './public_html/staging/' }}
