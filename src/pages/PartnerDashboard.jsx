@@ -614,27 +614,7 @@ const PartnerDashboard = () => {
                     Client Dashboard
                   </button>
                   <button 
-                    onClick={() => navigate('/internal-admin')}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[10px] font-black text-white bg-zinc-800 hover:bg-blue-500/20 border border-zinc-700 transition-all uppercase tracking-[0.2em]"
-                  >
-                    <iconify-icon icon="solar:shield-keyhole-bold-duotone" className="text-lg text-blue-500"></iconify-icon>
-                    Internal Dashboard
-                  </button>
-                </div>
-              )}
-
-              {user?.email === 'admin@tokcer-ai.com' && (
-                <div className="mt-8 pt-8 border-t border-zinc-900 space-y-2">
-                  <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-4 px-2">Superadmin Mode</p>
-                  <button 
-                    onClick={() => navigate('/dashboard')}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[10px] font-black text-white bg-zinc-800 hover:bg-orange-500/20 border border-zinc-700 transition-all uppercase tracking-[0.2em]"
-                  >
-                    <iconify-icon icon="solar:shop-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
-                    Client Dashboard
-                  </button>
-                  <button 
-                    onClick={() => navigate('/internal-admin')}
+                    onClick={() => navigate('/admin')}
                     className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[10px] font-black text-white bg-zinc-800 hover:bg-blue-500/20 border border-zinc-700 transition-all uppercase tracking-[0.2em]"
                   >
                     <iconify-icon icon="solar:shield-keyhole-bold-duotone" className="text-lg text-blue-500"></iconify-icon>
