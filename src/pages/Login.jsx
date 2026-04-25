@@ -102,7 +102,7 @@ const Login = () => {
     if (error) {
       setError(error.message);
     } else {
-      if (role === 'admin') navigate('/dashboard');
+      if (role === 'admin') navigate('/internal-admin');
       else if (role === 'partner') navigate('/partner-dashboard');
       else navigate('/dashboard');
     }

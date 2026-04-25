@@ -5,6 +5,7 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import PartnerDashboard from './pages/PartnerDashboard';
+import InternalDashboard from './pages/InternalDashboard';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -61,6 +62,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PartnerDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/internal-admin" 
+          element={
+            <ProtectedRoute>
+              <InternalDashboard />
             </ProtectedRoute>
           } 
         />

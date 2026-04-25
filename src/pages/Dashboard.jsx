@@ -48,7 +48,6 @@ const Dashboard = () => {
       aiGenerator: "AI Generator",
       healthScore: "Health Score",
       marketIntel: "Market Intel",
-      clientApproval: "Dashboard Internal Admin",
       logout: "Keluar",
       overview: "Ringkasan",
       monitorShop: "Pantau performa tokomu detik ini juga.",
@@ -2023,14 +2022,6 @@ const Dashboard = () => {
             >
               <iconify-icon icon="solar:widget-linear" className="text-lg"></iconify-icon> {t('dashboard')}
             </button>
-            {user?.email === 'admin@tokcer-ai.com' && (
-              <button 
-                onClick={() => { setActiveMenu('tab-admin'); setIsSidebarOpen(false); }} 
-                className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-admin' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-              >
-                <iconify-icon icon="solar:shield-user-linear" className="text-lg"></iconify-icon> {t('clientApproval')}
-              </button>
-            )}
             <button 
               onClick={() => { setActiveMenu('tab-omzet'); setIsSidebarOpen(false); }} 
               className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-omzet' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
@@ -2079,11 +2070,11 @@ const Dashboard = () => {
               <div className="mt-4 pt-4 border-t border-zinc-800/50">
                 <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2 px-3">Superadmin Tools</p>
                 <button 
-                  onClick={() => navigate('/partner-dashboard')}
+                  onClick={() => navigate('/internal-admin')}
                   className="w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm font-bold text-white bg-zinc-800 hover:bg-orange-600/20 border border-zinc-700 transition-all"
                 >
-                  <iconify-icon icon="solar:hand-stars-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
-                  Partner Dashboard
+                  <iconify-icon icon="solar:shield-keyhole-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
+                  Dashboard Internal
                 </button>
               </div>
             )}
@@ -2156,11 +2147,11 @@ const Dashboard = () => {
             <div className="mt-6 pt-6 border-t border-zinc-800/50">
               <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-3 px-2">Superadmin Mode</p>
               <button 
-                onClick={() => navigate(window.location.pathname === '/partner-dashboard' ? '/dashboard' : '/partner-dashboard')}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black text-white bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/20 transition-all uppercase tracking-widest"
+                onClick={() => navigate('/internal-admin')}
+                className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-[10px] font-black text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-xl shadow-orange-600/20 transition-all uppercase tracking-widest"
               >
                 <iconify-icon icon="solar:shield-user-bold" className="text-lg"></iconify-icon>
-                {window.location.pathname === '/partner-dashboard' ? 'Client Dashboard' : 'Partner Dashboard'}
+                Dashboard Internal
               </button>
             </div>
           )}

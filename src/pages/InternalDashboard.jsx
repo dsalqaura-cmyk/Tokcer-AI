@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
+import { supabase } from '../supabase';
 import logo from '../assets/logo.png';
 
 // RICH SAMPLE DATA - STRICTOR ENGLISH COMPLIANCE
@@ -42,10 +43,48 @@ const InternalDashboard = ({ onLogout }) => {
   const [revenuePeriod, setRevenuePeriod] = useState('daily');
   const [showModal, setShowModal] = useState(false);
   const [showUserStats, setShowUserStats] = useState(null);
-  const [modalData, setModalData] = useState({ name: '', tier: '', amount: '', ref: '' });
   
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const [adminClients, setAdminClients] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  const fetchClients = async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*, partners(full_name)')
+      .order('created_at', { ascending: false });
+    if (!error) setAdminClients(data);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const handleApprove = async (client) => {
+    const confirm = window.confirm(`Approve pendaftaran untuk ${client.shop_name}?`);
+    if (!confirm) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ status: 'active', commission_amount: 100000 })
+        .eq('id', client.id);
+
+      if (error) throw error;
+      alert(`Berhasil! Akun untuk ${client.shop_name} telah diaktifkan.`);
+      fetchClients();
+      setShowModal(false);
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Chart Initialization
   useEffect(() => {
@@ -321,25 +360,31 @@ const InternalDashboard = ({ onLogout }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {(activeAppTab === 'new-partner' ? MOCK_PARTNERS : MOCK_USERS).map((item, i) => (
+                      {(activeAppTab === 'app-subs' ? adminClients : activeAppTab === 'new-partner' ? MOCK_PARTNERS : MOCK_USERS).map((item, i) => (
                         <tr key={i} className="bg-zinc-950/50 hover:bg-zinc-800/50 transition-all group">
                           <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800">
-                            <div className="font-black text-white text-sm tracking-tight">{item.name}</div>
+                            <div className="font-black text-white text-sm tracking-tight">{item.name || item.shop_name}</div>
                             <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">{item.email}</div>
                           </td>
                           <td className="p-4 border-y border-zinc-800">
-                            <span className={`${getTierBadgeClass(item.tier)} text-[9px] font-black px-3 py-1 rounded-lg uppercase`}>{item.tier}</span>
+                            <span className={`${getTierBadgeClass(item.tier || item.plan)} text-[9px] font-black px-3 py-1 rounded-lg uppercase`}>{item.tier || item.plan}</span>
                           </td>
                           <td className="p-4 border-y border-zinc-800 text-center">
-                            <span className="text-[10px] font-bold text-zinc-400 italic">{item.pic || 'Direct'}</span>
+                            <span className="text-[10px] font-bold text-zinc-400 italic">{item.pic || item.partners?.full_name || 'Direct'}</span>
                           </td>
                           <td className="p-4 border-y border-zinc-800 text-center">
-                            <span className="text-[10px] font-bold text-blue-500 tracking-tighter uppercase">{item.ref || 'SYSTEM'}</span>
+                            <span className="text-[10px] font-bold text-blue-500 tracking-tighter uppercase">{item.ref || item.payment_method || 'SYSTEM'}</span>
                           </td>
                           <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
                             <div className="flex items-center justify-end gap-3">
-                              <button onClick={() => openApprovalModal(item.name, item.tier, 'Rp 350,000', 'REF-99')} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95">Approve</button>
-                              <button className="px-6 py-2 bg-zinc-800 hover:bg-red-600 text-red-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
+                              {item.status === 'pending' || !item.status ? (
+                                <>
+                                  <button onClick={() => { setSelectedClient(item); setShowModal(true); }} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95">Approve</button>
+                                  <button className="px-6 py-2 bg-zinc-800 hover:bg-red-600 text-red-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
+                                </>
+                              ) : (
+                                <span className="text-emerald-500 text-[10px] font-black uppercase px-4">{item.status}</span>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -578,9 +623,9 @@ const InternalDashboard = ({ onLogout }) => {
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-zinc-900 rounded-[2.5rem] max-w-md w-full p-10 border border-zinc-800 text-center">
             <h2 className="text-xl font-black text-white uppercase tracking-tight mb-4">Confirm Approval</h2>
-            <p className="text-sm text-zinc-500 mb-8 font-medium italic">Approve upgrade request for {modalData.name} to {modalData.tier} level?</p>
+            <p className="text-sm text-zinc-500 mb-8 font-medium italic">Approve upgrade request for {selectedClient?.shop_name || selectedClient?.name}?</p>
             <div className="flex gap-4">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-4 bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl">Confirm</button>
+              <button onClick={() => handleApprove(selectedClient)} className="flex-1 py-4 bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl">Confirm</button>
               <button onClick={() => setShowModal(false)} className="flex-1 py-4 bg-zinc-800 text-zinc-400 font-black uppercase text-[10px] tracking-widest rounded-2xl">Cancel</button>
             </div>
           </div>
