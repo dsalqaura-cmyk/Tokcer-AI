@@ -48,7 +48,7 @@ const Dashboard = () => {
       aiGenerator: "AI Generator",
       healthScore: "Health Score",
       marketIntel: "Market Intel",
-      clientApproval: "Client Approval",
+      clientApproval: "Dashboard Internal Admin",
       logout: "Keluar",
       overview: "Ringkasan",
       monitorShop: "Pantau performa tokomu detik ini juga.",
@@ -225,7 +225,7 @@ const Dashboard = () => {
       aiGenerator: "AI Generator",
       healthScore: "Health Score",
       marketIntel: "Market Intel",
-      clientApproval: "Client Approval",
+      clientApproval: "Dashboard Internal Admin",
       logout: "Sign Out",
       overview: "Overview",
       monitorShop: "Monitor your shop's performance in real-time.",
@@ -718,7 +718,7 @@ const Dashboard = () => {
     return (
       <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <header>
-          <h2 className="text-2xl font-semibold text-white tracking-tight">{t('clientApproval')}</h2>
+          <h2 className="text-2xl font-semibold text-white tracking-tight">Dashboard Internal Admin</h2>
           <p className="text-xs text-zinc-400 mt-1">Review dan aktivasi pendaftaran dari Partner.</p>
         </header>
 
