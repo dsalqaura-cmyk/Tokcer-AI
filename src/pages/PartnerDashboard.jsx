@@ -946,9 +946,9 @@ const PartnerDashboard = () => {
                             <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${
                               s.status === 'active' 
                                 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
-                                : 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+                                : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
                             }`}>
-                              <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
+                              <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
                               {s.status}
                             </span>
                           </td>
