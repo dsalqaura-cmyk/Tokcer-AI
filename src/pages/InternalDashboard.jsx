@@ -60,6 +60,11 @@ const InternalDashboard = ({ onLogout }) => {
     setIsLoading(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('tokcer_admin_auth');
+    navigate('/admin-login');
+  };
+
   useEffect(() => {
     fetchClients();
   }, []);
@@ -187,7 +192,7 @@ const InternalDashboard = ({ onLogout }) => {
           </div>
           <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest text-center mb-4 italic">Core Command v2.4.1</p>
           
-          <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
+          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
             <iconify-icon icon="solar:logout-3-bold-duotone" className="text-lg"></iconify-icon>
             Exit System
           </button>
@@ -361,7 +366,11 @@ const InternalDashboard = ({ onLogout }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {(activeAppTab === 'app-subs' ? adminClients : activeAppTab === 'new-partner' ? MOCK_PARTNERS : MOCK_USERS).map((item, i) => (
+                      {(activeAppTab === 'app-subs' 
+                        ? adminClients.filter(c => c.status === 'pending') 
+                        : activeAppTab === 'new-partner' ? MOCK_PARTNERS.filter(p => p.status === 'Pending') 
+                        : MOCK_USERS.filter(u => u.status === 'Pending')
+                      ).map((item, i) => (
                         <tr key={i} className="bg-zinc-950/50 hover:bg-zinc-800/50 transition-all group">
                           <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800">
                             <div className="font-black text-white text-sm tracking-tight">{item.name || item.shop_name}</div>
