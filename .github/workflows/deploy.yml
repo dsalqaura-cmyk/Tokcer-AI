@@ -38,4 +38,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./dist/
-        server-dir: ${{ github.ref == 'refs/heads/main' && './public_html/' || './public_html/staging/' }}
+        server-dir: ${{ github.ref == 'refs/heads/main' && './public_html/' || './staging.tokcer-ai.com/' }}
