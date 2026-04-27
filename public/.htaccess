@@ -5,19 +5,19 @@
   # 1. UTAMAKAN INDEX.HTML SEBAGAI DEFAULT UNTUK SEMUA
   DirectoryIndex index.html admin.html
 
-  # 2. KHUSUS SUBDOMAIN DASHBOARD (dashboard.tokcer-ai.com)
-  # Jika akses datang dari dashboard.tokcer-ai.com, PAKSA ke admin.html
-  RewriteCond %{HTTP_HOST} ^dashboard\.tokcer-ai\.com$ [NC]
+  # 2. KHUSUS SUBDOMAIN DASHBOARD (dashboard.tokcer-ai.com & dashboardstaging.tokcer-ai.com)
+  # Jika akses datang dari dashboard subdomain, PAKSA ke admin.html
+  RewriteCond %{HTTP_HOST} ^(dashboard|dashboardstaging)\.tokcer-ai\.com$ [NC]
   RewriteRule ^$ admin.html [L]
   
-  RewriteCond %{HTTP_HOST} ^dashboard\.tokcer-ai\.com$ [NC]
+  RewriteCond %{HTTP_HOST} ^(dashboard|dashboardstaging)\.tokcer-ai\.com$ [NC]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^(.*)$ admin.html [L]
 
-  # 3. UNTUK DOMAIN UTAMA (tokcer-ai.com / www.tokcer-ai.com)
+  # 3. UNTUK DOMAIN UTAMA (tokcer-ai.com / staging.tokcer-ai.com)
   # Pastikan tetap di index.html dan dukung React Router (SPA)
-  RewriteCond %{HTTP_HOST} !^dashboard\.tokcer-ai\.com$ [NC]
+  RewriteCond %{HTTP_HOST} !^(dashboard|dashboardstaging)\.tokcer-ai\.com$ [NC]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^(.*)$ index.html [L]
