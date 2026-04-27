@@ -215,6 +215,18 @@ const Dashboard = () => {
       supportSuccess: "Berhasil Terkirim!",
       supportSuccessDesc: "Terima kasih atas masukannya! Tim kami akan segera meninjau laporan Anda.",
       backToDashboard: "Kembali ke Dashboard",
+      videoContent: "Konten Video",
+      textContent: "Konten Teks",
+      weeklyViralTopics: "Topik Viral Minggu Ini",
+      liveDataSampling: "Sampling Data Live",
+      aiSummary: "Ringkasan AI",
+      marketConfidence: "Kepercayaan Pasar",
+      planActive: "Plan Aktif",
+      ultimatePlan: "Ultimate",
+      active: "Aktif",
+      aiQuota: "Kuota AI",
+      validUntil: "Berlaku hingga",
+      supportDesc: "Kami siap membantu Anda 24/7.",
     },
     en: {
       dashboard: "Dashboard",
@@ -392,6 +404,18 @@ const Dashboard = () => {
       supportSuccess: "Successfully Sent!",
       supportSuccessDesc: "Thank you for your feedback! Our team will review your report soon.",
       backToDashboard: "Back to Dashboard",
+      videoContent: "Video Content",
+      textContent: "Text Content",
+      weeklyViralTopics: "Weekly Viral Topics",
+      liveDataSampling: "Live Data Sampling",
+      aiSummary: "AI Summary",
+      marketConfidence: "Market Confidence",
+      planActive: "Active Plan",
+      ultimatePlan: "Ultimate",
+      active: "Active",
+      aiQuota: "AI Quota",
+      validUntil: "Valid until",
+      supportDesc: "We are ready to help you 24/7.",
     }
   };
 
@@ -610,7 +634,7 @@ const Dashboard = () => {
       <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <header>
           <h2 className="text-2xl font-semibold text-white tracking-tight">{t('supportCenter')}</h2>
-          <p className="text-xs text-zinc-400 mt-1">{lang === 'id' ? 'Kami siap membantu Anda 24/7.' : 'We are ready to help you 24/7.'}</p>
+          <p className="text-xs text-zinc-400 mt-1">{t('supportDesc')}</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -814,36 +838,70 @@ const Dashboard = () => {
                 <h2 className="text-2xl font-semibold text-white tracking-tight">{t('overview')}</h2>
                 <p className="text-xs text-zinc-400 mt-1">{t('monitorShop')}</p>
               </div>
-              <div className="relative w-full sm:w-auto z-50">
-                <div 
-                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                >
-                  <div className="flex items-center gap-2">
-                    <iconify-icon icon="solar:calendar-linear"></iconify-icon> 
-                    {timeFilter}
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto z-50">
+                {/* Platform Filter */}
+                <div className="relative w-full sm:w-auto">
+                  <div
+                    onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
+                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+                  >
+                    <div className="flex items-center gap-2">
+                      <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
+                      {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
+                    </div>
+                    <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="sm:ml-2 text-zinc-500"></iconify-icon>
                   </div>
-                  <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
-                </div>
-                {showFilterDropdown && (
-                  <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden">
-                    <div className="py-1">
-                      {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
-                        <div 
-                          key={option}
-                          onClick={() => {
-                            setTimeFilter(option);
-                            setShowFilterDropdown(false);
-                          }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                  {showPlatformDropdown && (
+                    <div className="absolute top-full left-0 sm:right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] py-1 overflow-hidden">
+                      {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+                        <div
+                          key={val}
+                          onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
+                          className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${platformFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
                         >
-                          {t(option)}
-                          {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
+                          {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
+                          {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
+                          {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
+                          {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
+                          {label}
                         </div>
                       ))}
                     </div>
+                  )}
+                </div>
+
+                {/* Period Filter */}
+                <div className="relative w-full sm:w-auto">
+                  <div 
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+                  >
+                    <div className="flex items-center gap-2">
+                      <iconify-icon icon="solar:calendar-linear"></iconify-icon> 
+                      {t(timeFilter)}
+                    </div>
+                    <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
                   </div>
-                )}
+                  {showFilterDropdown && (
+                    <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] overflow-hidden">
+                      <div className="py-1">
+                        {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
+                          <div 
+                            key={option}
+                            onClick={() => {
+                              setTimeFilter(option);
+                              setShowFilterDropdown(false);
+                            }}
+                            className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                          >
+                            {t(option)}
+                            {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </header>
             
@@ -935,34 +993,6 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                {/* Platform Filter for summary */}
-                <div className="flex items-center gap-2 mb-4 relative">
-                  <div
-                    onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
-                    className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-zinc-700 transition-colors"
-                  >
-                    <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
-                    {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
-                    <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="text-zinc-500"></iconify-icon>
-                  </div>
-                  {showPlatformDropdown && (
-                    <div className="absolute top-full left-0 mt-1 w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
-                      {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
-                        <div
-                          key={val}
-                          onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${platformFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                        >
-                          {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
-                          {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                          {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
-                          {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
-                          {label}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
 
                 {/* Combined Bar + Line Chart */}
                 {(() => {
@@ -1159,19 +1189,48 @@ const Dashboard = () => {
                 <h2 className="text-2xl font-semibold text-white tracking-tight">{t('revenue')}</h2>
                 <p className="text-xs text-zinc-400 mt-1">{t('revenueDesc') || 'Detailed sales performance across multiple channels.'}</p>
               </div>
-              <div className="flex items-center gap-2 flex-wrap justify-end">
+              <div className="flex items-center gap-2 flex-wrap justify-end w-full sm:w-auto">
+                {/* Platform Filter Dropdown */}
+                <div className="relative w-full sm:w-auto">
+                  <div
+                    onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
+                    className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-700 transition-colors w-full justify-between sm:justify-start"
+                  >
+                    <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
+                    {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
+                    <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="text-zinc-500"></iconify-icon>
+                  </div>
+                  {showPlatformDropdown && (
+                    <div className="absolute top-full right-0 mt-1 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
+                      {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+                        <div
+                          key={val}
+                          onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
+                          className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${platformFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                        >
+                          {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
+                          {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
+                          {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
+                          {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Time Filter Dropdown */}
-                <div className="relative">
+                <div className="relative w-full sm:w-auto">
                   <div
                     onClick={() => setShowOmzetTimeDropdown(!showOmzetTimeDropdown)}
-                    className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-700 transition-colors"
+                    className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-700 transition-colors w-full justify-between sm:justify-start"
                   >
                     <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon>
                     {omzetTimeFilter === 'all' ? t('omzetFilterAll') : t(`omzetFilter${omzetTimeFilter.charAt(0).toUpperCase() + omzetTimeFilter.slice(1)}`) || omzetTimeFilter}
                     <iconify-icon icon={showOmzetTimeDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="text-zinc-500"></iconify-icon>
                   </div>
                   {showOmzetTimeDropdown && (
-                    <div className="absolute top-full right-0 mt-1 w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
+                    <div className="absolute top-full right-0 mt-1 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
                       {[
                         ['all', t('omzetFilterAll')],
                         ['Today', t('omzetFilterToday')],
@@ -1314,9 +1373,39 @@ const Dashboard = () => {
       case 'tab-analytics':
         return (
           <div className="relative z-10 space-y-6">
-            <header className="mb-8">
-              <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketAnalytics')}</h2>
-              <p className="text-xs text-zinc-400 mt-1">{t('analyticsDesc') || 'Performance analysis, tactical strategy, and profit optimization.'}</p>
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <div>
+                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketAnalytics')}</h2>
+                <p className="text-sm text-zinc-400 mt-1">{t('analyticsDesc') || 'Performance analysis, tactical strategy, and profit optimization.'}</p>
+              </div>
+              <div className="relative w-full sm:w-auto">
+                <div 
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+                >
+                  <div className="flex items-center gap-2">
+                    <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon> 
+                    {t(timeFilter)}
+                  </div>
+                  <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
+                </div>
+                {showFilterDropdown && (
+                  <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                    <div className="py-1">
+                      {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
+                        <div 
+                          key={option}
+                          onClick={() => { setTimeFilter(option); setShowFilterDropdown(false); }}
+                          className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                        >
+                          {t(option)}
+                          {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </header>
 
             {/* Platform Comparison Cards */}
@@ -1474,9 +1563,39 @@ const Dashboard = () => {
         const hd = healthData[healthPlatform] || healthData.all;
         return (
           <div className="relative z-10 space-y-6">
-            <header className="mb-2">
-              <h2 className="text-2xl font-semibold text-white tracking-tight">{t('shopHealth')}</h2>
-              <p className="text-sm text-zinc-400 mt-1">{t('shopHealthDesc')}</p>
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+              <div>
+                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('shopHealth')}</h2>
+                <p className="text-sm text-zinc-400 mt-1">{t('shopHealthDesc')}</p>
+              </div>
+              <div className="relative w-full sm:w-auto">
+                <div 
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+                >
+                  <div className="flex items-center gap-2">
+                    <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon> 
+                    {t(timeFilter)}
+                  </div>
+                  <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
+                </div>
+                {showFilterDropdown && (
+                  <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                    <div className="py-1">
+                      {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
+                        <div 
+                          key={option}
+                          onClick={() => { setTimeFilter(option); setShowFilterDropdown(false); }}
+                          className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                        >
+                          {t(option)}
+                          {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </header>
 
             {/* Platform Tabs */}
@@ -1518,8 +1637,8 @@ const Dashboard = () => {
                 <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">{t('healthTitle')}</p>
                 <p className="text-3xl font-bold text-white">{hd.score}<span className="text-base text-zinc-500 font-normal">/100</span></p>
                 <p className="text-xs text-zinc-400 mt-1">
-                  {healthPlatform === 'all' ? t('allPlatforms') : healthPlatform}
-                  {hd.score >= 90 ? ' · Sangat Baik 🏆' : hd.score >= 80 ? ' · Baik ✅' : ' · Perlu Perhatian ⚠️'}
+                  {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
+                  {hd.score >= 90 ? (lang === 'id' ? ' · Sangat Baik 🏆' : ' · Excellent 🏆') : hd.score >= 80 ? (lang === 'id' ? ' · Baik ✅' : ' · Good ✅') : (lang === 'id' ? ' · Perlu Perhatian ⚠️' : ' · Needs Attention ⚠️')}
                 </p>
               </div>
             </div>
@@ -1596,24 +1715,49 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">{t('formatOutput')}</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {[
-                      { label: 'TikTok Video', key: 'tiktokVideo', icon: 'solar:video-frame-play-horizontal-linear' },
-                      { label: 'Marketplace', key: 'marketplace', icon: 'solar:shop-linear' },
-                      { label: 'Instagram Feed', key: 'instagramFeed', icon: 'solar:camera-linear' },
-                    ].map(f => (
-                      <button
-                        key={f.label}
-                        onClick={() => setAiFormat(f.label)}
-                        disabled={isGenerating}
-                        className={`border-2 px-4 py-4 rounded-xl text-xs font-medium flex flex-col items-center justify-center gap-2 transition-all ${aiFormat === f.label ? 'bg-orange-950/30 border-orange-500 text-orange-400 shadow-sm' : 'bg-black border-zinc-800 text-zinc-400 hover:border-orange-500/50 hover:text-orange-400'} disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        <iconify-icon icon={f.icon} className="text-2xl"></iconify-icon>
-                        {t(f.key)}
-                      </button>
-                    ))}
+                <div className="space-y-4">
+                  <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-1">{t('formatOutput')}</label>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Video Content Group */}
+                    <div className={`p-4 rounded-2xl border transition-all ${aiFormat.includes('Video') ? 'bg-orange-950/20 border-orange-500/50' : 'bg-black border-zinc-800'}`}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <iconify-icon icon="solar:video-frame-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">{t('videoContent')}</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {['TikTok Video', 'Instagram Reels'].map(f => (
+                          <button
+                            key={f}
+                            onClick={() => setAiFormat(f)}
+                            className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left flex items-center justify-between ${aiFormat === f ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'}`}
+                          >
+                            {f}
+                            {aiFormat === f && <iconify-icon icon="solar:check-circle-bold"></iconify-icon>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Text Content Group */}
+                    <div className={`p-4 rounded-2xl border transition-all ${!aiFormat.includes('Video') ? 'bg-orange-950/20 border-orange-500/50' : 'bg-black border-zinc-800'}`}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <iconify-icon icon="solar:notes-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">{t('textContent')}</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {['Shopee Ads', 'Tokopedia Description', 'TikTok Shop Copy'].map(f => (
+                          <button
+                            key={f}
+                            onClick={() => setAiFormat(f)}
+                            className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left flex items-center justify-between ${aiFormat === f ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'}`}
+                          >
+                            {f}
+                            {aiFormat === f && <iconify-icon icon="solar:check-circle-bold"></iconify-icon>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1722,9 +1866,40 @@ const Dashboard = () => {
       case 'tab-market':
         return (
           <div className="relative z-10 space-y-6">
-            <header className="mb-4">
-              <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketIntelTitle')}</h2>
-              <p className="text-sm text-zinc-400 mt-1">{t('monitorShop')}</p>
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <div>
+                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketIntelTitle')}</h2>
+                <p className="text-sm text-zinc-400 mt-1">{t('monitorShop')}</p>
+              </div>
+              <div className="relative w-full sm:w-auto">
+                <div 
+                  onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
+                  className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+                >
+                  <div className="flex items-center gap-2">
+                    <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
+                    {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
+                  </div>
+                  <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="sm:ml-2 text-zinc-500"></iconify-icon>
+                </div>
+                {showPlatformDropdown && (
+                  <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
+                    {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+                      <div
+                        key={val}
+                        onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
+                        className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${platformFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                      >
+                        {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
+                        {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
+                        {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
+                        {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </header>
 
             {/* Radar Trend AI - Sample Data */}
@@ -1948,23 +2123,33 @@ const Dashboard = () => {
               })()}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                  <h3 className="text-sm font-semibold text-zinc-500 uppercase mb-4 tracking-widest">{t('compPriceTracker')}</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
+                      <iconify-icon icon="solar:fire-bold" className="text-orange-500"></iconify-icon>
+                      {t('weeklyViralTopics')}
+                    </h3>
+                    <span className="text-[10px] text-zinc-500 font-mono">LIVE FEED</span>
+                  </div>
                   <div className="space-y-4">
                     {[
-                      { item: t('sneakersA1'), myPrice: 'Rp 350k', compPrice: 'Rp 345k', diff: '-Rp 5k', status: t('warning') },
-                      { item: t('premiumTee'), myPrice: 'Rp 120k', compPrice: 'Rp 125k', diff: '+Rp 5k', status: t('optimal') },
-                      { item: t('hoodieUrban'), myPrice: 'Rp 450k', compPrice: 'Rp 449k', diff: '-Rp 1k', status: t('competitive') },
-                    ].map((c, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-black border border-zinc-800 rounded-xl">
-                        <div className="text-sm font-medium text-white">{c.item}</div>
-                        <div className="flex gap-8 items-center text-xs">
-                          <div className="text-zinc-500">{t('me')}: <span className="text-white">{c.myPrice}</span></div>
-                          <div className="text-zinc-500">{t('market')}: <span className="text-white">{c.compPrice}</span></div>
-                          <div className={c.diff.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}>{c.diff}</div>
+                      { topic: 'Old Money Aesthetic', platform: 'TikTok', trend: '+142%', color: 'text-zinc-300' },
+                      { topic: 'Skincare Barrier Repair', platform: 'Shopee', trend: '+85%', color: 'text-orange-500' },
+                      { topic: 'Eco-friendly Home Living', platform: 'Tokopedia', trend: '+64%', color: 'text-teal-400' },
+                    ].map((t, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color}`}>
+                            <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : t.platform === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'}></iconify-icon>
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-white">{t.topic}</div>
+                            <div className="text-[10px] text-zinc-500">{t.platform} Trends</div>
+                          </div>
                         </div>
+                        <div className="text-xs font-black text-emerald-500">{t.trend}</div>
                       </div>
                     ))}
                   </div>
@@ -1972,12 +2157,41 @@ const Dashboard = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-orange-600 rounded-2xl p-6 text-white">
-                  <h3 className="text-lg font-bold mb-2">{t('globalTrendPred')}</h3>
-                  <p className="text-xs opacity-90 leading-relaxed mb-4">{t('globalTrendDesc')}</p>
-                  <button className="w-full bg-white text-orange-600 text-xs font-bold py-2.5 rounded-lg shadow-md">
-                    {t('exploreNiche')}
-                  </button>
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm h-full">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
+                      <iconify-icon icon="solar:chart-line-up-bold" className="text-indigo-500"></iconify-icon>
+                      {t('liveDataSampling')}
+                    </h3>
+                    <div className="flex gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50"></div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-5">
+                    <div className="p-4 bg-indigo-600/10 border border-indigo-500/20 rounded-xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-2 opacity-5">
+                        <iconify-icon icon="solar:graph-bold" className="text-4xl text-indigo-400"></iconify-icon>
+                      </div>
+                      <p className="text-[11px] text-indigo-300 font-bold mb-1 uppercase tracking-wider">{t('aiSummary')}</p>
+                      <p className="text-xs text-zinc-300 leading-relaxed italic">
+                        {lang === 'id' 
+                          ? '"Produk kategori Home & Living mengalami kenaikan volume pencarian 3x lipat menjelang akhir pekan. Rekomendasi: Fokus pada keyword \'minimalist\' dan \'aesthetic\'."'
+                          : '"Home & Living category products saw a 3x increase in search volume leading into the weekend. Recommendation: Focus on \'minimalist\' and \'aesthetic\' keywords."'
+                        }
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-zinc-500">{t('marketConfidence')}</span>
+                        <span className="text-emerald-500 font-bold">88%</span>
+                      </div>
+                      <div className="w-full bg-zinc-800 rounded-full h-1">
+                        <div className="bg-indigo-500 h-1 rounded-full" style={{ width: '88%' }}></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2091,31 +2305,30 @@ const Dashboard = () => {
 
           {/* User Tier Card */}
           <div className="mb-4 px-2">
-            <div className="bg-gradient-to-br from-amber-950/60 to-orange-950/40 border border-amber-700/40 rounded-2xl p-4 relative overflow-hidden">
-              {/* Glow effect */}
-              <div className="absolute -top-4 -right-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
-              <div className="flex items-center justify-between mb-3">
+            <div className="bg-gradient-to-br from-amber-950/60 to-orange-950/40 border border-amber-700/40 rounded-xl p-3 relative overflow-hidden">
+              <div className="absolute -top-4 -right-4 w-12 h-12 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
-                    <iconify-icon icon="solar:crown-bold" className="text-white text-sm"></iconify-icon>
+                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                    <iconify-icon icon="solar:crown-bold" className="text-white text-[10px]"></iconify-icon>
                   </div>
                   <div>
-                    <p className="text-[10px] text-amber-400/80 uppercase tracking-widest font-semibold">Plan Aktif</p>
-                    <p className="text-sm font-bold text-amber-300 leading-none">Ultimate</p>
+                    <p className="text-[8px] text-amber-400/80 uppercase tracking-widest font-semibold">{t('planActive')}</p>
+                    <p className="text-xs font-bold text-amber-300 leading-none">{t('ultimatePlan')}</p>
                   </div>
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">✓ Aktif</span>
+                <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">✓ {t('active')}</span>
               </div>
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-zinc-500">Kuota AI Generator</span>
-                  <span className="text-[10px] text-amber-400 font-semibold">42 / 100</span>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[9px]">
+                  <span className="text-zinc-500">{t('aiQuota')}</span>
+                  <span className="text-amber-400 font-semibold">42 / 100</span>
                 </div>
-                <div className="w-full bg-zinc-800/80 rounded-full h-1.5">
-                  <div className="h-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: '42%'}}></div>
+                <div className="w-full bg-zinc-800/80 rounded-full h-1">
+                  <div className="h-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: '42%'}}></div>
                 </div>
               </div>
-                        <p className="text-[9px] text-zinc-600 mt-2">Berlaku hingga 30 Mei 2025</p>
+              <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
             </div>
           </div>
 

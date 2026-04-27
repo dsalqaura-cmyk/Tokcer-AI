@@ -22,9 +22,20 @@ const ProductModal = ({ isOpen, onClose, t }) => {
         </div>
         
         <form onSubmit={(e) => { e.preventDefault(); alert(t('simulatedAlert')); onClose(); }} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t('productName')}</label>
-            <input type="text" required placeholder={t('productNamePlaceholder')} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t('productName')}</label>
+              <input type="text" required placeholder={t('productNamePlaceholder')} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t('platform')}</label>
+              <select className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all appearance-none">
+                <option value="all">{t('allPlatforms')}</option>
+                <option value="shopee">Shopee</option>
+                <option value="tokopedia">Tokopedia</option>
+                <option value="tiktok">TikTok Shop</option>
+              </select>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
