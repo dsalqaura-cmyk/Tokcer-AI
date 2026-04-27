@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardInventory = ({ t }) => {
+const DashboardInventory = ({ t, hasConnectedStore }) => {
   const inventoryData = [
     { name: 'Sepatu Sneakers A1', sku: 'SS-A1-BLU', stock: 142, status: t('optimal') },
     { name: 'Kaos Polos Premium', sku: 'KP-PRM-BLK', stock: 12, status: t('runningLow') },
@@ -12,7 +12,12 @@ const DashboardInventory = ({ t }) => {
   return (
     <div className="relative z-10 space-y-6 animate-in fade-in duration-700">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h2 className="text-2xl font-semibold text-white tracking-tight">{t('inventoryCatalog')}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-semibold text-white tracking-tight">{t('inventoryCatalog')}</h2>
+          {!hasConnectedStore && (
+            <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[10px] rounded-full font-bold uppercase tracking-wider">Mode Simulasi</span>
+          )}
+        </div>
         <button className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
           <iconify-icon icon="solar:add-circle-linear" className="text-base"></iconify-icon> 
           {t('addProduct')}

@@ -196,6 +196,8 @@ const Dashboard = () => {
         return wrapContent(
           <DashboardOverview 
             t={t}
+            profile={profile}
+            hasConnectedStore={hasConnectedStore}
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
             showFilterDropdown={showFilterDropdown}
@@ -207,9 +209,9 @@ const Dashboard = () => {
           />
         );
       case 'tab-omzet':
-        return wrapContent(<DashboardRevenue t={t} />);
+        return wrapContent(<DashboardRevenue t={t} hasConnectedStore={hasConnectedStore} />);
       case 'tab-inventory':
-        return wrapContent(<DashboardInventory t={t} />);
+        return wrapContent(<DashboardInventory t={t} hasConnectedStore={hasConnectedStore} />);
       case 'tab-analytics':
         return wrapContent(
           <DashboardAnalytics 

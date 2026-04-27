@@ -1,12 +1,17 @@
 import React from 'react';
 
-const DashboardRevenue = ({ t }) => {
+const DashboardRevenue = ({ t, hasConnectedStore }) => {
   return (
     <div className="relative z-10 space-y-6 animate-in fade-in duration-700">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h2 className="text-2xl font-semibold text-white tracking-tight">{t('revenueData')}</h2>
-          <p className="text-xs text-zinc-400 mt-1">{t('revenueDesc')}</p>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-2xl font-semibold text-white tracking-tight">{t('revenueData')}</h2>
+            {!hasConnectedStore && (
+              <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[10px] rounded-full font-bold uppercase tracking-wider">Mode Simulasi</span>
+            )}
+          </div>
+          <p className="text-xs text-zinc-400">{t('revenueDesc')}</p>
         </div>
         <button className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 text-xs font-medium px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
           <iconify-icon icon="solar:download-linear" className="text-base"></iconify-icon> 
