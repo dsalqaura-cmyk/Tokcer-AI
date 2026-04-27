@@ -518,7 +518,7 @@ const Dashboard = () => {
 
   const callDeepSeek = async (systemPrompt, userMessage) => {
     const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
-    if (!apiKey || apiKey === 'sk-78f56818cb234d628afe48dac3a4239d') {
+    if (!apiKey) {
       throw new Error('API Key AI Generator belum dikonfigurasi. Silakan isi VITE_DEEPSEEK_API_KEY di file .env Anda.');
     }
     const res = await fetch('https://api.deepseek.com/chat/completions', {
