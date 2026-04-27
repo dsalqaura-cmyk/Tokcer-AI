@@ -2364,6 +2364,8 @@ const Dashboard = () => {
             </div>
           </div>
         );
+      case 'tab-support':
+        return renderSupportCenter();
       case 'tab-account':
         return (
           <div className="relative z-10 animate-in fade-in duration-500 max-w-md">
