@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import ProductModal from '../components/modals/ProductModal';
-// Build Timestamp: 2026-04-27 10:45:00
+// Build Timestamp: 2026-04-27 11:46:00
 import logo from '../assets/logo.png';
 
 const Dashboard = () => {
@@ -1419,32 +1419,33 @@ const Dashboard = () => {
 
                 {/* Period Filter */}
                 <div className="relative w-full sm:w-auto">
-                <div 
-                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                >
-                  <div className="flex items-center gap-2">
-                    <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon> 
-                    {t(timeFilter)}
-                  </div>
-                  <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
-                </div>
-                {showFilterDropdown && (
-                  <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 overflow-hidden">
-                    <div className="py-1">
-                      {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
-                        <div 
-                          key={option}
-                          onClick={() => { setTimeFilter(option); setShowFilterDropdown(false); }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                        >
-                          {t(option)}
-                          {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
-                        </div>
-                      ))}
+                  <div 
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+                  >
+                    <div className="flex items-center gap-2">
+                      <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon> 
+                      {t(timeFilter)}
                     </div>
+                    <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
                   </div>
-                )}
+                  {showFilterDropdown && (
+                    <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                      <div className="py-1">
+                        {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
+                          <div 
+                            key={option}
+                            onClick={() => { setTimeFilter(option); setShowFilterDropdown(false); }}
+                            className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                          >
+                            {t(option)}
+                            {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </header>
 
