@@ -30,6 +30,10 @@ jobs:
         else
           npx vite build --mode staging
         fi
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        VITE_DEEPSEEK_API_KEY: ${{ secrets.VITE_DEEPSEEK_API_KEY }}
 
     - name: 📂 Sync to Staging
       if: github.ref == 'refs/heads/staging'
