@@ -556,6 +556,50 @@ const Dashboard = () => {
         return stats;
     };
 
+    const callDeepSeek = async (system, prompt) => {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer sk-34bbe3cdd5664996a4777f4e6c21aba0'
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [
+                    { role: "system", content: system },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.0
+            })
+        });
+        const data = await response.json();
+        return data.choices[0].message.content;
+    };
+
+    const fetchTrends = async () => {
+        setIsFetchingTrends(true);
+        try {
+            const bizType = profile?.business_type || 'E-commerce';
+            const systemPrompt = "You are an AI Market Analyst for Tokcer AI. Return ONLY a JSON object with 'topics' (array of 3 objects with topic, platform, trend_percent, color_class) and 'summary' (object with summary, risk, strategy).";
+            const result = await callDeepSeek(systemPrompt, "Fetch current viral trends for " + bizType);
+            const data = JSON.parse(result.replace(/```json|```/g, '').trim());
+            if (data.topics) setViralTopics(data.topics);
+            if (data.summary) setLiveSummary(data.summary);
+        } catch (e) { console.error(e); }
+        finally { setIsFetchingTrends(false); }
+    };
+
+    const handleGenerate = async () => {
+        if (!aiPrompt) return;
+        setIsGenerating(true);
+        try {
+            const systemPrompt = `You are an expert ${aiFormat} writer for Tokcer AI.`;
+            const result = await callDeepSeek(systemPrompt, aiPrompt);
+            setAiResult(result);
+        } catch (e) { console.error(e); }
+        finally { setIsGenerating(false); }
+    };
+
     getUser();
   }, []);
 
@@ -728,40 +772,26 @@ const Dashboard = () => {
       "trend": (detailed current market trend), 
       "demo": (specific target audience profile), 
       "top5": (array of 5 specific high-potential products), 
-      "risk": (market or operational risks), 
-      "strategy": (actionable growth strategy).`;
+      const bizType = profile?.business_type || 'E-commerce';
+      const userMessage = trendPrompt || `Fetch current viral trends for ${bizType}`;
+      const systemPrompt = "You are an AI Market Analyst for Tokcer AI. Return ONLY a JSON object with 'topics' (array of 3 objects with topic, platform, trend_percent, color_class) and 'summary' (object with summary, risk, strategy).";
       
-      const ragKnowledge = config?.rag_knowledge_base ? `\n\nPengetahuan tambahan:\n${config.rag_knowledge_base}` : '';
-
-      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}\n\nLanguage: ${lang === 'id' ? 'Indonesian' : 'English'}.\nONLY return the JSON object.`;
-      const userMessage = `Lakukan analisis Market Trend Radar untuk kategori berikut:\n\n"${trendPrompt}"`;
-
-      // 3. Call DeepSeek
-      const result = await callDeepSeek(fullSystemPrompt, userMessage);
+      const result = await callDeepSeek(systemPrompt, userMessage);
+      const data = JSON.parse(result.replace(/```json|```/g, '').trim());
+      
+      if (data.topics) setViralTopics(data.topics);
+      if (data.summary) setLiveSummary(data.summary);
       setTrendResult(result);
 
-      // 4. Update Tokens (Only for non-admin)
+      // Log Usage
       if (!isAdmin) {
         const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
-        const newTokens = currentTokens - 1;
-        
-        // Update either tokens or ai_credits_remaining based on what's available
-        const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
-        await supabase.from('profiles').update(updateData).eq('id', user.id);
-        
-        setProfile({ ...profile, tokens: newTokens });
-
-        await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
-          prompt: userMessage,
-          response: result,
-          tokens_used: 1,
-          feature: 'market_analyst'
-        }]);
+        await supabase.from('profiles').update({ tokens: currentTokens - 1 }).eq('id', user.id);
+        setProfile({ ...profile, tokens: currentTokens - 1 });
       }
-
     } catch (e) {
-      setTrendResult(`❌ Error: ${e.message}`);
+      console.error(e);
+      setTrendResult("Maaf, terjadi kesalahan saat menganalisa tren.");
     } finally {
       setIsTrendAnalyzing(false);
     }
