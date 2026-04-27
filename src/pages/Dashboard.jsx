@@ -12,6 +12,8 @@ import DashboardAnalytics from '../components/dashboard/DashboardAnalytics';
 import DashboardAI from '../components/dashboard/DashboardAI';
 import DashboardHealth from '../components/dashboard/DashboardHealth';
 import DashboardSupport from '../components/dashboard/DashboardSupport';
+import DashboardOnboarding from '../components/dashboard/DashboardOnboarding';
+import StoreIntegrator from '../components/dashboard/StoreIntegrator';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -44,6 +46,10 @@ const Dashboard = () => {
   const [isSearchingTrend, setIsSearchingTrend] = useState(false);
   const [trendSampleKey, setTrendSampleKey] = useState(null);
 
+  // -- Integration States --
+  const [hasConnectedStore, setHasConnectedStore] = useState(false);
+  const [showIntegrator, setShowIntegrator] = useState(false);
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -64,6 +70,16 @@ const Dashboard = () => {
 
       if (error) throw error;
       setProfile(prof);
+      
+      // Check for connected stores (placeholder logic)
+      const { data: stores } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('user_id', session.user.id);
+      
+      if (stores && stores.length > 0) {
+        setHasConnectedStore(true);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -161,10 +177,23 @@ const Dashboard = () => {
     }, 1200);
   };
 
+  const wrapContent = (content) => {
+    if (showIntegrator) {
+      return <StoreIntegrator t={t} onBack={() => setShowIntegrator(false)} />;
+    }
+
+    return (
+      <div className="space-y-6">
+        {!hasConnectedStore && <DashboardOnboarding onConnect={() => setShowIntegrator(true)} />}
+        {content}
+      </div>
+    );
+  };
+
   const renderContent = () => {
     switch (activeMenu) {
       case 'tab-dash': 
-        return (
+        return wrapContent(
           <DashboardOverview 
             t={t}
             timeFilter={timeFilter}
@@ -178,11 +207,11 @@ const Dashboard = () => {
           />
         );
       case 'tab-omzet':
-        return <DashboardRevenue t={t} />;
+        return wrapContent(<DashboardRevenue t={t} />);
       case 'tab-inventory':
-        return <DashboardInventory t={t} />;
+        return wrapContent(<DashboardInventory t={t} />);
       case 'tab-analytics':
-        return (
+        return wrapContent(
           <DashboardAnalytics 
             t={t}
             analyticsPlatform={analyticsPlatform}
@@ -196,7 +225,7 @@ const Dashboard = () => {
           />
         );
       case 'tab-ai':
-        return (
+        return wrapContent(
           <DashboardAI 
             t={t}
             lang={lang}
@@ -218,7 +247,7 @@ const Dashboard = () => {
           />
         );
       case 'tab-health':
-        return (
+        return wrapContent(
           <DashboardHealth 
             t={t}
             lang={lang}
@@ -231,11 +260,12 @@ const Dashboard = () => {
           />
         );
       case 'tab-support':
-        return <DashboardSupport t={t} />;
+        return wrapContent(<DashboardSupport t={t} />);
       default:
         return <div className="text-zinc-500 italic">Menu {activeMenu} is under construction.</div>;
     }
   };
+
 
   if (loading) {
     return (
