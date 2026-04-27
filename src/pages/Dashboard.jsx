@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { useTranslation } from '../hooks/useTranslation';
+import { supabase } from '../supabase';
+import { useLandingTranslation as useTranslation } from '../hooks/useLandingTranslation';
 
 // Import Modular Components
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
