@@ -30,6 +30,8 @@ const Dashboard = () => {
   const [trendCustomInput, setTrendCustomInput] = useState('');
   const [trendCustomResult, setTrendCustomResult] = useState(null);
   const [isSearchingTrend, setIsSearchingTrend] = useState(false);
+  const [analyticsPlatform, setAnalyticsPlatform] = useState('all');
+  const [showAnalyticsPlatformDropdown, setShowAnalyticsPlatformDropdown] = useState(false);
 
   // Support Center States
   const [supportType, setSupportType] = useState('bug'); // 'bug' or 'feature'
@@ -1383,7 +1385,40 @@ const Dashboard = () => {
                 <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketAnalytics')}</h2>
                 <p className="text-sm text-zinc-400 mt-1">{t('analyticsDesc') || 'Performance analysis, tactical strategy, and profit optimization.'}</p>
               </div>
-              <div className="relative w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto z-50">
+                {/* Platform Filter */}
+                <div className="relative w-full sm:w-auto">
+                  <div
+                    onClick={() => setShowAnalyticsPlatformDropdown(!showAnalyticsPlatformDropdown)}
+                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+                  >
+                    <div className="flex items-center gap-2">
+                      <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
+                      {analyticsPlatform === 'all' ? t('allPlatforms') : analyticsPlatform}
+                    </div>
+                    <iconify-icon icon={showAnalyticsPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="sm:ml-2 text-zinc-500"></iconify-icon>
+                  </div>
+                  {showAnalyticsPlatformDropdown && (
+                    <div className="absolute top-full left-0 sm:right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] py-1 overflow-hidden">
+                      {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+                        <div
+                          key={val}
+                          onClick={() => { setAnalyticsPlatform(val); setShowAnalyticsPlatformDropdown(false); }}
+                          className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${analyticsPlatform === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                        >
+                          {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
+                          {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
+                          {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
+                          {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Period Filter */}
+                <div className="relative w-full sm:w-auto">
                 <div 
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
@@ -1413,23 +1448,33 @@ const Dashboard = () => {
               </div>
             </header>
 
-            {/* Platform Comparison Cards */}
+            {/* Platform Comparison Cards - Only show if 'all' is selected, or show single platform detail */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
+              {(analyticsPlatform === 'all' ? [
                 { name: 'TikTok Shop', revenue: 'Rp 52.4M', orders: 1240, color: 'text-zinc-300', icon: 'ri:tiktok-fill', trend: '+12.5%' },
                 { name: 'Shopee', revenue: 'Rp 48.2M', orders: 1180, color: 'text-orange-500', icon: 'simple-icons:shopee', trend: '+8.2%' },
                 { name: 'Tokopedia', revenue: 'Rp 32.1M', orders: 840, color: 'text-teal-400', icon: 'solar:shop-2-linear', trend: '-2.4%' },
-              ].map((p, i) => (
-                <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm">
+              ] : [
+                analyticsPlatform === 'TikTok' ? { name: 'TikTok Shop', revenue: 'Rp 52.4M', orders: 1240, color: 'text-zinc-300', icon: 'ri:tiktok-fill', trend: '+12.5%' } :
+                analyticsPlatform === 'Shopee' ? { name: 'Shopee', revenue: 'Rp 48.2M', orders: 1180, color: 'text-orange-500', icon: 'simple-icons:shopee', trend: '+8.2%' } :
+                { name: 'Tokopedia', revenue: 'Rp 32.1M', orders: 840, color: 'text-teal-400', icon: 'solar:shop-2-linear', trend: '-2.4%' }
+              ]).map((p, i) => (
+                <div key={i} className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm ${analyticsPlatform !== 'all' ? 'md:col-span-3' : ''}`}>
                   <div className="flex justify-between items-start mb-4">
                     <div className={`w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center ${p.color}`}>
                       <iconify-icon icon={p.icon} className="text-xl"></iconify-icon>
                     </div>
-                    <span className={`text-xs font-medium ${p.trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{p.trend}</span>
+                    <div className="flex flex-col items-end">
+                      <span className={`text-xs font-bold ${p.trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{p.trend}</span>
+                      <span className="text-[9px] text-zinc-500 uppercase tracking-tighter">Growth</span>
+                    </div>
                   </div>
                   <h3 className="text-sm font-medium text-zinc-400">{p.name}</h3>
-                  <div className="text-2xl font-semibold text-white mt-1">{p.revenue}</div>
-                  <div className="text-[10px] text-zinc-500 mt-1">{p.orders} {t('done')}</div>
+                  <div className="text-3xl font-bold text-white mt-1">{p.revenue}</div>
+                  <div className="text-xs text-zinc-500 mt-2 flex items-center gap-2">
+                    <iconify-icon icon="solar:bag-check-bold-duotone" className="text-orange-500"></iconify-icon>
+                    {p.orders} {t('done')}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1442,7 +1487,7 @@ const Dashboard = () => {
                   <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
                     <iconify-icon icon="solar:bolt-circle-linear" className="text-white text-xl"></iconify-icon>
                   </div>
-                  <h3 className="text-lg font-semibold text-white">{t('strategicIntel')}</h3>
+                  <h3 className="text-lg font-semibold text-white">{t('strategicIntel')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</h3>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1490,7 +1535,7 @@ const Dashboard = () => {
 
               {/* Selling Ideas / Market Pulse */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col">
-                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-6">{t('marketPulseIdeas')}</div>
+                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-6">{t('marketPulseIdeas')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</div>
                 <div className="flex-1 space-y-4">
                   <div className="p-4 bg-orange-600/10 border border-orange-500/20 rounded-xl">
                     <div className="text-xs font-bold text-orange-500 mb-1">🔥 {t('hotIdea')}</div>
@@ -1514,7 +1559,7 @@ const Dashboard = () => {
                 <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center">
                   <iconify-icon icon="solar:globus-linear" className="text-white"></iconify-icon>
                 </div>
-                <h3 className="text-lg font-semibold text-white">{t('priceOpt')}</h3>
+                <h3 className="text-lg font-semibold text-white">{t('priceOpt')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</h3>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1748,10 +1793,13 @@ const Dashboard = () => {
                     <div className={`p-4 rounded-2xl border transition-all ${!aiFormat.includes('Video') ? 'bg-orange-950/20 border-orange-500/50' : 'bg-black border-zinc-800'}`}>
                       <div className="flex items-center gap-2 mb-3">
                         <iconify-icon icon="solar:notes-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
-                        <span className="text-xs font-bold text-white uppercase tracking-wider">{t('textContent')}</span>
+                        <div>
+                          <span className="text-xs font-bold text-white uppercase tracking-wider block">{t('textContent')}</span>
+                          <span className="text-[9px] text-zinc-500 italic block">(Product Name & Description)</span>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-2">
-                        {['Shopee Ads', 'Tokopedia Description', 'TikTok Shop Copy'].map(f => (
+                        {['Shopee Description', 'Tokopedia Description', 'TikTok Shop Description'].map(f => (
                           <button
                             key={f}
                             onClick={() => setAiFormat(f)}
