@@ -569,7 +569,7 @@ const Dashboard = () => {
                     { role: "system", content: system },
                     { role: "user", content: prompt }
                 ],
-                temperature: 0.0
+                temperature: 0.2
             })
         });
         const data = await response.json();
