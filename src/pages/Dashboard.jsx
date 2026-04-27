@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import ProductModal from '../components/modals/ProductModal';
+// Build Timestamp: 2026-04-27 10:45:00
 import logo from '../assets/logo.png';
 
 const Dashboard = () => {
@@ -1549,7 +1550,7 @@ const Dashboard = () => {
                     <div className="text-4xl font-bold text-white">+Rp 4.2M</div>
                     <p className="text-xs text-zinc-400">{t('potentialProfit')}</p>
                     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-left">
-                      <p className="text-[10px] text-zinc-500 leading-relaxed">Terapkan rekomendasi harga secara manual melalui platform masing-masing untuk memaksimalkan profit bulan ini.</p>
+                      <p className="text-[10px] text-zinc-500 leading-relaxed">{t('priceRecTip') || (lang === 'id' ? 'Terapkan rekomendasi harga secara manual melalui platform masing-masing untuk memaksimalkan profit bulan ini.' : 'Apply price recommendations manually through each platform to maximize profit this month.')}</p>
                     </div>
                   </div>
                 </div>
