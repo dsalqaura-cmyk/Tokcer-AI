@@ -14,6 +14,7 @@ import DashboardHealth from '../components/dashboard/DashboardHealth';
 import DashboardSupport from '../components/dashboard/DashboardSupport';
 import DashboardOnboarding from '../components/dashboard/DashboardOnboarding';
 import StoreIntegrator from '../components/dashboard/StoreIntegrator';
+import DashboardAccount from '../components/dashboard/DashboardAccount';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -274,6 +275,8 @@ const Dashboard = () => {
         );
       case 'tab-support':
         return wrapContent(<DashboardSupport t={t} />);
+      case 'tab-account':
+        return wrapContent(<DashboardAccount t={t} profile={profile} />);
       default:
         return <div className="text-zinc-500 italic">Menu {activeMenu} is under construction.</div>;
     }

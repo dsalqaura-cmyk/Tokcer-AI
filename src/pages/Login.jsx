@@ -12,42 +12,39 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [fullName, setFullName] = useState('');
+  const [useMagicLink, setUseMagicLink] = useState(false);
   const navigate = useNavigate();
 
   const translations = {
     id: {
-      loginTitle: isRegister ? "Daftar Akun Baru" : "Login Dashboard",
-      loginDesc: isRegister ? "Mulai kelola tokomu dengan AI." : (role === 'user' ? "Masukkan email untuk menerima link login." : "Masuk untuk kelola tokomu."),
+      loginTitle: "Login Dashboard",
+      loginDesc: useMagicLink ? "Masukkan email untuk menerima link login." : "Masuk untuk kelola tokomu.",
       emailLabel: "Email Akses",
       passwordLabel: "Password",
-      fullNameLabel: "Nama Lengkap",
       forgotPass: "Lupa Password?",
-      loginBtn: isRegister ? "Daftar Sekarang" : (role === 'user' ? "Kirim Link Login" : "Masuk ke Sistem"),
-      loggingIn: isRegister ? "Mendaftar..." : "Memproses...",
+      loginBtn: useMagicLink ? "Kirim Link Login" : "Masuk ke Sistem",
+      loggingIn: "Memproses...",
       asUser: "Sebagai User",
       asPartner: "Sebagai Partner",
-      asAdmin: "Sebagai Admin",
       noAccount: "Belum punya akun?",
-      haveAccount: "Sudah punya akun?",
       signUp: "Daftar di sini",
-      signIn: "Login di sini",
+      useMagicLink: "Masuk pakai Magic Link (Email)",
+      usePassword: "Masuk pakai Password"
     },
     en: {
-      loginTitle: isRegister ? "Create New Account" : "Dashboard Login",
-      loginDesc: isRegister ? "Start managing your shop with AI." : (role === 'user' ? "Enter your email to receive a login link." : "Sign in to manage your shop."),
+      loginTitle: "Dashboard Login",
+      loginDesc: useMagicLink ? "Enter your email to receive a login link." : "Sign in to manage your shop.",
       emailLabel: "Access Email",
       passwordLabel: "Password",
-      fullNameLabel: "Full Name",
       forgotPass: "Forgot Password?",
-      loginBtn: isRegister ? "Sign Up Now" : (role === 'user' ? "Send Login Link" : "Sign In"),
-      loggingIn: isRegister ? "Signing up..." : "Processing...",
+      loginBtn: useMagicLink ? "Send Login Link" : "Sign In",
+      loggingIn: "Processing...",
       asUser: "As User",
       asPartner: "As Partner",
-      asAdmin: "As Admin",
       noAccount: "Don't have an account?",
-      haveAccount: "Already have an account?",
       signUp: "Sign up here",
-      signIn: "Login here",
+      useMagicLink: "Login with Magic Link",
+      usePassword: "Login with Password"
     }
   };
 
@@ -63,32 +60,8 @@ const Login = () => {
     setLoading(true);
     setError(null);
     
-    if (isRegister) {
-      // Handle Sign Up (Using OTP/Magic Link for consistency)
-      const { error: signUpError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          data: {
-            full_name: fullName,
-            role: role
-          },
-          emailRedirectTo: window.location.origin + '/dashboard',
-        }
-      });
-
-      if (signUpError) {
-        setError(signUpError.message);
-        setLoading(false);
-      } else {
-        alert(lang === 'id' ? 'Link verifikasi telah dikirim ke email Anda!' : 'Verification link sent to your email!');
-        setIsRegister(false);
-        setLoading(false);
-      }
-      return;
-    }
-
     // Handle Admin Total Bypass
-    if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
+    if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983' && !useMagicLink) {
       localStorage.setItem('tokcer_admin_auth', 'true');
       setLoading(false);
       if (role === 'admin') navigate('/admin');
@@ -97,35 +70,21 @@ const Login = () => {
       return;
     }
 
-    // Handle User Login with Magic Link
-    if (role === 'user') {
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                emailRedirectTo: window.location.origin + '/dashboard',
-            }
-        });
-
-        if (otpError) {
-            setError(otpError.message);
-            setLoading(false);
-        } else {
-            alert(lang === 'id' ? 'Link login telah dikirim ke email Anda!' : 'Login link sent to your email!');
-            setLoading(false);
-        }
-        return;
+    if (useMagicLink) {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin + '/dashboard' }
+      });
+      if (otpError) setError(otpError.message);
+      else alert(lang === 'id' ? 'Link login telah dikirim!' : 'Login link sent!');
+      setLoading(false);
+      return;
     }
 
-    // Handle Partner/Admin Login with Password
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else {
       if (role === 'admin') navigate('/admin');
       else if (role === 'partner') navigate('/partner-dashboard');
@@ -137,128 +96,65 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-black px-4 relative">
       <div className="fixed inset-0 -z-10 h-[100vh] w-full bg-black bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
       
-      {/* Language Toggle */}
       <div className="absolute top-6 right-6 flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
-        <button 
-          onClick={() => toggleLang('id')}
-          className={`px-3 py-1.5 text-[10px] font-bold rounded ${lang === 'id' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
-        >
-          ID
-        </button>
-        <button 
-          onClick={() => toggleLang('en')}
-          className={`px-3 py-1.5 text-[10px] font-bold rounded ${lang === 'en' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
-        >
-          EN
-        </button>
+        <button onClick={() => toggleLang('id')} className={`px-3 py-1.5 text-[10px] font-bold rounded ${lang === 'id' ? 'bg-orange-600 text-white' : 'text-zinc-500'}`}>ID</button>
+        <button onClick={() => toggleLang('en')} className={`px-3 py-1.5 text-[10px] font-bold rounded ${lang === 'en' ? 'bg-orange-600 text-white' : 'text-zinc-500'}`}>EN</button>
       </div>
 
       <div className="absolute top-6 left-6 lg:fixed">
-        <Link to="/" className="text-xl font-bold text-white tracking-tight flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link to="/" className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
           <img src={logo} alt="Tokcer AI" className="h-6 md:h-8 w-auto" />
         </Link>
       </div>
 
       <div className="relative bg-zinc-900 w-full max-w-[calc(100%-2rem)] md:max-w-sm p-6 md:p-8 rounded-2xl shadow-2xl border border-zinc-800 my-20">
-        <div className="mb-6 md:mb-8 text-center">
+        <div className="mb-6 text-center">
           <div className="w-12 h-12 bg-orange-950/50 rounded-xl flex items-center justify-center border border-orange-900/50 mx-auto mb-4">
-            <iconify-icon icon={isRegister ? "solar:user-plus-linear" : "solar:user-linear"} className="text-2xl text-orange-500"></iconify-icon>
+            <iconify-icon icon="solar:user-linear" className="text-2xl text-orange-500"></iconify-icon>
           </div>
           <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight">{t('loginTitle')}</h3>
           <p className="text-[10px] md:text-xs text-zinc-400 mt-1">{t('loginDesc')}</p>
         </div>
         
-        {/* Role Switcher */}
         <div className="flex bg-black rounded-xl p-1 mb-6 border border-zinc-800">
-          <button 
-            onClick={() => setRole('user')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${role === 'user' ? 'bg-orange-600 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
-          >
-            <iconify-icon icon="solar:shop-linear"></iconify-icon>
-            {t('asUser')}
-          </button>
-          <button 
-            onClick={() => setRole('partner')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${role === 'partner' ? 'bg-orange-600 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
-          >
-            <iconify-icon icon="solar:hand-stars-linear"></iconify-icon>
-            {t('asPartner')}
-          </button>
+          <button onClick={() => setRole('user')} className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${role === 'user' ? 'bg-orange-600 text-white' : 'text-zinc-500'}`}>User</button>
+          <button onClick={() => setRole('partner')} className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${role === 'partner' ? 'bg-orange-600 text-white' : 'text-zinc-500'}`}>Partner</button>
         </div>
         
-        {error && (
-          <div className="bg-rose-500/10 border border-rose-500/50 text-rose-500 p-3 rounded-lg mb-6 text-sm text-center">
-            {error}
-          </div>
-        )}
+        {error && <div className="bg-rose-500/10 border border-rose-500/50 text-rose-500 p-3 rounded-lg mb-6 text-sm text-center">{error}</div>}
 
         <form onSubmit={handleAuth} className="space-y-4">
-          {isRegister && (
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t('fullNameLabel')}</label>
-              <input 
-                type="text" 
-                required
-                className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-                placeholder="Andi Pratama"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-            </div>
-          )}
-
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t('emailLabel')}</label>
-            <input 
-              type="email" 
-              required
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-              placeholder="admin@tokoanda.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input type="email" required className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:ring-2 focus:ring-orange-500/50 outline-none" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           
-          {/* Show password field ONLY for non-user roles or if it's the admin bypass */}
-          {(role !== 'user' || email === 'admin@tokcer-ai.com') && (
+          {!useMagicLink && (
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-xs font-medium text-zinc-400">{t('passwordLabel')}</label>
-                {!isRegister && (
-                  <a href="#" className="text-[10px] font-medium text-orange-500 hover:text-orange-400 transition-colors">{t('forgotPass')}</a>
-                )}
+                <a href="#" className="text-[10px] text-orange-500">{t('forgotPass')}</a>
               </div>
-              <input 
-                type="password" 
-                required
-                className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <input type="password" required className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:ring-2 focus:ring-orange-500/50 outline-none" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
           )}
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-orange-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-orange-500 transition-all shadow-md mt-2 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {loading && <iconify-icon icon="solar:spinner-linear" className="animate-spin text-lg"></iconify-icon>}
+          <button type="submit" disabled={loading} className="w-full bg-orange-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-orange-500 transition-all flex justify-center items-center gap-2">
             {loading ? t('loggingIn') : t('loginBtn')}
           </button>
         </form>
 
+        <div className="mt-6 text-center">
+            <button onClick={() => setUseMagicLink(!useMagicLink)} className="text-xs text-zinc-400 hover:text-white underline">
+                {useMagicLink ? t('usePassword') : t('useMagicLink')}
+            </button>
+        </div>
+
         <div className="mt-8 pt-6 border-t border-zinc-800 text-center">
-          <p className="text-xs text-zinc-500 mb-3">
-            {isRegister ? t('haveAccount') : t('noAccount')}
-          </p>
-          <button 
-            onClick={() => setIsRegister(!isRegister)}
-            className="w-full py-2.5 rounded-xl border border-zinc-800 text-orange-500 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-orange-500/5 transition-all"
-          >
-            {isRegister ? t('signIn') : t('signUp')}
-          </button>
+          <p className="text-xs text-zinc-500 mb-3">{t('noAccount')}</p>
+          <Link to="/" className="block w-full py-2.5 rounded-xl border border-zinc-800 text-orange-500 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-orange-500/5">
+            {t('signUp')}
+          </Link>
         </div>
       </div>
     </div>

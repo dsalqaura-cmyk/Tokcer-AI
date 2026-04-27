@@ -40,7 +40,8 @@ const DashboardSidebar = ({
             { id: 'tab-ai', label: t('aiGenerator'), icon: 'solar:magic-stick-3-linear', isAI: true },
             { id: 'tab-support', label: t('supportCenter'), icon: 'solar:headphones-round-linear' },
             { id: 'tab-health', label: t('healthScore'), icon: 'solar:shield-check-linear' },
-            { id: 'tab-market', label: t('marketIntel'), icon: 'solar:global-linear' }
+            { id: 'tab-market', label: t('marketIntel'), icon: 'solar:global-linear' },
+            { id: 'tab-account', label: 'Keamanan Akun', icon: 'solar:shield-keyhole-linear' }
           ].map((item) => (
             <button 
               key={item.id}
