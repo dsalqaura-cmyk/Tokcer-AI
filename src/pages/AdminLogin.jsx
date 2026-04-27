@@ -14,8 +14,12 @@ const AdminLogin = () => {
     setLoading(true);
     setError(null);
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     // TOTAL BYPASS for Admin
-    if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
+    if (cleanEmail === 'admin@tokcer-ai.com' && cleanPassword === 'Dind@1983') {
+      console.log("Admin Access Granted");
       setTimeout(() => {
         localStorage.setItem('tokcer_admin_auth', 'true');
         setLoading(false);
