@@ -443,6 +443,7 @@ const Dashboard = () => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+      
       if (session) {
         setUser(session.user);
         // Fetch profile and tokens
@@ -451,12 +452,51 @@ const Dashboard = () => {
           .select('*')
           .eq('id', session.user.id)
           .single();
-        if (prof) setProfile(prof);
+        
+        if (prof) {
+            // Support both 'tokens' and 'ai_credits_remaining'
+            const activeTokens = prof.tokens !== undefined ? prof.tokens : prof.ai_credits_remaining;
+            setProfile({ ...prof, tokens: activeTokens });
+        }
+
+        // AUTO-CONNECT STORES FROM METADATA
+        const metadata = session.user.user_metadata;
+        if (metadata?.platforms && metadata?.store_links) {
+            await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
+        }
       } else if (isAdmin) {
         setUser({ email: 'admin@tokcer-ai.com', id: 'admin-bypass' });
         setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
       }
     };
+
+    const autoConnectStores = async (userId, platforms, links) => {
+        try {
+            // Check if already connected
+            const { data: existing } = await supabase
+                .from('marketplace_connections')
+                .select('id')
+                .eq('user_id', userId);
+            
+            if (existing && existing.length > 0) return;
+
+            // Create connections
+            const connections = platforms.map(plat => ({
+                user_id: userId,
+                platform: plat.toLowerCase(),
+                shop_name: plat + " Store",
+                shop_id: links[plat] || 'pending',
+                sync_status: 'idle'
+            }));
+
+            if (connections.length > 0) {
+                await supabase.from('marketplace_connections').insert(connections);
+            }
+        } catch (err) {
+            console.error("AutoConnect Error:", err);
+        }
+    };
+
     getUser();
   }, []);
 
@@ -575,8 +615,13 @@ const Dashboard = () => {
 
       // 4. Update Tokens & Log Usage (Only for non-admin)
       if (!isAdmin) {
-        const newTokens = (profile.tokens || 0) - 1;
-        await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
+        const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
+        const newTokens = currentTokens - 1;
+        
+        // Update either tokens or ai_credits_remaining based on what's available
+        const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
+        await supabase.from('profiles').update(updateData).eq('id', user.id);
+        
         setProfile({ ...profile, tokens: newTokens });
 
         await supabase.from('ai_usage_logs').insert([{
