@@ -17,13 +17,13 @@ const Login = () => {
   const translations = {
     id: {
       loginTitle: isRegister ? "Daftar Akun Baru" : "Login Dashboard",
-      loginDesc: isRegister ? "Mulai kelola tokomu dengan AI." : "Masuk untuk kelola tokomu.",
+      loginDesc: isRegister ? "Mulai kelola tokomu dengan AI." : (role === 'user' ? "Masukkan email untuk menerima link login." : "Masuk untuk kelola tokomu."),
       emailLabel: "Email Akses",
       passwordLabel: "Password",
       fullNameLabel: "Nama Lengkap",
       forgotPass: "Lupa Password?",
-      loginBtn: isRegister ? "Daftar Sekarang" : "Masuk ke Sistem",
-      loggingIn: isRegister ? "Mendaftar..." : "Masuk...",
+      loginBtn: isRegister ? "Daftar Sekarang" : (role === 'user' ? "Kirim Link Login" : "Masuk ke Sistem"),
+      loggingIn: isRegister ? "Mendaftar..." : "Memproses...",
       asUser: "Sebagai User",
       asPartner: "Sebagai Partner",
       asAdmin: "Sebagai Admin",
@@ -34,13 +34,13 @@ const Login = () => {
     },
     en: {
       loginTitle: isRegister ? "Create New Account" : "Dashboard Login",
-      loginDesc: isRegister ? "Start managing your shop with AI." : "Sign in to manage your shop.",
+      loginDesc: isRegister ? "Start managing your shop with AI." : (role === 'user' ? "Enter your email to receive a login link." : "Sign in to manage your shop."),
       emailLabel: "Access Email",
       passwordLabel: "Password",
       fullNameLabel: "Full Name",
       forgotPass: "Forgot Password?",
-      loginBtn: isRegister ? "Sign Up Now" : "Sign In",
-      loggingIn: isRegister ? "Signing up..." : "Signing in...",
+      loginBtn: isRegister ? "Sign Up Now" : (role === 'user' ? "Send Login Link" : "Sign In"),
+      loggingIn: isRegister ? "Signing up..." : "Processing...",
       asUser: "As User",
       asPartner: "As Partner",
       asAdmin: "As Admin",
@@ -64,15 +64,15 @@ const Login = () => {
     setError(null);
     
     if (isRegister) {
-      // Handle Sign Up
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // Handle Sign Up (Using OTP/Magic Link for consistency)
+      const { error: signUpError } = await supabase.auth.signInWithOtp({
         email,
-        password,
         options: {
           data: {
             full_name: fullName,
             role: role
-          }
+          },
+          emailRedirectTo: window.location.origin + '/dashboard',
         }
       });
 
@@ -80,7 +80,7 @@ const Login = () => {
         setError(signUpError.message);
         setLoading(false);
       } else {
-        alert(lang === 'id' ? 'Registrasi berhasil! Silakan login.' : 'Registration successful! Please login.');
+        alert(lang === 'id' ? 'Link verifikasi telah dikirim ke email Anda!' : 'Verification link sent to your email!');
         setIsRegister(false);
         setLoading(false);
       }
@@ -97,6 +97,26 @@ const Login = () => {
       return;
     }
 
+    // Handle User Login with Magic Link
+    if (role === 'user') {
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                emailRedirectTo: window.location.origin + '/dashboard',
+            }
+        });
+
+        if (otpError) {
+            setError(otpError.message);
+            setLoading(false);
+        } else {
+            alert(lang === 'id' ? 'Link login telah dikirim ke email Anda!' : 'Login link sent to your email!');
+            setLoading(false);
+        }
+        return;
+    }
+
+    // Handle Partner/Admin Login with Password
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -199,22 +219,25 @@ const Login = () => {
             />
           </div>
           
-          <div>
-            <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs font-medium text-zinc-400">{t('passwordLabel')}</label>
-              {!isRegister && (
-                <a href="#" className="text-[10px] font-medium text-orange-500 hover:text-orange-400 transition-colors">{t('forgotPass')}</a>
-              )}
+          {/* Show password field ONLY for non-user roles or if it's the admin bypass */}
+          {(role !== 'user' || email === 'admin@tokcer-ai.com') && (
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-xs font-medium text-zinc-400">{t('passwordLabel')}</label>
+                {!isRegister && (
+                  <a href="#" className="text-[10px] font-medium text-orange-500 hover:text-orange-400 transition-colors">{t('forgotPass')}</a>
+                )}
+              </div>
+              <input 
+                type="password" 
+                required
+                className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <input 
-              type="password" 
-              required
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          )}
 
           <button 
             type="submit" 

@@ -56,20 +56,31 @@ const Dashboard = () => {
 
   const fetchProfile = async () => {
     try {
+      const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      
+      if (!session && !isAdmin) {
         navigate('/login');
         return;
       }
 
-      const { data: prof, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+      if (session) {
+        const { data: prof, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (error) throw error;
-      setProfile(prof);
+        if (error) throw error;
+        setProfile(prof);
+      } else if (isAdmin) {
+        // Mock profile for admin bypass
+        setProfile({
+          full_name: 'Administrator',
+          tokens: 9999,
+          role: 'admin'
+        });
+      }
       
       // Check for connected stores (placeholder logic)
       const { data: stores } = await supabase
