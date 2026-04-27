@@ -18,6 +18,8 @@ const PartnerDashboard = () => {
     bankAccount: '1234567890',
   });
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [leaderboardPeriod, setLeaderboardPeriod] = useState('current');
+  const [supportTab, setSupportTab] = useState('report'); // 'report' or 'vision'
   const navigate = useNavigate();
 
   // Form States
@@ -175,7 +177,7 @@ const PartnerDashboard = () => {
       verified: "TERVERIFIKASI",
       advancedAnalytics: "Analitik Partner Lanjutan",
       onboardTitle: "Onboarding Pelanggan Baru",
-      onboardDesc: "Daftarkan pelanggan baru langsung di sini. Pastikan semua data valid untuk proses verifikasi komisi.",
+      onboardDesc: "Daftarkan pelanggan baru. Data akan diverifikasi admin sebelum akun diaktifkan.",
       whatsapp: "WhatsApp",
       paymentMethod: "Metode Pembayaran",
       paymentProof: "Upload Bukti Bayar",
@@ -184,26 +186,34 @@ const PartnerDashboard = () => {
       noFile: "Belum ada file",
       selectPlan: "Pilih Paket",
       selectPayment: "Pilih Pembayaran",
-      support: "Support",
-      vision: "Vision",
-      academy: "Academy",
-      supportTitle: "Support Center",
-      supportDesc: "Laporkan kendala teknis atau pertanyaan seputar komisi.",
+      support: "Pusat Bantuan",
+      vision: "Saran Fitur",
+      academy: "Tokcer Academy",
+      supportTitle: "Pusat Bantuan",
+      supportDesc: "Laporkan kendala teknis atau berikan saran pengembangan fitur.",
       category: "Kategori",
       catData: "Kendala Input Data",
       catLogin: "Masalah Login",
       catComm: "Pertanyaan Komisi",
-      description: "Deskripsi Kendala",
-      descPlaceholder: "Jelaskan kendala kamu secara detail...",
-      uploadMedia: "Upload Media (Screenshot)",
-      submitReport: "Submit Report",
-      visionTitle: "Partner Vision",
+      catBug: "Lapor Bug Sistem",
+      description: "Deskripsi",
+      descPlaceholder: "Jelaskan detail kendala atau saran kamu...",
+      uploadMedia: "Upload Media (Opsional)",
+      submitReport: "Kirim Laporan",
+      visionTitle: "Saran Pengembangan",
       visionDesc: "Bantu kami mengembangkan fitur yang kamu butuhkan.",
       visionPrompt: "Fitur apa yang bisa bantu kamu jualan lebih banyak?",
-      submitIdea: "Submit Idea",
+      submitIdea: "Kirim Ide",
       academyTitle: "Tokcer Academy",
       academyDesc: "Materi eksklusif untuk tingkatkan penjualan kamu.",
       profile: "Profil",
+      history: "Riwayat",
+      performanceBonus: "Bonus Performa",
+      statusPending: "Pending",
+      statusActive: "Active",
+      statusPaid: "Paid",
+      statusWarning: "Warning",
+      statusCancel: "Cancel",
     },
     en: {
       onboard: "[+] Onboard",
@@ -249,7 +259,7 @@ const PartnerDashboard = () => {
       verified: "VERIFIED",
       advancedAnalytics: "Advanced Partner Analytics",
       onboardTitle: "New Customer Onboarding",
-      onboardDesc: "Register new customers directly here. Ensure all data is valid for commission verification.",
+      onboardDesc: "Register new customers. Data will be verified by admin before account activation.",
       whatsapp: "WhatsApp",
       paymentMethod: "Payment Method",
       paymentProof: "Upload Payment Proof",
@@ -258,26 +268,34 @@ const PartnerDashboard = () => {
       noFile: "No file selected",
       selectPlan: "Select Plan",
       selectPayment: "Select Payment",
-      support: "Support",
-      vision: "Vision",
-      academy: "Academy",
+      support: "Support Center",
+      vision: "Feature Suggestion",
+      academy: "Tokcer Academy",
       supportTitle: "Support Center",
-      supportDesc: "Report technical issues or commission inquiries.",
+      supportDesc: "Report technical issues or provide feature suggestions.",
       category: "Category",
       catData: "Data Input Issue",
       catLogin: "Login Issue",
       catComm: "Commission Inquiry",
-      description: "Issue Description",
-      descPlaceholder: "Explain your issue in detail...",
-      uploadMedia: "Upload Media (Screenshot)",
+      catBug: "Report System Bug",
+      description: "Description",
+      descPlaceholder: "Explain your issue or suggestion in detail...",
+      uploadMedia: "Upload Media (Optional)",
       submitReport: "Submit Report",
-      visionTitle: "Partner Vision",
+      visionTitle: "Feature Suggestion",
       visionDesc: "Help us build the features you need.",
       visionPrompt: "What features would help you sell more?",
       submitIdea: "Submit Idea",
       academyTitle: "Tokcer Academy",
       academyDesc: "Exclusive materials to boost your sales.",
       profile: "Profile",
+      history: "History",
+      performanceBonus: "Performance Bonus",
+      statusPending: "Pending",
+      statusActive: "Active",
+      statusPaid: "Paid",
+      statusWarning: "Warning",
+      statusCancel: "Cancel",
     }
   };
 
@@ -552,7 +570,7 @@ const PartnerDashboard = () => {
               </div>
 
               <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] ml-2 mb-2">Portal Menu</p>
-              {['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'vision', 'academy', 'profile'].map((tab) => (
+              {['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'academy', 'profile'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => { setActiveTab(tab); setIsMobileMenuOpen(false); }}
@@ -610,7 +628,7 @@ const PartnerDashboard = () => {
       {/* Tab Navigation - Desktop */}
       <div className="hidden lg:block bg-black/40 backdrop-blur-md border-b border-zinc-800/50 sticky top-[73px] z-40">
         <div className="max-w-7xl mx-auto px-6 flex gap-8 overflow-x-auto no-scrollbar">
-          {['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'vision', 'academy', 'profile'].map((tab) => (
+          {['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'academy', 'profile'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -706,8 +724,8 @@ const PartnerDashboard = () => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('paymentMethod')}</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {['Transfer', 'QRIS', 'E-Wallet', 'VA'].map((method) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {['Transfer', 'QRIS', 'VA', 'CC', 'E-Wallet'].map((method) => (
                       <button
                         key={method}
                         type="button"
@@ -761,100 +779,102 @@ const PartnerDashboard = () => {
         )}
 
         {activeTab === 'support' && (
-          <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div className="text-center space-y-3 mb-10">
+          <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-8">
+            <div className="text-center space-y-3">
               <h2 className="text-2xl font-black text-white uppercase tracking-[0.4em]">{t('supportTitle')}</h2>
               <p className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em]">{t('supportDesc')}</p>
             </div>
 
-            <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-orange-600/50"></div>
-              <form className="space-y-8" onSubmit={handleSupportSubmit}>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('category')}</label>
-                  <div className="relative">
-                    <select 
-                      value={supportForm.category}
-                      onChange={(e) => setSupportForm({...supportForm, category: e.target.value})}
-                      className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white outline-none"
-                    >
-                      <option value="data">{t('catData')}</option>
-                      <option value="login">{t('catLogin')}</option>
-                      <option value="commission">{t('catComm')}</option>
-                    </select>
-                    <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></iconify-icon>
-                  </div>
-                </div>
+            {/* Sub-tabs for Support */}
+            <div className="flex justify-center">
+              <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800">
+                <button 
+                  onClick={() => setSupportTab('report')}
+                  className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${supportTab === 'report' ? 'bg-orange-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  <iconify-icon icon="solar:shield-warning-bold-duotone" className="mr-2"></iconify-icon>
+                  {t('reportBug')}
+                </button>
+                <button 
+                  onClick={() => setSupportTab('vision')}
+                  className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${supportTab === 'vision' ? 'bg-orange-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  <iconify-icon icon="solar:lightbulb-bold-duotone" className="mr-2"></iconify-icon>
+                  {t('suggestFeature')}
+                </button>
+              </div>
+            </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('description')}</label>
-                  <textarea 
-                    rows="4"
-                    required
-                    value={supportForm.description}
-                    onChange={(e) => setSupportForm({...supportForm, description: e.target.value})}
-                    className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white outline-none resize-none"
-                    placeholder={t('descPlaceholder')}
-                  ></textarea>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('uploadMedia')}</label>
-                  <div className="relative group/upload">
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={(e) => setSupportForm({...supportForm, screenshot: e.target.files[0]})}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <div className="border-2 border-dashed border-zinc-800 group-hover/upload:border-orange-500/30 rounded-3xl p-10 flex flex-col items-center justify-center transition-all bg-white/[0.01] group-hover/upload:bg-orange-500/[0.02]">
-                      <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-4 group-hover/upload:scale-110 transition-transform">
-                        <iconify-icon icon="solar:camera-bold-duotone" className="text-3xl text-orange-500"></iconify-icon>
-                      </div>
-                      <div className="text-xs font-bold text-zinc-300 mb-1">
-                        {supportForm.screenshot ? (
-                          <span className="text-orange-400">{t('uploadSuccess')} {supportForm.screenshot.name}</span>
-                        ) : (
-                          <span>Click to upload screenshot</span>
-                        )}
-                      </div>
-                      <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">JPG, PNG up to 5MB</div>
+            <div className="max-w-2xl mx-auto bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 to-amber-400"></div>
+              
+              {supportTab === 'report' ? (
+                <form className="space-y-8" onSubmit={handleSupportSubmit}>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('category')}</label>
+                    <div className="relative">
+                      <select 
+                        value={supportForm.category}
+                        onChange={(e) => setSupportForm({...supportForm, category: e.target.value})}
+                        className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white outline-none"
+                      >
+                        <option value="data">{t('catData')}</option>
+                        <option value="login">{t('catLogin')}</option>
+                        <option value="commission">{t('catComm')}</option>
+                        <option value="bug">{t('catBug')}</option>
+                      </select>
+                      <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></iconify-icon>
                     </div>
                   </div>
-                </div>
 
-                <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all shadow-lg shadow-orange-600/20">
-                  {t('submitReport')}
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('description')}</label>
+                    <textarea 
+                      rows="4"
+                      required
+                      value={supportForm.description}
+                      onChange={(e) => setSupportForm({...supportForm, description: e.target.value})}
+                      className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white outline-none resize-none"
+                      placeholder={t('descPlaceholder')}
+                    ></textarea>
+                  </div>
 
-        {activeTab === 'vision' && (
-          <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div className="text-center space-y-3 mb-10">
-              <h2 className="text-2xl font-black text-white uppercase tracking-[0.4em]">{t('visionTitle')}</h2>
-              <p className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em]">{t('visionDesc')}</p>
-            </div>
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('uploadMedia')}</label>
+                    <div className="relative group/upload">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => setSupportForm({...supportForm, screenshot: e.target.files[0]})}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="border-2 border-dashed border-zinc-800 group-hover/upload:border-orange-500/30 rounded-3xl p-10 flex flex-col items-center justify-center transition-all bg-white/[0.01] group-hover/upload:bg-orange-500/[0.02]">
+                        <iconify-icon icon="solar:camera-bold-duotone" className="text-3xl text-orange-500 mb-2"></iconify-icon>
+                        <span className="text-[10px] font-bold text-zinc-400">{supportForm.screenshot ? supportForm.screenshot.name : t('uploadMedia')}</span>
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-orange-600/50"></div>
-              <form className="space-y-8" onSubmit={handleIdeaSubmit}>
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] px-1">{t('visionPrompt')}</label>
-                  <textarea 
-                    rows="6"
-                    required
-                    className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-3xl px-6 py-5 text-sm text-white outline-none resize-none leading-relaxed"
-                    placeholder="e.g. Saya butuh materi konten harian untuk TikTok Shop..."
-                  ></textarea>
-                </div>
-
-                <button type="submit" disabled={loading} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/20 transition-all transform hover:-translate-y-1">
-                  {t('submitIdea')}
-                </button>
-              </form>
+                  <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all">
+                    {t('submitReport')}
+                  </button>
+                </form>
+              ) : (
+                <form className="space-y-8" onSubmit={handleIdeaSubmit}>
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] px-1">{t('visionPrompt')}</label>
+                    <textarea 
+                      rows="6"
+                      required
+                      className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-3xl px-6 py-5 text-sm text-white outline-none resize-none leading-relaxed"
+                      placeholder={lang === 'id' ? 'Contoh: Saya butuh materi konten harian...' : 'Example: I need daily content materials...'}
+                    ></textarea>
+                  </div>
+                  <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all">
+                    {t('submitIdea')}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         )}
@@ -903,11 +923,9 @@ const PartnerDashboard = () => {
                 <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('cancelled')}</div>
                 <div className="text-3xl font-black text-rose-500 font-mono tracking-tighter">{partnerData.cancelledUsers}</div>
               </div>
-              <div className="relative group overflow-hidden bg-orange-600/10 backdrop-blur-md border border-orange-500/20 p-5 rounded-2xl">
-                <div className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-3">{t('estCommission')}</div>
-                <div className="text-3xl font-black text-white font-mono tracking-tighter">
-                  {formatCurrency(partnerData.mtdPace)}
-                </div>
+              <div className="relative group overflow-hidden bg-emerald-600/10 backdrop-blur-md border border-emerald-500/20 p-5 rounded-2xl">
+                <div className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-3">{t('performanceBonus')}</div>
+                <div className="text-3xl font-black text-white font-mono tracking-tighter">Rp 0</div>
               </div>
             </div>
 
@@ -955,12 +973,16 @@ const PartnerDashboard = () => {
                           </td>
                           <td className="px-4 sm:px-8 py-4 sm:py-6">
                             <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${
-                              s.status === 'active' 
+                              s.status === 'active' || s.status === 'paid'
                                 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
-                                : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                                : s.status === 'pending'
+                                ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                                : s.status === 'warning'
+                                ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+                                : 'text-zinc-500 bg-zinc-800 border-zinc-700'
                             }`}>
-                              <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
-                              {s.status}
+                              <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' || s.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                              {t('status' + s.status.charAt(0).toUpperCase() + s.status.slice(1))}
                             </span>
                           </td>
                           <td className="px-4 sm:px-8 py-4 sm:py-6">
@@ -1023,9 +1045,23 @@ const PartnerDashboard = () => {
               </div>
             </div>
 
-            <div className="text-center space-y-2 mb-10 pt-4">
-              <h2 className="text-2xl font-black text-white uppercase tracking-[0.4em]">{t('eliteRankings')}</h2>
-              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">{t('rankDesc')}</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pt-4">
+              <div className="text-left space-y-1">
+                <h2 className="text-2xl font-black text-white uppercase tracking-[0.4em]">{t('eliteRankings')}</h2>
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">{t('rankDesc')}</p>
+              </div>
+              <div className="relative group">
+                <select 
+                  value={leaderboardPeriod}
+                  onChange={(e) => setLeaderboardPeriod(e.target.value)}
+                  className="appearance-none bg-zinc-900/50 border border-zinc-800 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl focus:outline-none focus:border-orange-500/50 transition-all cursor-pointer min-w-[180px]"
+                >
+                  <option value="current">{lang === 'id' ? 'Minggu Ini' : 'Current Week'}</option>
+                  <option value="last">Week 16 (Last Week)</option>
+                  <option value="prev">Week 15</option>
+                </select>
+                <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-4 top-1/2 -translate-y-1/2 text-orange-500 pointer-events-none"></iconify-icon>
+              </div>
             </div>
 
             <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] overflow-hidden shadow-2xl">
@@ -1333,7 +1369,7 @@ const PartnerDashboard = () => {
 
       <footer className="max-w-7xl mx-auto px-6 py-10 flex flex-col items-center gap-4 border-t border-zinc-900/50 mt-10">
         <div className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.5em]">
-          Tokcer AI © 2024 — {t('advancedAnalytics')}
+          Tokcer AI © 2026 — {t('advancedAnalytics')}
         </div>
       </footer>
     </div>
