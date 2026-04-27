@@ -214,6 +214,29 @@ const PartnerDashboard = () => {
       statusPaid: "Paid",
       statusWarning: "Warning",
       statusCancel: "Cancel",
+      planPro: "Pro Plan (Rp 499rb)",
+      planElite: "Elite Plan (Rp 999rb)",
+      planUltimate: "Ultimate Plan (Rp 1.499rb)",
+      uploadPrompt: "Klik atau seret gambar untuk upload",
+      uploadTypes: "JPG, PNG sampai 5MB",
+      uploadMediaDesc: "Upload Media (Opsional)",
+      submitIdea: "Kirim Ide",
+      visionPrompt: "Fitur apa yang bisa bantu kamu jualan lebih banyak?",
+      visionPlaceholder: "Contoh: Saya butuh materi konten harian...",
+      academyTitle: "Tokcer Academy",
+      academyDesc: "Materi eksklusif untuk tingkatkan penjualan kamu.",
+      academyClosingMastery: "Closing Mastery",
+      academyClosingMasteryDesc: "Video penanganan keberatan",
+      academyContentBank: "Content Bank",
+      academyContentBankDesc: "Foto, video, dan caption",
+      academyAdsFramework: "Ads Framework",
+      academyAdsFrameworkDesc: "Strategi traffic murah",
+      academyProductKnowledge: "Product Knowledge",
+      academyProductKnowledgeDesc: "Update fitur & pendalaman",
+      academyAccess: "Akses Materi",
+      weekCurrent: "Minggu Ini",
+      weekLast: "Minggu Lalu",
+      weekPrev: "Dua Minggu Lalu",
     },
     en: {
       onboard: "[+] Onboard",
@@ -285,9 +308,19 @@ const PartnerDashboard = () => {
       visionTitle: "Feature Suggestion",
       visionDesc: "Help us build the features you need.",
       visionPrompt: "What features would help you sell more?",
+      visionPlaceholder: "Example: I need daily content materials...",
       submitIdea: "Submit Idea",
       academyTitle: "Tokcer Academy",
       academyDesc: "Exclusive materials to boost your sales.",
+      academyClosingMastery: "Closing Mastery",
+      academyClosingMasteryDesc: "Objection handling videos",
+      academyContentBank: "Content Bank",
+      academyContentBankDesc: "Photos, videos, and captions",
+      academyAdsFramework: "Ads Framework",
+      academyAdsFrameworkDesc: "Cheap traffic strategies",
+      academyProductKnowledge: "Product Knowledge",
+      academyProductKnowledgeDesc: "Feature updates & deep dive",
+      academyAccess: "Access Resource",
       profile: "Profile",
       history: "History",
       performanceBonus: "Performance Bonus",
@@ -296,6 +329,15 @@ const PartnerDashboard = () => {
       statusPaid: "Paid",
       statusWarning: "Warning",
       statusCancel: "Cancel",
+      planPro: "Pro Plan (Rp 499k)",
+      planElite: "Elite Plan (Rp 999k)",
+      planUltimate: "Ultimate Plan (Rp 1,499k)",
+      uploadPrompt: "Click or drag image to upload",
+      uploadTypes: "JPG, PNG up to 5MB",
+      uploadMediaDesc: "Upload Media (Optional)",
+      weekCurrent: "Current Week",
+      weekLast: "Last Week",
+      weekPrev: "Previous Week",
     }
   };
 
@@ -714,8 +756,9 @@ const PartnerDashboard = () => {
                         onChange={(e) => setOnboardForm({...onboardForm, plan: e.target.value})}
                         className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white transition-all outline-none"
                       >
-                        <option value="pro">Pro Plan (Rp 499k)</option>
-                        <option value="elite">Elite Plan (Rp 999k)</option>
+                        <option value="pro">{t('planPro')}</option>
+                        <option value="elite">{t('planElite')}</option>
+                        <option value="ultimate">{t('planUltimate')}</option>
                       </select>
                       <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></iconify-icon>
                     </div>
@@ -759,10 +802,10 @@ const PartnerDashboard = () => {
                         {onboardForm.paymentProof ? (
                           <span className="text-orange-400">{t('uploadSuccess')} {onboardForm.paymentProof.name}</span>
                         ) : (
-                          <span>Click or drag image to upload</span>
+                          <span>{t('uploadPrompt')}</span>
                         )}
                       </div>
-                      <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">JPG, PNG up to 5MB</div>
+                      <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{t('uploadTypes')}</div>
                     </div>
                   </div>
                 </div>
@@ -850,7 +893,7 @@ const PartnerDashboard = () => {
                       />
                       <div className="border-2 border-dashed border-zinc-800 group-hover/upload:border-orange-500/30 rounded-3xl p-10 flex flex-col items-center justify-center transition-all bg-white/[0.01] group-hover/upload:bg-orange-500/[0.02]">
                         <iconify-icon icon="solar:camera-bold-duotone" className="text-3xl text-orange-500 mb-2"></iconify-icon>
-                        <span className="text-[10px] font-bold text-zinc-400">{supportForm.screenshot ? supportForm.screenshot.name : t('uploadMedia')}</span>
+                        <span className="text-[10px] font-bold text-zinc-400">{supportForm.screenshot ? supportForm.screenshot.name : t('uploadPrompt')}</span>
                       </div>
                     </div>
                   </div>
@@ -867,7 +910,7 @@ const PartnerDashboard = () => {
                       rows="6"
                       required
                       className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-3xl px-6 py-5 text-sm text-white outline-none resize-none leading-relaxed"
-                      placeholder={lang === 'id' ? 'Contoh: Saya butuh materi konten harian...' : 'Example: I need daily content materials...'}
+                      placeholder={t('visionPlaceholder')}
                     ></textarea>
                   </div>
                   <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all">
@@ -897,10 +940,10 @@ const PartnerDashboard = () => {
                   <div className={`w-14 h-14 ${item.bg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                     <iconify-icon icon={item.icon} className={`text-3xl ${item.color}`}></iconify-icon>
                   </div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">{item.title}</h3>
-                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mb-6">{item.desc}</p>
+                  <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2">{t('academy' + item.title.replace(' ', ''))}</h3>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mb-6">{t('academy' + item.title.replace(' ', '') + 'Desc')}</p>
                   <div className="flex items-center gap-2 text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] group-hover:gap-4 transition-all">
-                    Access Resource <iconify-icon icon="solar:arrow-right-bold"></iconify-icon>
+                    {t('academyAccess')} <iconify-icon icon="solar:arrow-right-bold"></iconify-icon>
                   </div>
                 </div>
               ))}
@@ -1056,9 +1099,9 @@ const PartnerDashboard = () => {
                   onChange={(e) => setLeaderboardPeriod(e.target.value)}
                   className="appearance-none bg-zinc-900/50 border border-zinc-800 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl focus:outline-none focus:border-orange-500/50 transition-all cursor-pointer min-w-[180px]"
                 >
-                  <option value="current">{lang === 'id' ? 'Minggu Ini' : 'Current Week'}</option>
-                  <option value="last">Week 16 (Last Week)</option>
-                  <option value="prev">Week 15</option>
+                  <option value="current">{t('weekCurrent')}</option>
+                  <option value="last">{t('weekLast')}</option>
+                  <option value="prev">{t('weekPrev')}</option>
                 </select>
                 <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-4 top-1/2 -translate-y-1/2 text-orange-500 pointer-events-none"></iconify-icon>
               </div>

@@ -49,6 +49,175 @@ const InternalDashboard = ({ onLogout }) => {
   const [adminClients, setAdminClients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [aiConfig, setAiConfig] = useState({ system_prompt: '', rag_knowledge_base: '' });
+  const [aiLogs, setAiLogs] = useState([]);
+
+  const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
+  const translations = {
+    id: {
+      overview: "Ringkasan",
+      approvals: "Pusat Persetujuan",
+      users: "Manajer User",
+      partners: "Kemitraan",
+      tickets: "Bug & Request",
+      supabase: "Monitor Supabase",
+      superAdmin: "Super Admin",
+      exitSystem: "Keluar Sistem",
+      coreCommand: "Pusat Komando",
+      systemStatus: "Status Sistem",
+      liveSynced: "LIVE & SINKRON",
+      financialHub: "Pusat Performa Keuangan",
+      grossIncome: "Pendapatan Kotor",
+      partnerPayouts: "Pembayaran Partner",
+      paid: "Sudah Dibayar",
+      pending: "Menunggu",
+      activePartners: "Partner Aktif",
+      netProfit: "Profit Bersih",
+      tierDist: "Distribusi Tier Partner",
+      liveMonitor: "Monitor Live",
+      recentActivity: "Aktivitas Terbaru",
+      paymentsUpgrades: "Pembayaran & Upgrade",
+      identityVerification: "Verifikasi Identitas",
+      partnerApplications: "Pendaftaran Partner",
+      identification: "Identifikasi",
+      statusPlan: "Status / Paket",
+      picPartner: "PIC Partner",
+      refSource: "Sumber Referral",
+      actions: "Aksi",
+      approve: "Setujui",
+      reject: "Tolak",
+      userBaseMonitor: "Monitoring Database User",
+      subscriberInfo: "Info Pelanggan",
+      activePlan: "Paket Aktif",
+      health: "Kesehatan",
+      viewDetails: "Lihat Detail",
+      totalReferrals: "Total Referral",
+      networkPayouts: "Pembayaran Jaringan",
+      newApps: "Pendaftaran Baru",
+      globalNetwork: "Jaringan Partner Global",
+      registerPartner: "Daftar Partner",
+      partnerEntity: "Entitas Partner",
+      nicheAudience: "Niche / Audiens",
+      tier: "Tier",
+      referrals: "Referral",
+      revenue: "Omzet",
+      status: "Status",
+      feedbackLoop: "Loop Feedback Sistem",
+      priority: "Prioritas",
+      accept: "Terima",
+      toUserDb: "Ke User DB",
+      toPartnerDb: "Ke Partner DB",
+      infraHub: "Hub Infrastruktur Supabase",
+      authService: "Layanan Auth",
+      confirmApproval: "Konfirmasi Persetujuan",
+      approveUpgrade: "Setujui permintaan upgrade untuk",
+      confirm: "Konfirmasi",
+      cancel: "Batal",
+      details: "Detail",
+      healthScore: "Skor Kesehatan",
+      orders: "Pesanan",
+      aiStrategy: "AI Strategy Hub",
+      aiManagement: "Manajemen AI Core",
+      strictInstructions: "Instruksi Ketat (System Prompt)",
+      knowledgeBase: "Basis Pengetahuan (RAG)",
+      saveConfig: "Simpan Konfigurasi",
+      configUpdated: "Konfigurasi AI diperbarui!",
+      aiLogs: "Log Aktivitas AI",
+      user: "User",
+      task: "Tugas",
+      credits: "Kredit",
+      time: "Waktu",
+    },
+    en: {
+      overview: "Overview",
+      approvals: "Approval Center",
+      users: "User Manager",
+      partners: "Partnership",
+      tickets: "Bugs & Requests",
+      supabase: "Supabase Monitor",
+      superAdmin: "Super Admin",
+      exitSystem: "Exit System",
+      coreCommand: "Core Command Center",
+      systemStatus: "System Status",
+      liveSynced: "LIVE & SYNCED",
+      financialHub: "Financial Performance Hub",
+      grossIncome: "Gross Income",
+      partnerPayouts: "Partner Payouts",
+      paid: "Paid",
+      pending: "Pending",
+      activePartners: "Active Partners",
+      netProfit: "Net Profit",
+      tierDist: "Partner Tier Distribution",
+      liveMonitor: "Live Monitor",
+      recentActivity: "Recent Activity",
+      paymentsUpgrades: "Payments & Upgrades",
+      identityVerification: "Identity Verification",
+      partnerApplications: "Partner Applications",
+      identification: "Identification",
+      statusPlan: "Status / Plan",
+      picPartner: "PIC Partner",
+      refSource: "Referral Source",
+      actions: "Actions",
+      approve: "Approve",
+      reject: "Reject",
+      userBaseMonitor: "User Base Monitoring",
+      subscriberInfo: "Subscriber Info",
+      activePlan: "Active Plan",
+      health: "Health",
+      viewDetails: "View Details",
+      totalReferrals: "Total Referrals",
+      networkPayouts: "Network Payouts",
+      newApps: "New Applications",
+      globalNetwork: "Global Partner Network",
+      registerPartner: "Register Partner",
+      partnerEntity: "Partner Entity",
+      nicheAudience: "Niche / Audience",
+      tier: "Tier",
+      referrals: "Referrals",
+      revenue: "Revenue",
+      status: "Status",
+      feedbackLoop: "System Feedback Loop",
+      priority: "Priority",
+      accept: "Accept",
+      toUserDb: "To User DB",
+      toPartnerDb: "To Partner DB",
+      infraHub: "Supabase Infrastructure Hub",
+      authService: "Auth Service",
+      confirmApproval: "Confirm Approval",
+      approveUpgrade: "Approve upgrade request for",
+      confirm: "Confirm",
+      cancel: "Cancel",
+      details: "Details",
+      healthScore: "Health Score",
+      orders: "Orders",
+      aiStrategy: "AI Strategy Hub",
+      aiManagement: "AI Core Management",
+      strictInstructions: "Strict Instructions (System Prompt)",
+      knowledgeBase: "Knowledge Base (RAG)",
+      saveConfig: "Save Configuration",
+      configUpdated: "AI Configuration updated!",
+      aiLogs: "AI Activity Logs",
+      user: "User",
+      task: "Task",
+      credits: "Credits",
+      time: "Time",
+    }
+  };
+
+  const t = (key) => translations[lang][key] || key;
+  const toggleLang = (newLang) => {
+    setLang(newLang);
+    localStorage.setItem('tokcer_lang', newLang);
+    window.dispatchEvent(new Event('lang-change'));
+  };
+
+  useEffect(() => {
+    const handleLangChange = () => {
+      setLang(localStorage.getItem('tokcer_lang') || 'id');
+    };
+    window.addEventListener('lang-change', handleLangChange);
+    return () => window.removeEventListener('lang-change', handleLangChange);
+  }, []);
 
   const fetchClients = async () => {
     setIsLoading(true);
@@ -66,8 +235,49 @@ const InternalDashboard = ({ onLogout }) => {
     navigate('/admin-login');
   };
 
+  const fetchAiConfig = async () => {
+    const { data, error } = await supabase.from('ai_configs').select('*');
+    if (!error && data) {
+      const configMap = {};
+      data.forEach(item => {
+        configMap[item.key] = item.value;
+      });
+      setAiConfig(configMap);
+    }
+  };
+
+  const fetchAiLogs = async () => {
+    const { data, error } = await supabase
+      .from('ai_usage_logs')
+      .select('*, profiles(full_name)')
+      .order('created_at', { ascending: false })
+      .limit(10);
+    if (!error) setAiLogs(data);
+  };
+
+  const handleSaveAiConfig = async () => {
+    setIsLoading(true);
+    try {
+      const updates = [
+        { key: 'system_prompt', value: aiConfig.system_prompt },
+        { key: 'rag_knowledge_base', value: aiConfig.rag_knowledge_base }
+      ];
+
+      for (const item of updates) {
+        await supabase.from('ai_configs').upsert(item, { onConflict: 'key' });
+      }
+      alert(t('configUpdated'));
+    } catch (err) {
+      alert("Error saving config: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchClients();
+    fetchAiConfig();
+    fetchAiLogs();
   }, []);
 
   const handleApprove = async (client) => {
@@ -174,15 +384,34 @@ const InternalDashboard = ({ onLogout }) => {
             <span className="text-blue-500">Core</span>
           </div>
         </div>
+
+        {/* Language Toggle */}
+        <div className="px-6 py-4 border-b border-zinc-800">
+          <div className="flex bg-black rounded-lg p-1 border border-zinc-800">
+            <button 
+              onClick={() => toggleLang('id')}
+              className={`flex-1 py-1 text-[10px] font-black rounded ${lang === 'id' ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}
+            >
+              ID
+            </button>
+            <button 
+              onClick={() => toggleLang('en')}
+              className={`flex-1 py-1 text-[10px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}
+            >
+              EN
+            </button>
+          </div>
+        </div>
         
         <nav className="flex-1 mt-6 overflow-y-auto custom-scrollbar space-y-1">
           {[
-            { id: 'overview', label: 'Overview', icon: 'solar:chart-square-bold-duotone' },
-            { id: 'approvals', label: 'Approval Center', icon: 'solar:check-circle-bold-duotone', badge: 12 },
-            { id: 'users', label: 'User Manager', icon: 'solar:users-group-rounded-bold-duotone' },
-            { id: 'partners', label: 'Partnership', icon: 'solar:users-group-two-rounded-bold-duotone' },
-            { id: 'tickets', label: 'Bugs & Requests', icon: 'solar:bug-bold-duotone', badge: 3 },
-            { id: 'supabase', label: 'Supabase Monitor', icon: 'solar:database-bold-duotone' }
+            { id: 'overview', label: t('overview'), icon: 'solar:chart-square-bold-duotone' },
+            { id: 'approvals', label: t('approvals'), icon: 'solar:check-circle-bold-duotone', badge: 12 },
+            { id: 'users', label: t('users'), icon: 'solar:users-group-rounded-bold-duotone' },
+            { id: 'partners', label: t('partners'), icon: 'solar:users-group-two-rounded-bold-duotone' },
+            { id: 'tickets', label: t('tickets'), icon: 'solar:bug-bold-duotone', badge: 3 },
+            { id: 'ai-gen', label: t('aiStrategy'), icon: 'solar:magic-stick-bold-duotone' },
+            { id: 'supabase', label: t('supabase'), icon: 'solar:database-bold-duotone' }
           ].map((item) => (
             <button
               key={item.id}
@@ -202,7 +431,7 @@ const InternalDashboard = ({ onLogout }) => {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xs shadow-lg">AD</div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white truncate">Super Admin</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white truncate">{t('superAdmin')}</p>
               <p className="text-[8px] font-bold text-zinc-500 truncate">admin@tokcer-ai.com</p>
             </div>
           </div>
@@ -210,7 +439,7 @@ const InternalDashboard = ({ onLogout }) => {
           
           <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
             <iconify-icon icon="solar:logout-3-bold-duotone" className="text-lg"></iconify-icon>
-            Exit System
+            {t('exitSystem')}
           </button>
         </div>
       </aside>
@@ -231,10 +460,10 @@ const InternalDashboard = ({ onLogout }) => {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1 text-right">System Status</p>
+              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1 text-right">{t('systemStatus')}</p>
               <p className="text-sm font-bold text-green-500 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                LIVE & SYNCED
+                {t('liveSynced')}
               </p>
             </div>
           </div>
@@ -250,45 +479,45 @@ const InternalDashboard = ({ onLogout }) => {
                 <div className="absolute top-0 left-0 w-full h-full bg-blue-600/[0.03] pointer-events-none"></div>
                 <div className="flex justify-between items-center mb-8 relative z-10">
                   <div>
-                    <h3 className="font-black text-xl text-white uppercase tracking-tight">Financial Performance Hub</h3>
+                    <h3 className="font-black text-xl text-white uppercase tracking-tight">{t('financialHub')}</h3>
                     <p className="text-sm text-zinc-500 font-medium">Daily income, payouts, and net profit analytics</p>
                   </div>
                   <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800">
                     {['daily', 'weekly', 'monthly'].map(p => (
-                      <button key={p} onClick={() => setRevenuePeriod(p)} className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${revenuePeriod === p ? 'bg-zinc-800 text-blue-400 shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}>{p}</button>
+                      <button key={p} onClick={() => setRevenuePeriod(p)} className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${revenuePeriod === p ? 'bg-zinc-800 text-blue-400 shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}>{t(p)}</button>
                     ))}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
                   <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Gross Income</p>
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('grossIncome')}</p>
                     <h2 className="text-2xl font-black text-white tracking-tighter">Rp 82.5M</h2>
                     <div className="mt-4 flex items-center gap-2">
                         <span className="text-[9px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded tracking-widest">+15.2%</span>
                     </div>
                   </div>
                   <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Partner Payouts</p>
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('partnerPayouts')}</p>
                     <div className="flex justify-between items-end">
                       <div>
-                        <p className="text-[8px] font-black text-zinc-500 uppercase mb-1">Paid</p>
+                        <p className="text-[8px] font-black text-zinc-500 uppercase mb-1">{t('paid')}</p>
                         <h2 className="text-xl font-black text-white tracking-tighter">Rp 15.2M</h2>
                       </div>
                       <div className="text-right">
-                        <p className="text-[8px] font-black text-amber-500 uppercase mb-1">Pending</p>
+                        <p className="text-[8px] font-black text-amber-500 uppercase mb-1">{t('pending')}</p>
                         <h2 className="text-xl font-black text-amber-500 tracking-tighter">Rp 6.2M</h2>
                       </div>
                     </div>
                   </div>
                   <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
-                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Active Partners</p>
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('activePartners')}</p>
                     <h2 className="text-2xl font-black text-white tracking-tighter">124</h2>
                     <div className="mt-4 flex items-center gap-2">
                         <span className="text-[9px] font-black bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded tracking-widest">+4 New</span>
                     </div>
                   </div>
                   <div className="p-6 bg-blue-600 rounded-2xl shadow-xl shadow-blue-600/20 text-white">
-                    <p className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Net Profit</p>
+                    <p className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('netProfit')}</p>
                     <h2 className="text-2xl font-black tracking-tighter">Rp 56.9M</h2>
                     <div className="mt-4 flex items-center gap-2">
                         <span className="text-[9px] font-black bg-white/20 text-white px-2 py-0.5 rounded tracking-widest">68.9%</span>
@@ -300,8 +529,8 @@ const InternalDashboard = ({ onLogout }) => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-zinc-800 lg:col-span-2">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-black text-white uppercase tracking-tight">Partner Tier Distribution</h3>
-                    <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-tighter">Live Monitor</span>
+                    <h3 className="font-black text-white uppercase tracking-tight">{t('tierDist')}</h3>
+                    <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-tighter">{t('liveMonitor')}</span>
                   </div>
                   <div className="flex items-center gap-8 h-40">
                     <div className="w-1/3 h-full relative">
@@ -313,13 +542,13 @@ const InternalDashboard = ({ onLogout }) => {
                         { label: 'Gold', color: 'bg-amber-400', count: 31 },
                         { label: 'Silver', color: 'bg-zinc-400', count: 43 },
                         { label: 'Bronze', color: 'bg-orange-600', count: 32 }
-                      ].map((t) => (
-                        <div key={t.label} className="flex items-center justify-between bg-zinc-950/50 p-3 rounded-xl border border-zinc-800">
+                      ].map((t_item) => (
+                        <div key={t_item.label} className="flex items-center justify-between bg-zinc-950/50 p-3 rounded-xl border border-zinc-800">
                           <div className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${t.color}`}></span>
-                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t.label}</span>
+                            <span className={`w-2 h-2 rounded-full ${t_item.color}`}></span>
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t_item.label}</span>
                           </div>
-                          <span className="font-black text-white text-xs">{t.count}</span>
+                          <span className="font-black text-white text-xs">{t_item.count}</span>
                         </div>
                       ))}
                     </div>
@@ -327,7 +556,7 @@ const InternalDashboard = ({ onLogout }) => {
                 </div>
 
                 <div className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-zinc-800">
-                    <h3 className="font-black text-white uppercase tracking-tight mb-6">Recent Activity</h3>
+                    <h3 className="font-black text-white uppercase tracking-tight mb-6">{t('recentActivity')}</h3>
                     <div className="space-y-6">
                         {RECENT_ACTIVITY.map((act, i) => (
                             <div key={i} className="flex gap-4 relative">
@@ -355,9 +584,9 @@ const InternalDashboard = ({ onLogout }) => {
               <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800 overflow-hidden">
                 <div className="flex space-x-8 px-8 border-b border-zinc-800 bg-zinc-950/50 pt-6">
                   {[
-                    { id: 'app-subs', label: 'Payments & Upgrades' },
-                    { id: 'new-user', label: 'Identity Verification' },
-                    { id: 'new-partner', label: 'Partner Applications' }
+                    { id: 'app-subs', label: t('paymentsUpgrades') },
+                    { id: 'new-user', label: t('identityVerification') },
+                    { id: 'new-partner', label: t('partnerApplications') }
                   ].map((tab) => (
                     <button 
                       key={tab.id}
@@ -374,11 +603,11 @@ const InternalDashboard = ({ onLogout }) => {
                   <table className="w-full text-left border-separate border-spacing-y-2">
                     <thead className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">
                       <tr>
-                        <th className="px-4 pb-2">Identification</th>
-                        <th className="px-4 pb-2">Status / Plan</th>
-                        <th className="px-4 pb-2 text-center">PIC Partner</th>
-                        <th className="px-4 pb-2 text-center">Referral Source</th>
-                        <th className="px-4 pb-2 text-right">Actions</th>
+                        <th className="px-4 pb-2">{t('identification')}</th>
+                        <th className="px-4 pb-2">{t('statusPlan')}</th>
+                        <th className="px-4 pb-2 text-center">{t('picPartner')}</th>
+                        <th className="px-4 pb-2 text-center">{t('refSource')}</th>
+                        <th className="px-4 pb-2 text-right">{t('actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -427,16 +656,16 @@ const InternalDashboard = ({ onLogout }) => {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800 overflow-hidden">
                 <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
-                   <h3 className="font-black text-white uppercase tracking-tight">User Base Monitoring</h3>
+                   <h3 className="font-black text-white uppercase tracking-tight">{t('userBaseMonitor')}</h3>
                 </div>
                 <div className="p-8">
                   <table className="w-full text-left border-separate border-spacing-y-2">
                     <thead className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">
                       <tr>
-                        <th className="px-4 pb-2">Subscriber Info</th>
-                        <th className="px-4 pb-2">Active Plan</th>
-                        <th className="px-4 pb-2">Health</th>
-                        <th className="px-4 pb-2 text-right">Actions</th>
+                        <th className="px-4 pb-2">{t('subscriberInfo')}</th>
+                        <th className="px-4 pb-2">{t('activePlan')}</th>
+                        <th className="px-4 pb-2">{t('health')}</th>
+                        <th className="px-4 pb-2 text-right">{t('actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -453,7 +682,7 @@ const InternalDashboard = ({ onLogout }) => {
                              <span className={`text-[10px] font-black ${u.stats.health > 80 ? 'text-green-500' : 'text-amber-500'}`}>{u.stats.health}%</span>
                           </td>
                           <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
-                             <button onClick={() => setShowUserStats(u)} className="px-4 py-2 bg-blue-600/10 text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-xl border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">View Details</button>
+                             <button onClick={() => setShowUserStats(u)} className="px-4 py-2 bg-blue-600/10 text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-xl border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">{t('viewDetails')}</button>
                           </td>
                         </tr>
                       ))}
@@ -469,15 +698,15 @@ const InternalDashboard = ({ onLogout }) => {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
-                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Total Referrals</p>
+                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">{t('totalReferrals')}</p>
                    <h3 className="text-3xl font-black text-white tracking-tighter">601</h3>
                 </div>
                 <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
-                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Network Payouts</p>
+                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">{t('networkPayouts')}</p>
                    <h3 className="text-3xl font-black text-green-500 tracking-tighter">Rp 21.4M</h3>
                 </div>
                 <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
-                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">New Applications</p>
+                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">{t('newApps')}</p>
                    <h3 className="text-3xl font-black text-amber-500 tracking-tighter">12</h3>
                 </div>
               </div>
@@ -485,25 +714,25 @@ const InternalDashboard = ({ onLogout }) => {
               <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl">
                 <div className="p-8 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
                   <div>
-                    <h3 className="font-black text-white uppercase tracking-tight">Global Partner Network</h3>
+                    <h3 className="font-black text-white uppercase tracking-tight">{t('globalNetwork')}</h3>
                     <p className="text-xs text-zinc-500 font-medium">Managing affiliates, agencies, and content creators</p>
                   </div>
                   <button className="bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-2xl flex items-center gap-2 hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20">
                     <iconify-icon icon="solar:user-plus-bold-duotone" className="text-lg"></iconify-icon>
-                    Register Partner
+                    {t('registerPartner')}
                   </button>
                 </div>
                 <div className="p-8 overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left border-separate border-spacing-y-2 min-w-[1000px]">
                     <thead className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">
                       <tr>
-                        <th className="px-4 pb-2">Partner Entity</th>
-                        <th className="px-4 pb-2">Niche / Audience</th>
-                        <th className="px-4 pb-2 text-center">Tier</th>
-                        <th className="px-4 pb-2 text-right">Referrals</th>
-                        <th className="px-4 pb-2 text-right">Revenue</th>
-                        <th className="px-4 pb-2 text-center">Status</th>
-                        <th className="px-4 pb-2 text-right">Actions</th>
+                        <th className="px-4 pb-2">{t('partnerEntity')}</th>
+                        <th className="px-4 pb-2">{t('nicheAudience')}</th>
+                        <th className="px-4 pb-2 text-center">{t('tier')}</th>
+                        <th className="px-4 pb-2 text-right">{t('referrals')}</th>
+                        <th className="px-4 pb-2 text-right">{t('revenue')}</th>
+                        <th className="px-4 pb-2 text-center">{t('status')}</th>
+                        <th className="px-4 pb-2 text-right">{t('actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -548,26 +777,26 @@ const InternalDashboard = ({ onLogout }) => {
           {activeSection === 'tickets' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800 p-8">
-                  <h3 className="font-black text-white uppercase tracking-tight mb-8">System Feedback Loop</h3>
+                  <h3 className="font-black text-white uppercase tracking-tight mb-8">{t('feedbackLoop')}</h3>
                   <div className="space-y-4">
-                    {MOCK_TICKETS.map(t => (
-                      <div key={t.id} className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 flex justify-between items-center">
+                    {MOCK_TICKETS.map(t_item => (
+                      <div key={t_item.id} className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 flex justify-between items-center">
                          <div className="flex gap-4 items-center">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t.priority === 'High' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-400'}`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t_item.priority === 'High' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-400'}`}>
                                <iconify-icon icon="solar:shield-warning-bold-duotone" className="text-xl"></iconify-icon>
                             </div>
                             <div>
-                               <h4 className="text-sm font-black text-white uppercase tracking-tight">{t.title}</h4>
-                               <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">BY: {t.author} • {t.priority} PRIORITY</p>
+                               <h4 className="text-sm font-black text-white uppercase tracking-tight">{t_item.title}</h4>
+                               <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">BY: {t_item.author} • {t_item.priority} {t('priority')}</p>
                             </div>
                          </div>
                          <div className="flex items-center gap-4">
-                            <button className="px-4 py-2 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 transition-all">Accept</button>
-                            <button className="px-4 py-2 bg-zinc-800 text-zinc-500 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-red-600 hover:text-white transition-all border border-zinc-700">Reject</button>
+                            <button className="px-4 py-2 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 transition-all">{t('accept')}</button>
+                            <button className="px-4 py-2 bg-zinc-800 text-zinc-500 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-red-600 hover:text-white transition-all border border-zinc-700">{t('reject')}</button>
                             <div className="h-8 w-px bg-zinc-800 mx-2"></div>
                             <div className="flex gap-2">
-                              <button className="px-3 py-2 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase tracking-tighter rounded-lg border border-zinc-800 hover:border-blue-500/50 transition-all">To User DB</button>
-                              <button className="px-3 py-2 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase tracking-tighter rounded-lg border border-zinc-800 hover:border-amber-500/50 transition-all">To Partner DB</button>
+                              <button className="px-3 py-2 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase tracking-tighter rounded-lg border border-zinc-800 hover:border-blue-500/50 transition-all">{t('toUserDb')}</button>
+                              <button className="px-3 py-2 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase tracking-tighter rounded-lg border border-zinc-800 hover:border-amber-500/50 transition-all">{t('toPartnerDb')}</button>
                             </div>
                          </div>
                       </div>
@@ -598,16 +827,114 @@ const InternalDashboard = ({ onLogout }) => {
               <div className="bg-zinc-900/50 p-12 rounded-[3rem] border border-zinc-800 text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl"></div>
                 <iconify-icon icon="solar:settings-bold-duotone" className="text-6xl text-zinc-800 mb-6 animate-spin-slow"></iconify-icon>
-                <h3 className="text-xl font-black text-white uppercase tracking-tight">Supabase Infrastructure Hub</h3>
+                <h3 className="text-xl font-black text-white uppercase tracking-tight">{t('infraHub')}</h3>
                 <p className="text-zinc-500 text-sm mt-2 max-w-lg mx-auto uppercase font-bold tracking-[0.1em]">Connected to project `iogxyo...`. Monitoring real-time data flow, authentication triggers, and storage bucket accessibility.</p>
                 
                 <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
                     {['Auth Service', 'PostgREST', 'Realtime', 'Storage'].map(srv => (
                         <div key={srv} className="flex items-center gap-2 justify-center py-2 px-4 rounded-full bg-zinc-950 border border-zinc-800">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{srv} OK</span>
+                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{srv === 'Auth Service' ? t('authService') : srv} OK</span>
                         </div>
                     ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION: AI STRATEGY HUB */}
+          {activeSection === 'ai-gen' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+              <div className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-zinc-800 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 blur-[100px] -z-10"></div>
+                <div className="flex justify-between items-center mb-8">
+                  <div>
+                    <h3 className="font-black text-2xl text-white uppercase tracking-tight">{t('aiManagement')}</h3>
+                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1">Control AI Behavior and Knowledge Base</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full border border-emerald-500/20 uppercase tracking-widest">DeepSeek-V3 Active</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* System Prompt */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center px-2">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('strictInstructions')}</label>
+                      <iconify-icon icon="solar:shield-keyhole-bold-duotone" className="text-blue-500"></iconify-icon>
+                    </div>
+                    <textarea 
+                      className="w-full h-64 bg-black/40 border border-zinc-800 focus:border-blue-500/50 rounded-3xl p-6 text-sm text-zinc-300 outline-none resize-none leading-relaxed font-mono"
+                      value={aiConfig.system_prompt}
+                      onChange={(e) => setAiConfig({...aiConfig, system_prompt: e.target.value})}
+                    ></textarea>
+                  </div>
+
+                  {/* RAG Knowledge Base */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center px-2">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('knowledgeBase')}</label>
+                      <iconify-icon icon="solar:library-bold-duotone" className="text-amber-500"></iconify-icon>
+                    </div>
+                    <textarea 
+                      className="w-full h-64 bg-black/40 border border-zinc-800 focus:border-amber-500/50 rounded-3xl p-6 text-sm text-zinc-300 outline-none resize-none leading-relaxed font-mono"
+                      placeholder="Input knowledge chunks here for RAG..."
+                      value={aiConfig.rag_knowledge_base}
+                      onChange={(e) => setAiConfig({...aiConfig, rag_knowledge_base: e.target.value})}
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-end">
+                  <button 
+                    onClick={handleSaveAiConfig}
+                    disabled={isLoading}
+                    className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {isLoading ? 'SAVING...' : t('saveConfig')}
+                  </button>
+                </div>
+              </div>
+
+              {/* AI Logs */}
+              <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl">
+                <div className="p-8 border-b border-zinc-800 bg-zinc-950/50">
+                  <h3 className="font-black text-white uppercase tracking-tight">{t('aiLogs')}</h3>
+                </div>
+                <div className="p-8">
+                  <table className="w-full text-left border-separate border-spacing-y-2">
+                    <thead className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                      <tr>
+                        <th className="px-4 pb-2">{t('user')}</th>
+                        <th className="px-4 pb-2">{t('task')}</th>
+                        <th className="px-4 pb-2 text-center">{t('credits')}</th>
+                        <th className="px-4 pb-2 text-right">{t('time')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {aiLogs.length > 0 ? aiLogs.map((log, i) => (
+                        <tr key={i} className="bg-zinc-950/50 hover:bg-zinc-800/50 transition-all group">
+                          <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800">
+                            <div className="font-black text-white text-xs uppercase tracking-tight">{log.profiles?.full_name || 'System User'}</div>
+                          </td>
+                          <td className="p-4 border-y border-zinc-800">
+                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{log.task_type} ({log.topic})</span>
+                          </td>
+                          <td className="p-4 border-y border-zinc-800 text-center">
+                             <span className="bg-blue-600/10 text-blue-400 text-[10px] font-black px-3 py-1 rounded-lg">-{log.credits_spent} CR</span>
+                          </td>
+                          <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
+                             <span className="text-[10px] font-bold text-zinc-600 uppercase italic">{new Date(log.created_at).toLocaleTimeString()}</span>
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr>
+                          <td colSpan="4" className="p-8 text-center text-zinc-500 text-[10px] font-black uppercase tracking-widest italic">No AI activity recorded yet</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -621,22 +948,22 @@ const InternalDashboard = ({ onLogout }) => {
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[110] flex items-center justify-center p-4 animate-in fade-in duration-300">
            <div className="bg-zinc-900 rounded-[2.5rem] max-w-4xl w-full p-10 border border-zinc-800 relative">
                 <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-2xl font-black text-white uppercase tracking-tight">{showUserStats.name} Details</h2>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tight">{showUserStats.name} {t('details')}</h2>
                     <button onClick={() => setShowUserStats(null)} className="text-zinc-500 hover:text-white transition-all">
                         <iconify-icon icon="solar:close-circle-bold" className="text-3xl"></iconify-icon>
                     </button>
                 </div>
                 <div className="grid grid-cols-3 gap-6">
                     <div className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 text-center">
-                        <p className="text-zinc-600 text-[10px] font-black uppercase mb-2">Omzet</p>
+                        <p className="text-zinc-600 text-[10px] font-black uppercase mb-2">{t('revenue')}</p>
                         <p className="text-xl font-black text-white">{showUserStats.stats.omzet}</p>
                     </div>
                     <div className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 text-center">
-                        <p className="text-zinc-600 text-[10px] font-black uppercase mb-2">Health Score</p>
+                        <p className="text-zinc-600 text-[10px] font-black uppercase mb-2">{t('healthScore')}</p>
                         <p className="text-xl font-black text-green-500">{showUserStats.stats.health}%</p>
                     </div>
                     <div className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 text-center">
-                        <p className="text-zinc-600 text-[10px] font-black uppercase mb-2">Orders</p>
+                        <p className="text-zinc-600 text-[10px] font-black uppercase mb-2">{t('orders')}</p>
                         <p className="text-xl font-black text-white">{showUserStats.stats.orders}</p>
                     </div>
                 </div>
@@ -648,11 +975,11 @@ const InternalDashboard = ({ onLogout }) => {
       {showModal && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-zinc-900 rounded-[2.5rem] max-w-md w-full p-10 border border-zinc-800 text-center">
-            <h2 className="text-xl font-black text-white uppercase tracking-tight mb-4">Confirm Approval</h2>
-            <p className="text-sm text-zinc-500 mb-8 font-medium italic">Approve upgrade request for {selectedClient?.shop_name || selectedClient?.name}?</p>
+            <h2 className="text-xl font-black text-white uppercase tracking-tight mb-4">{t('confirmApproval')}</h2>
+            <p className="text-sm text-zinc-500 mb-8 font-medium italic">{t('approveUpgrade')} {selectedClient?.shop_name || selectedClient?.name}?</p>
             <div className="flex gap-4">
-              <button onClick={() => handleApprove(selectedClient)} className="flex-1 py-4 bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl">Confirm</button>
-              <button onClick={() => setShowModal(false)} className="flex-1 py-4 bg-zinc-800 text-zinc-400 font-black uppercase text-[10px] tracking-widest rounded-2xl">Cancel</button>
+              <button onClick={() => handleApprove(selectedClient)} className="flex-1 py-4 bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl">{t('confirm')}</button>
+              <button onClick={() => setShowModal(false)} className="flex-1 py-4 bg-zinc-800 text-zinc-400 font-black uppercase text-[10px] tracking-widest rounded-2xl">{t('cancel')}</button>
             </div>
           </div>
         </div>
