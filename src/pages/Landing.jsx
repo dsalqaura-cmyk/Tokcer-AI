@@ -9,11 +9,11 @@ import Testimonial from '../components/landing/Testimonial';
 import AboutUs from '../components/landing/AboutUs';
 import WaitlistCTA from '../components/landing/WaitlistCTA';
 import Footer from '../components/Footer';
-import WaitlistModal from '../components/modals/WaitlistModal';
+import RegisterModal from '../components/modals/RegisterModal';
 import PartnerModal from '../components/modals/PartnerModal';
 
 const Landing = () => {
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isPartnerOpen, setIsPartnerOpen] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ const Landing = () => {
 
       <Navbar 
         onOpenPartner={() => setIsPartnerOpen(true)} 
-        onOpenWaitlist={() => setIsWaitlistOpen(true)} 
+        onOpenWaitlist={() => setIsRegisterOpen(true)} 
       />
       
       {/* === SECTION 1: Hero / Above the Fold === */}
@@ -42,7 +42,7 @@ const Landing = () => {
         <Ecosystem />
 
         {/* === SECTION 5: Pricing (Coming Soon) === */}
-        <Pricing onOpenWaitlist={() => setIsWaitlistOpen(true)} />
+        <Pricing onOpenWaitlist={() => setIsRegisterOpen(true)} />
 
         {/* === SECTION 6: Social Proof / Testimonials === */}
         <Testimonial />
@@ -51,12 +51,12 @@ const Landing = () => {
         <AboutUs />
 
         {/* === SECTION 8: Final CTA === */}
-        <WaitlistCTA onOpenWaitlist={() => setIsWaitlistOpen(true)} />
+        <WaitlistCTA onOpenWaitlist={() => setIsRegisterOpen(true)} />
       </main>
 
       <Footer />
 
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
+      <RegisterModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />
       <PartnerModal isOpen={isPartnerOpen} onClose={() => setIsPartnerOpen(false)} />
     </div>
   );
