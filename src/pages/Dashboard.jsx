@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// Last Updated: 2026-04-27 12:20:00 (Trigger Re-deploy)
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import ProductModal from '../components/modals/ProductModal';
