@@ -571,7 +571,7 @@ const Dashboard = () => {
           { role: 'user', content: userMessage }
         ],
         temperature: 0.0,
-        max_tokens: 1024,
+        max_tokens: 2048,
       })
     });
     if (!res.ok) {
@@ -661,7 +661,7 @@ const Dashboard = () => {
         .eq('type', 'market_analyst')
         .single();
 
-      const systemPrompt = config?.system_prompt || `Kamu adalah Market Research Analyst spesialis e-commerce Indonesia.`;
+      const systemPrompt = config?.system_prompt || `Kamu adalah Market Research Analyst spesialis e-commerce Indonesia. Berikan respons dalam format JSON dengan keys: "trend", "demo", "top5" (array), "risk", "strategy".`;
       const ragKnowledge = config?.rag_knowledge_base ? `\n\nPengetahuan tambahan:\n${config.rag_knowledge_base}` : '';
 
       const fullSystemPrompt = `${systemPrompt}${ragKnowledge}`;
@@ -2002,77 +2002,6 @@ const Dashboard = () => {
                 )}
               </div>
             )}
-
-            {/* === SUB-TAB: MARKET TREND RADAR === */}
-            {aiSubTab === 'trend' && (
-              <div className="max-w-2xl space-y-6">
-                <div className="bg-black border border-zinc-800 rounded-xl p-4 flex items-start gap-3">
-                  <iconify-icon icon="solar:info-circle-linear" className="text-orange-500 text-xl mt-0.5 shrink-0"></iconify-icon>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    {t('marketInfo')}
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-500 uppercase tracking-widest">{t('nicheLabel')}</label>
-                  <div className={`relative bg-black border rounded-xl shadow-sm transition duration-300 ${isTrendAnalyzing ? 'border-zinc-700 opacity-60' : 'border-zinc-800 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500/50'}`}>
-                    <textarea
-                      className="w-full bg-transparent p-4 text-sm text-white focus:outline-none placeholder:text-zinc-600 resize-none disabled:cursor-not-allowed"
-                      rows="3"
-                      placeholder={t('trendPromptPlaceholder')}
-                      value={trendPrompt}
-                      onChange={(e) => setTrendPrompt(e.target.value)}
-                      disabled={isTrendAnalyzing}
-                    ></textarea>
-                  </div>
-                </div>
-
-                {/* Quick Suggestions */}
-                <div>
-                  <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">{t('quickSuggest')}</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Skincare Pria', 'Outfit Thrifting', 'Peralatan Dapur', 'Gadget Gaming', 'Suplemen Kesehatan'].map(s => (
-                      <button
-                        key={s}
-                        onClick={() => setTrendPrompt(s)}
-                        disabled={isTrendAnalyzing}
-                        className="px-3 py-1.5 text-[11px] font-medium bg-zinc-800 border border-zinc-700 rounded-full text-zinc-300 hover:border-orange-500 hover:text-orange-400 transition-all disabled:opacity-50"
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleAnalyzeTrend}
-                  disabled={isTrendAnalyzing || !trendPrompt}
-                  className="w-full bg-orange-600 text-white py-3.5 rounded-xl text-sm font-medium shadow-md hover:bg-orange-500 transition-all flex justify-center items-center gap-2 border border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isTrendAnalyzing ? (
-                    <><iconify-icon icon="solar:spinner-linear" className="text-lg animate-spin"></iconify-icon> {t('analyzing')}</>
-                  ) : (
-                    <><iconify-icon icon="solar:radar-linear" className="text-lg"></iconify-icon> {t('analyzeNow')}</>
-                  )}
-                </button>
-
-                {trendResult && (
-                  <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl relative group">
-                    <button
-                      onClick={() => navigator.clipboard.writeText(trendResult)}
-                      className="absolute top-4 right-4 text-zinc-500 hover:text-orange-500 transition-colors opacity-0 group-hover:opacity-100 p-2 bg-black rounded-md border border-zinc-800"
-                    >
-                      <iconify-icon icon="solar:copy-linear" className="text-lg"></iconify-icon>
-                    </button>
-                    <div className="flex items-center gap-2 mb-4 text-orange-500 text-xs font-medium uppercase tracking-widest">
-                      <iconify-icon icon="solar:radar-linear" className="text-base"></iconify-icon>
-                      {t('analyzeResult')}
-                    </div>
-                    <div className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{trendResult}</div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         );
       case 'tab-market':
@@ -2140,12 +2069,8 @@ const Dashboard = () => {
                       onChange={(e) => { setTrendCustomInput(e.target.value); if (e.target.value) { setTrendSampleKey(null); setTrendCustomResult(null); } }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && trendCustomInput.trim()) {
-                          setIsSearchingTrend(true);
-                          setTrendSampleKey(null);
-                          setTimeout(() => {
-                            setTrendCustomResult(trendCustomInput.trim());
-                            setIsSearchingTrend(false);
-                          }, 900);
+                           setTrendPrompt(trendCustomInput.trim());
+                           handleAnalyzeTrend();
                         }
                       }}
                       placeholder={lang === 'id' ? 'Ketik kategori produk... (tekan Enter)' : 'Type product category... (press Enter)'}
@@ -2159,18 +2084,14 @@ const Dashboard = () => {
                   </div>
                   <button
                     onClick={() => {
-                      if (!trendCustomInput.trim()) return;
-                      setIsSearchingTrend(true);
-                      setTrendSampleKey(null);
-                      setTimeout(() => {
-                        setTrendCustomResult(trendCustomInput.trim());
-                        setIsSearchingTrend(false);
-                      }, 900);
+                       if (!trendCustomInput.trim()) return;
+                       setTrendPrompt(trendCustomInput.trim());
+                       handleAnalyzeTrend();
                     }}
-                    disabled={!trendCustomInput.trim() || isSearchingTrend}
+                    disabled={!trendCustomInput.trim() || isTrendAnalyzing}
                     className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition-all shrink-0"
                   >
-                    {isSearchingTrend ? (
+                    {isTrendAnalyzing ? (
                       <iconify-icon icon="solar:spinner-linear" className="text-base animate-spin"></iconify-icon>
                     ) : (
                       <iconify-icon icon="solar:radar-linear" className="text-base"></iconify-icon>
@@ -2198,7 +2119,13 @@ const Dashboard = () => {
                 ].map(({ key, label }) => (
                   <button
                     key={key}
-                    onClick={() => { setTrendSampleKey(trendSampleKey === key ? null : key); setTrendCustomInput(''); setTrendCustomResult(null); }}
+                    onClick={() => { 
+                      setTrendSampleKey(trendSampleKey === key ? null : key); 
+                      if(trendSampleKey !== key) {
+                        setTrendPrompt(label);
+                        handleAnalyzeTrend();
+                      }
+                    }}
                     className={`px-3 py-1.5 text-xs rounded-full border font-medium transition-all ${
                       trendSampleKey === key
                         ? 'bg-indigo-600 border-indigo-500 text-white'
@@ -2210,98 +2137,32 @@ const Dashboard = () => {
                 ))}
               </div>
 
-              {/* Custom Input Result */}
-              {trendCustomResult && !trendSampleKey && (() => {
-                const query = trendCustomResult;
-                return (
-                  <div className="space-y-4 border-t border-zinc-800 pt-5">
-                    <div className="flex items-center gap-2 mb-1">
-                      <iconify-icon icon="solar:radar-linear" className="text-indigo-400 text-base"></iconify-icon>
-                      <span className="text-sm font-semibold text-white">Analisis: <span className="text-indigo-400">{query}</span></span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-orange-600/10 border border-orange-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">🔥 Tren Terkini</p>
-                        <p className="text-sm text-zinc-200">Kategori <strong className="text-white">{query}</strong> menunjukkan pertumbuhan signifikan di marketplace Indonesia. Permintaan meningkat terutama di TikTok Shop & Shopee dalam 3 bulan terakhir.</p>
-                      </div>
-                      <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">🎯 Target Demografi</p>
-                        <p className="text-sm text-zinc-200">Segmen utama berusia 18–35 tahun, aktif di media sosial. Perilaku pembelian didorong oleh konten video dan ulasan produk autentik.</p>
-                      </div>
-                    </div>
-                    <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">💡 Top 5 Produk Potensial</p>
-                      <div className="space-y-1.5">
-                        {[
-                          `1. Produk ${query} varian terlaris (best-seller)`,
-                          `2. Bundle/paket hemat kategori ${query}`,
-                          `3. Versi premium / upgrade dari ${query}`,
-                          `4. Aksesori & pelengkap ${query}`,
-                          `5. Edisi limited / kolaborasi brand ${query}`,
-                        ].map((item, i) => (
-                          <p key={i} className="text-sm text-zinc-200">{item}</p>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-rose-600/10 border border-rose-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">⚠️ Risiko</p>
-                        <p className="text-sm text-zinc-200">Persaingan harga ketat dari penjual lain. Pastikan diferensiasi produk melalui kualitas, packaging, atau layanan purna jual yang unggul.</p>
-                      </div>
-                      <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">🚀 Strategi</p>
-                        <p className="text-sm text-zinc-200">Manfaatkan konten video TikTok untuk edukasi produk. Aktifkan program Flash Sale Shopee di akhir pekan. Optimalkan foto produk untuk SEO marketplace.</p>
-                      </div>
-                    </div>
-                    <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-xl p-3 flex items-start gap-2">
-                      <iconify-icon icon="solar:info-circle-linear" className="text-indigo-400 text-base mt-0.5 shrink-0"></iconify-icon>
-                      <p className="text-xs text-zinc-400">Data ini merupakan analisis template berdasarkan pola pasar umum. Untuk analisis mendalam berbasis data real-time, gunakan fitur AI Generator.</p>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {trendSampleKey && (() => {
-                const sampleData = {
-                  running: {
-                    trend: '🔥 Naik 35% di TikTok Shop. Kategori lari outdoor & trail running jadi favorit.',
-                    demo: '🎯 Pria 18-35 thn, komunitas lari, gym-goer. Aktif di TikTok & Shopee.',
-                    top5: ['1. Sepatu Trail Running ringan', '2. Insole anti-blister', '3. Kaus kaki kompresi', '4. Sepatu road running wanita', '5. Sandal recovery post-run'],
-                    risk: '⚠️ Banyak seller baru masuk, margin tipis di Shopee. Fokus diferensiasi di TikTok.',
-                    strategy: '🚀 Buat konten "Before & After" performa lari. Kolaborasi micro-influencer komunitas lari.',
-                  },
-                  skincare: {
-                    trend: '🔥 Tren pria makin peduli kulit. Produk moisturizer & sunscreen pria naik 28%.',
-                    demo: '🎯 Pria 20-40 thn, pekerja kantoran & mahasiswa. Aktif di TikTok & Instagram.',
-                    top5: ['1. Moisturizer ringan SPF30', '2. Serum Vitamin C pria', '3. Facial wash oil control', '4. Toner eksfoliasi', '5. Eye cream anti-kantung'],
-                    risk: '⚠️ Brand Korea masih dominasi. Perlu keunggulan harga atau formula lokal yang terbukti.',
-                    strategy: '🚀 Konten edukasi "skincare routine pria 3 langkah" sangat viral. Bundling starter kit.',
-                  },
-                  thrifting: {
-                    trend: '🔥 "Vintage aesthetic" & "Y2K fashion" masih kuat. Pencarian naik 40% di Tokopedia.',
-                    demo: '🎯 Gen Z 16-25 thn, mahasiswa. Budget sensitif tapi fashion-conscious.',
-                    top5: ['1. Kemeja flanel vintage', '2. Jaket denim second', '3. Celana cargo oversize', '4. Kaos band retro', '5. Bucket hat & aksesoris retro'],
-                    risk: '⚠️ Kualitas tidak konsisten bisa bikin return tinggi. Foto produk harus sangat detail.',
-                    strategy: '🚀 "GRWM thrift haul" di TikTok paling efektif. Live selling malam hari boost konversi.',
-                  },
-                  gadget: {
-                    trend: '🔥 Gaming mobile & PC peripheral naik 22%. Aksesori HP gaming paling dicari.',
-                    demo: '🎯 Pria 15-28 thn, gamer & content creator. Loyal brand tapi price-sensitive.',
-                    top5: ['1. Controller gamepad Bluetooth', '2. Cooling fan HP gaming', '3. Headset gaming under 300k', '4. Stand HP lipat portabel', '5. Power bank 20.000mAh fast charge'],
-                    risk: '⚠️ Produk KW banyak beredar, reputasi toko krusial. Garansi jadi pembeda utama.',
-                    strategy: '🚀 Review & unboxing di YouTube Shorts + TikTok. Bundle dengan aksesoris relevan.',
-                  },
-                  supplement: {
-                    trend: '🔥 Kesadaran kesehatan post-COVID masih tinggi. Vitamin C, D & Omega-3 paling populer.',
-                    demo: '🎯 Semua usia, terutama 25-50 thn. Wanita lebih dominan sebagai pembeli keluarga.',
-                    top5: ['1. Vitamin C 1000mg effervescent', '2. Multivitamin anak', '3. Kolagen minuman', '4. Probiotik digestive', '5. Suplemen mata lutein'],
-                    risk: '⚠️ Regulasi BPOM ketat. Pastikan semua produk terdaftar. Klaim berlebihan bisa kena suspend.',
-                    strategy: '🚀 Konten edukasi manfaat vs testimoni. Bundling paket keluarga meningkatkan AOV.',
-                  },
+              {/* AI Result Rendering */}
+              {(() => {
+                let d = {
+                    trend: 'Data analisis belum tersedia.',
+                    demo: 'Data analisis belum tersedia.',
+                    top5: ['Memuat...'],
+                    risk: 'Data analisis belum tersedia.',
+                    strategy: 'Data analisis belum tersedia.'
                 };
-                const d = sampleData[trendSampleKey];
+                
+                // Use AI result if available
+                if (trendResult) {
+                  try {
+                    // Try to parse JSON from AI response
+                    const cleanJson = trendResult.replace(/```json|```/g, '').trim();
+                    const aiData = JSON.parse(cleanJson);
+                    d = { ...d, ...aiData };
+                  } catch (e) {
+                    console.error("AI Parse Error:", e);
+                    // Fallback to trendResult as string if parsing fails
+                    return <div className="text-xs text-zinc-400 p-4 bg-zinc-800 rounded-xl whitespace-pre-wrap">{trendResult}</div>;
+                  }
+                } else if (!isTrendAnalyzing) return null;
+
                 return (
-                  <div className="space-y-4 border-t border-zinc-800 pt-5">
+                  <div className="space-y-4 border-t border-zinc-800 pt-5 animate-in fade-in duration-700">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-orange-600/10 border border-orange-500/20 rounded-xl p-4">
                         <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">🔥 Tren Terkini</p>
@@ -2315,9 +2176,9 @@ const Dashboard = () => {
                     <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
                       <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">💡 Top 5 Produk Potensial</p>
                       <div className="space-y-1.5">
-                        {d.top5.map((item, i) => (
+                        {Array.isArray(d.top5) ? d.top5.map((item, i) => (
                           <p key={i} className="text-sm text-zinc-200">{item}</p>
-                        ))}
+                        )) : <p className="text-sm text-zinc-200">{d.top5}</p>}
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
