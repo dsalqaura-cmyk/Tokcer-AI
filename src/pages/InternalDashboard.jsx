@@ -416,13 +416,17 @@ const InternalDashboard = ({ onLogout }) => {
             <button
               key={item.id}
               onClick={() => { setActiveSection(item.id); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center justify-between py-4 px-6 transition-all border-l-4 ${activeSection === item.id ? 'bg-zinc-800 border-blue-500 text-white shadow-inner' : 'border-transparent text-zinc-500 hover:bg-zinc-800/50 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 py-3.5 px-6 transition-all border-l-4 group ${activeSection === item.id ? 'bg-blue-600/10 border-blue-500 text-white shadow-[inset_0_0_20px_rgba(59,130,246,0.1)]' : 'border-transparent text-zinc-500 hover:bg-zinc-800/50 hover:text-white'}`}
             >
-              <div className="flex items-center gap-4">
-                <iconify-icon icon={item.icon} className={`text-xl ${activeSection === item.id ? 'text-blue-500' : 'text-zinc-500'}`}></iconify-icon>
-                <span className="text-[11px] font-black uppercase tracking-[0.1em]">{item.label}</span>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <iconify-icon icon={item.icon} className={`text-xl transition-transform group-hover:scale-110 ${activeSection === item.id ? 'text-blue-500' : 'text-zinc-500'}`}></iconify-icon>
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] truncate">{item.label}</span>
               </div>
-              {item.badge && <span className="bg-red-500 text-[10px] font-black px-2 py-0.5 rounded-full text-white">{item.badge}</span>}
+              {item.badge && (
+                <span className="bg-blue-600 text-[9px] font-black px-2 py-0.5 rounded-md text-white shadow-lg shadow-blue-600/30">
+                  {item.badge}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -616,29 +620,32 @@ const InternalDashboard = ({ onLogout }) => {
                         : activeAppTab === 'new-partner' ? MOCK_PARTNERS.filter(p => !p.status || p.status.toLowerCase() === 'pending') 
                         : MOCK_USERS.filter(u => !u.status || u.status.toLowerCase() === 'pending' || u.status.toLowerCase() === 'warning')
                       ).map((item, i) => (
-                        <tr key={i} className="bg-zinc-950/50 hover:bg-zinc-800/50 transition-all group">
-                          <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800">
-                            <div className="font-black text-white text-sm tracking-tight">{item.name || item.shop_name}</div>
+                        <tr key={i} className="bg-zinc-900/30 hover:bg-zinc-800/50 transition-all group">
+                          <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800/50">
+                            <div className="font-black text-white text-sm tracking-tight group-hover:text-blue-400 transition-colors">{item.name || item.shop_name}</div>
                             <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">{item.email}</div>
                           </td>
-                          <td className="p-4 border-y border-zinc-800">
-                            <span className={`${getTierBadgeClass(item.tier || item.plan)} text-[9px] font-black px-3 py-1 rounded-lg uppercase`}>{item.tier || item.plan}</span>
+                          <td className="p-4 border-y border-zinc-800/50">
+                            <span className={`${getTierBadgeClass(item.tier || item.plan)} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>{item.tier || item.plan}</span>
                           </td>
-                          <td className="p-4 border-y border-zinc-800 text-center">
-                            <span className="text-[10px] font-bold text-zinc-400 italic">{item.pic || item.partners?.full_name || 'Direct'}</span>
+                          <td className="p-4 border-y border-zinc-800/50 text-center">
+                            <span className="text-[10px] font-bold text-zinc-400">{item.pic || item.partners?.full_name || 'Direct Access'}</span>
                           </td>
-                          <td className="p-4 border-y border-zinc-800 text-center">
-                            <span className="text-[10px] font-bold text-blue-500 tracking-tighter uppercase">{item.ref || item.payment_method || 'SYSTEM'}</span>
+                          <td className="p-4 border-y border-zinc-800/50 text-center">
+                            <span className="text-[10px] font-black text-blue-500 tracking-tighter uppercase bg-blue-500/5 px-2 py-1 rounded border border-blue-500/10">{item.ref || item.payment_method || 'SYSTEM'}</span>
                           </td>
-                          <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
+                          <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800/50 text-right">
                             <div className="flex items-center justify-end gap-3">
                               {item.status === 'pending' || !item.status ? (
                                 <>
                                   <button onClick={() => { setSelectedClient(item); setShowModal(true); }} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95">Approve</button>
-                                  <button className="px-6 py-2 bg-zinc-800 hover:bg-red-600 text-red-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
+                                  <button className="px-6 py-2 bg-zinc-800 hover:bg-rose-600 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
                                 </>
                               ) : (
-                                <span className="text-emerald-500 text-[10px] font-black uppercase px-4">{item.status}</span>
+                                <span className="text-emerald-500 text-[10px] font-black uppercase px-4 flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                  {item.status}
+                                </span>
                               )}
                             </div>
                           </td>
