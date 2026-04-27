@@ -227,6 +227,8 @@ const Dashboard = () => {
       aiQuota: "Kuota AI",
       validUntil: "Berlaku hingga",
       supportDesc: "Kami siap membantu Anda 24/7.",
+      revenueLabel: "Omzet",
+      profitLabel: "Profit",
     },
     en: {
       dashboard: "Dashboard",
@@ -416,6 +418,8 @@ const Dashboard = () => {
       aiQuota: "AI Quota",
       validUntil: "Valid until",
       supportDesc: "We are ready to help you 24/7.",
+      revenueLabel: "Revenue",
+      profitLabel: "Profit",
     }
   };
 
@@ -984,11 +988,11 @@ const Dashboard = () => {
               <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col shadow-sm">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-4">
                   <div>
-                    <div className="text-xs font-medium text-zinc-400 mb-1">{t('estProfit')} ({timeFilter})</div>
+                    <div className="text-xs font-medium text-zinc-400 mb-1">{t('estProfit')} ({t(timeFilter)})</div>
                     <div className="text-3xl font-semibold text-white tracking-tight">{estimasiProfit}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-medium text-zinc-400 mb-1">{t('totOmzet')} ({timeFilter})</div>
+                    <div className="text-xs font-medium text-zinc-400 mb-1">{t('totOmzet')} ({t(timeFilter)})</div>
                     <div className="text-xl font-semibold text-zinc-300">{estimasiOmzet}</div>
                   </div>
                 </div>
@@ -1003,22 +1007,22 @@ const Dashboard = () => {
                       profit:  [10, 18, 28, 38, 45,  62, 55, 40],
                     },
                     'Bulan Ini': {
-                      labels: ['Mg 1','Mg 2','Mg 3','Mg 4'],
+                      labels: lang === 'id' ? ['Mg 1','Mg 2','Mg 3','Mg 4'] : ['Wk 1','Wk 2','Wk 3','Wk 4'],
                       omzet:   [45, 70, 85, 100],
                       profit:  [28, 42, 55,  62],
                     },
                     '1 Bulan Terakhir': {
-                      labels: ['Mg 1','Mg 2','Mg 3','Mg 4'],
+                      labels: lang === 'id' ? ['Mg 1','Mg 2','Mg 3','Mg 4'] : ['Wk 1','Wk 2','Wk 3','Wk 4'],
                       omzet:   [60, 80, 75, 90],
                       profit:  [35, 50, 45, 56],
                     },
                     '2 Bulan Terakhir': {
-                      labels: ['Bln 1','Bln 2'],
+                      labels: lang === 'id' ? ['Bln 1','Bln 2'] : ['Mo 1','Mo 2'],
                       omzet:   [80, 100],
                       profit:  [48,  62],
                     },
                     '3 Bulan Terakhir': {
-                      labels: ['Jan','Feb','Mar'],
+                      labels: lang === 'id' ? ['Jan','Feb','Mar'] : ['Jan','Feb','Mar'],
                       omzet:   [70, 85, 100],
                       profit:  [42, 52,  62],
                     },
@@ -1043,11 +1047,11 @@ const Dashboard = () => {
                       <div className="flex items-center gap-4 mb-2">
                         <div className="flex items-center gap-1.5">
                           <div className="w-3 h-3 rounded-sm bg-orange-600"></div>
-                          <span className="text-[10px] text-zinc-400">Omzet</span>
+                          <span className="text-[10px] text-zinc-400">{t('revenueLabel')}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <div className="w-6 h-0.5 bg-emerald-400"></div>
-                          <span className="text-[10px] text-zinc-400">Profit</span>
+                          <span className="text-[10px] text-zinc-400">{t('profitLabel')}</span>
                         </div>
                       </div>
                       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:'130px'}}>
