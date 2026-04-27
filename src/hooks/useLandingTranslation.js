@@ -10,7 +10,7 @@ const translations = {
     navPricing: "Pricing",
     navLogin: "Member Area",
     navPartner: "Become a Partner",
-    navWaitlist: "Secure Your Early Access",
+    navWaitlist: "Daftar Sekarang",
     navContact: "Contact Us",
 
     // Hero
@@ -84,7 +84,7 @@ const translations = {
     // Waitlist CTA
     ctaTitle: "Yuk, Scale Up Sekarang!",
     ctaDesc: "Masuk ke waitlist kita buat dapetin akses duluan. Slot buat Beta testing terbatas banget ya!",
-    ctaBtn: "Secure Your Early Access",
+    ctaBtn: "Daftar Sekarang",
 
     // Footer
     footerCopyright: "© 2026. Elevate Your E-commerce.",
@@ -99,7 +99,7 @@ const translations = {
 
     // Waitlist Modal
     wlBadge: "Akses Prioritas",
-    wlTitle: "Secure Your Early Access",
+    wlTitle: "Daftar Sekarang",
     wlDesc: "Jadilah yang pertama pakai Tokcer AI. Slot Beta terbatas buat kamu yang mau curi start di market.",
     wlFullName: "Nama Lengkap",
     wlEmail: "Email Aktif",
@@ -111,7 +111,11 @@ const translations = {
     wlPlatformLabel: "Platform Jualan Saat Ini",
     wlPlatformOtherPlaceholder: "Sebutkan platform/toko offline...",
     wlSubmitLoading: "Mengirim Data...",
-    wlSubmitBtn: "Dapatkan Akses",
+    wlSubmitBtn: "Daftar Sekarang",
+    wlPassword: "Buat Kata Sandi",
+    wlConfirmPassword: "Konfirmasi Kata Sandi",
+    wlErrPassword: "Password minimal 6 karakter!",
+    wlErrMatch: "Konfirmasi password tidak cocok!",
     wlSuccessTitle: "Berhasil Mendaftar!",
     wlSuccessDesc: "Terima kasih telah bergabung! Kami akan segera menghubungi Anda melalui email/WhatsApp.",
     wlErrDuplicate: "Email sudah terdaftar di waitlist!",
@@ -127,7 +131,7 @@ const translations = {
     navPricing: "Pricing",
     navLogin: "Member Area",
     navPartner: "Become a Partner",
-    navWaitlist: "Secure Your Early Access",
+    navWaitlist: "Register",
     navContact: "Contact Us",
 
     // Hero
@@ -201,7 +205,7 @@ const translations = {
     // Waitlist CTA
     ctaTitle: "Let's Scale Up Now!",
     ctaDesc: "Join our waitlist to get early access. Slots for Beta testing are extremely limited!",
-    ctaBtn: "Secure Your Early Access",
+    ctaBtn: "Register",
 
     // Footer
     footerCopyright: "© 2026. Elevate Your E-commerce.",
@@ -216,7 +220,7 @@ const translations = {
 
     // Waitlist Modal
     wlBadge: "Priority Access",
-    wlTitle: "Secure Your Early Access",
+    wlTitle: "Register",
     wlDesc: "Be the first to leverage Tokcer AI. Beta slots are limited for those who want to get a head start in the market.",
     wlFullName: "Full Name",
     wlEmail: "Active Email",
@@ -228,7 +232,11 @@ const translations = {
     wlPlatformLabel: "Current Selling Platforms",
     wlPlatformOtherPlaceholder: "Mention your platform/offline store...",
     wlSubmitLoading: "Sending Data...",
-    wlSubmitBtn: "Get Early Access",
+    wlSubmitBtn: "Register Now",
+    wlPassword: "Create Password",
+    wlConfirmPassword: "Confirm Password",
+    wlErrPassword: "Password must be at least 6 characters!",
+    wlErrMatch: "Passwords do not match!",
     wlSuccessTitle: "Successfully Registered!",
     wlSuccessDesc: "Thank you for joining! We will contact you soon via email/WhatsApp.",
     wlErrDuplicate: "Email already registered in the waitlist!",
