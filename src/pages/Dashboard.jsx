@@ -570,7 +570,7 @@ const Dashboard = () => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
         ],
-        temperature: 0.0,
+        temperature: 0.2, // Increased slightly for variety while maintaining high accuracy
         max_tokens: 2048,
       })
     });
@@ -661,10 +661,20 @@ const Dashboard = () => {
         .eq('type', 'market_analyst')
         .single();
 
-      const systemPrompt = config?.system_prompt || `Kamu adalah Market Research Analyst spesialis e-commerce Indonesia. Berikan respons dalam format JSON dengan keys: "trend", "demo", "top5" (array), "risk", "strategy".`;
+      const systemPrompt = config?.system_prompt || `You are an elite Market Research Analyst for the Indonesian e-commerce market. 
+      Analyze the viral potential, competitor pricing landscape, and supply-chain risks for the specific category provided.
+      Be specific and provide unique insights. Compare TikTok Shop (viral/content-driven) vs Shopee (search/price-driven).
+      
+      Format your response as a JSON object with these keys: 
+      "trend": (detailed current market trend), 
+      "demo": (specific target audience profile), 
+      "top5": (array of 5 specific high-potential products), 
+      "risk": (market or operational risks), 
+      "strategy": (actionable growth strategy).`;
+      
       const ragKnowledge = config?.rag_knowledge_base ? `\n\nPengetahuan tambahan:\n${config.rag_knowledge_base}` : '';
 
-      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}`;
+      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}\n\nLanguage: ${lang === 'id' ? 'Indonesian' : 'English'}.\nONLY return the JSON object.`;
       const userMessage = `Lakukan analisis Market Trend Radar untuk kategori berikut:\n\n"${trendPrompt}"`;
 
       // 3. Call DeepSeek
@@ -673,8 +683,13 @@ const Dashboard = () => {
 
       // 4. Update Tokens (Only for non-admin)
       if (!isAdmin) {
-        const newTokens = (profile.tokens || 0) - 1;
-        await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
+        const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
+        const newTokens = currentTokens - 1;
+        
+        // Update either tokens or ai_credits_remaining based on what's available
+        const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
+        await supabase.from('profiles').update(updateData).eq('id', user.id);
+        
         setProfile({ ...profile, tokens: newTokens });
 
         await supabase.from('ai_usage_logs').insert([{
