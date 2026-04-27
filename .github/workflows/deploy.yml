@@ -49,20 +49,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./dist/
-        server-dir: ./
-
-    - name: 📂 Sync to Production (Dashboard Subdomain)
-      if: github.ref == 'refs/heads/main'
-      run: |
-        # Buat .htaccess khusus untuk folder dashboard agar admin.html jadi index
-        echo "DirectoryIndex admin.html" > ./dist/.htaccess
-      
-    - name: 🚀 Deploy to Dashboard
-      if: github.ref == 'refs/heads/main'
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./dist/
-        server-dir: public_html/dashboard.tokcer-ai.com/
+        server-dir: tokcer-ai.com/
