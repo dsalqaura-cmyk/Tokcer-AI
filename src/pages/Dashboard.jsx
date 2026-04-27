@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [aiSubTab, setAiSubTab] = useState('content');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiFormat, setAiFormat] = useState('TikTok Video');
@@ -436,6 +437,13 @@ const Dashboard = () => {
       const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
       if (session) {
         setUser(session.user);
+        // Fetch profile and tokens
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        if (prof) setProfile(prof);
       } else if (isAdmin) {
         setUser({ email: 'admin@tokcer-ai.com' });
       }
@@ -501,7 +509,7 @@ const Dashboard = () => {
 
   const callDeepSeek = async (systemPrompt, userMessage) => {
     const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
-    if (!apiKey || apiKey === 'your_deepseek_api_key_here') {
+    if (!apiKey || apiKey === 'sk-78f56818cb234d628afe48dac3a4239d') {
       throw new Error('API Key AI Generator belum dikonfigurasi. Silakan isi VITE_DEEPSEEK_API_KEY di file .env Anda.');
     }
     const res = await fetch('https://api.deepseek.com/chat/completions', {
@@ -513,7 +521,7 @@ const Dashboard = () => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
         ],
-        temperature: 0.8,
+        temperature: 0.0,
         max_tokens: 1024,
       })
     });
@@ -526,14 +534,48 @@ const Dashboard = () => {
   };
 
   const handleGenerateAI = async () => {
-    if (!aiPrompt) return;
+    if (!aiPrompt || !user) return;
+    
+    // 1. Check Credits
+    if (!profile || (profile.tokens || 0) < 1) {
+      setAiResult("⚠️ Maaf, sisa token AI Anda habis. Silakan hubungi admin untuk top-up.");
+      return;
+    }
+
     setIsGenerating(true);
     setAiResult('');
-    const systemPrompt = `Kamu adalah Copywriter Senior spesialis e-commerce Indonesia. Tugas kamu membuat konten promosi yang menarik, persuasif, dan sesuai platform. Gunakan Bahasa Indonesia yang natural, tidak kaku. Output HARUS mengikuti format yang diminta user.`;
-    const userMessage = `Buat konten promosi format "${aiFormat}" untuk produk berikut:\n\n${aiPrompt}\n\nSertakan: Hook yang menarik, Body (penjelasan produk), dan CTA yang kuat.`;
+
     try {
-      const result = await callDeepSeek(systemPrompt, userMessage);
+      // 2. Fetch RAG Config from Supabase
+      const { data: config } = await supabase
+        .from('ai_configs')
+        .select('*')
+        .eq('type', 'generator')
+        .single();
+
+      const systemPrompt = config?.system_prompt || `Kamu adalah Copywriter Senior spesialis e-commerce Indonesia. Gunakan Bahasa Indonesia yang natural.`;
+      const ragKnowledge = config?.rag_knowledge_base ? `\n\nGunakan referensi pengetahuan berikut ini untuk menjawab (Strict Knowledge):\n${config.rag_knowledge_base}` : '';
+      
+      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}`;
+      const userMessage = `Buat konten promosi format "${aiFormat}" untuk produk berikut:\n\n${aiPrompt}\n\nSertakan: Hook yang menarik, Body (penjelasan produk), dan CTA yang kuat.`;
+
+      // 3. Call DeepSeek
+      const result = await callDeepSeek(fullSystemPrompt, userMessage);
       setAiResult(result);
+
+      // 4. Update Tokens & Log Usage
+      const newTokens = (profile.tokens || 0) - 1;
+      await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
+      setProfile({ ...profile, tokens: newTokens });
+
+      await supabase.from('ai_usage_logs').insert([{
+        user_id: user.id,
+        prompt: userMessage,
+        response: result,
+        tokens_used: 1,
+        feature: 'content_generator'
+      }]);
+
     } catch (e) {
       setAiResult(`❌ Error: ${e.message}`);
     } finally {
@@ -542,18 +584,48 @@ const Dashboard = () => {
   };
 
   const handleAnalyzeTrend = async () => {
-    if (!trendPrompt) return;
+    if (!trendPrompt || !user) return;
+
+    // 1. Check Credits
+    if (!profile || (profile.tokens || 0) < 1) {
+      setTrendResult("⚠️ Maaf, sisa token AI Anda habis.");
+      return;
+    }
+
     setIsTrendAnalyzing(true);
     setTrendResult('');
-    const systemPrompt = `Kamu adalah Market Research Analyst dan Data Analyst spesialis e-commerce Indonesia. Kamu memiliki pengetahuan mendalam tentang tren belanja online di Shopee, Tokopedia, dan TikTok Shop Indonesia. Berikan analisis yang tajam, berbasis data, dan actionable dalam Bahasa Indonesia.`;
-    const userMessage = `Lakukan analisis Market Trend Radar untuk kategori/niche berikut di Indonesia:\n\n"${trendPrompt}"\n\nBerikan analisis mencakup:\n1. 🔥 Tren Terkini (apa yang sedang viral/naik)
-2. 🎯 Target Demografi Utama
-3. 💡 Top 5 Produk Paling Potensial untuk Dijual
-4. ⚠️ Risiko & Kompetitor yang Perlu Diwaspadai
-5. 🚀 Rekomendasi Strategi Berjualan`;
+
     try {
-      const result = await callDeepSeek(systemPrompt, userMessage);
+      // 2. Fetch RAG Config for Analyst
+      const { data: config } = await supabase
+        .from('ai_configs')
+        .select('*')
+        .eq('type', 'market_analyst')
+        .single();
+
+      const systemPrompt = config?.system_prompt || `Kamu adalah Market Research Analyst spesialis e-commerce Indonesia.`;
+      const ragKnowledge = config?.rag_knowledge_base ? `\n\nPengetahuan tambahan:\n${config.rag_knowledge_base}` : '';
+
+      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}`;
+      const userMessage = `Lakukan analisis Market Trend Radar untuk kategori berikut:\n\n"${trendPrompt}"`;
+
+      // 3. Call DeepSeek
+      const result = await callDeepSeek(fullSystemPrompt, userMessage);
       setTrendResult(result);
+
+      // 4. Update Tokens
+      const newTokens = (profile.tokens || 0) - 1;
+      await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
+      setProfile({ ...profile, tokens: newTokens });
+
+      await supabase.from('ai_usage_logs').insert([{
+        user_id: user.id,
+        prompt: userMessage,
+        response: result,
+        tokens_used: 1,
+        feature: 'market_analyst'
+      }]);
+
     } catch (e) {
       setTrendResult(`❌ Error: ${e.message}`);
     } finally {
@@ -2377,10 +2449,10 @@ const Dashboard = () => {
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-[9px]">
                   <span className="text-zinc-500">{t('aiQuota')}</span>
-                  <span className="text-amber-400 font-semibold">42 / 100</span>
+                  <span className="text-amber-400 font-semibold">{profile?.tokens || 0} / 100</span>
                 </div>
                 <div className="w-full bg-zinc-800/80 rounded-full h-1">
-                  <div className="h-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: '42%'}}></div>
+                  <div className="h-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: `${Math.min(100, (profile?.tokens || 0))}%`}}></div>
                 </div>
               </div>
               <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
