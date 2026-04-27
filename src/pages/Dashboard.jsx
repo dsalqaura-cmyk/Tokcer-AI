@@ -43,6 +43,12 @@ const Dashboard = () => {
   const [supportFilePreview, setSupportFilePreview] = useState(null);
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
   const [supportSubmitted, setSupportSubmitted] = useState(false);
+  
+  // Account Security States
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [securityMessage, setSecurityMessage] = useState({ type: '', text: '' });
 
   const translations = {
     id: {
@@ -53,6 +59,7 @@ const Dashboard = () => {
       aiGenerator: "AI Generator",
       healthScore: "Health Score",
       marketIntel: "Market Intel",
+      accountSecurity: "Keamanan Akun",
       logout: "Keluar",
       overview: "Ringkasan",
       monitorShop: "Pantau performa tokomu detik ini juga.",
@@ -243,6 +250,7 @@ const Dashboard = () => {
       aiGenerator: "AI Generator",
       healthScore: "Health Score",
       marketIntel: "Market Intel",
+      accountSecurity: "Account Security",
       clientApproval: "Dashboard Internal Admin",
       logout: "Sign Out",
       overview: "Overview",
@@ -630,6 +638,31 @@ const Dashboard = () => {
       setTrendResult(`❌ Error: ${e.message}`);
     } finally {
       setIsTrendAnalyzing(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setSecurityMessage({ type: 'error', text: lang === 'id' ? 'Password tidak cocok!' : 'Passwords do not match!' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setSecurityMessage({ type: 'error', text: lang === 'id' ? 'Minimal 6 karakter!' : 'At least 6 characters!' });
+      return;
+    }
+    setIsUpdatingPassword(true);
+    setSecurityMessage({ type: '', text: '' });
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setSecurityMessage({ type: 'success', text: lang === 'id' ? 'Password berhasil diperbarui!' : 'Password updated successfully!' });
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setSecurityMessage({ type: 'error', text: err.message });
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -2324,8 +2357,70 @@ const Dashboard = () => {
             </div>
           </div>
         );
-      case 'tab-support':
-        return renderSupportCenter();
+      case 'tab-account':
+        return (
+          <div className="relative z-10 animate-in fade-in duration-500 max-w-md">
+            <header className="mb-8">
+              <h2 className="text-2xl font-semibold text-white tracking-tight">{t('accountSecurity')}</h2>
+              <p className="text-xs text-zinc-400 mt-1">
+                {lang === 'id' ? 'Atur password Anda untuk akses lebih mudah.' : 'Set your password for easier access.'}
+              </p>
+            </header>
+
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-orange-950/50 flex items-center justify-center border border-orange-900/50">
+                  <iconify-icon icon="solar:lock-password-linear" className="text-xl text-orange-500"></iconify-icon>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">{lang === 'id' ? 'Ubah Password' : 'Change Password'}</h3>
+                  <p className="text-[10px] text-zinc-500">{lang === 'id' ? 'Gunakan kombinasi yang kuat.' : 'Use a strong combination.'}</p>
+                </div>
+              </div>
+
+              {securityMessage.text && (
+                <div className={`p-3 rounded-lg mb-6 text-xs text-center border ${
+                  securityMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-500' : 'bg-rose-500/10 border-rose-500/50 text-rose-500'
+                }`}>
+                  {securityMessage.text}
+                </div>
+              )}
+
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">{t('passwordLabel')} Baru</label>
+                  <input 
+                    type="password" 
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Konfirmasi Password</label>
+                  <input 
+                    type="password" 
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={isUpdatingPassword}
+                  className="w-full bg-orange-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-orange-500 transition-all flex justify-center items-center gap-2"
+                >
+                  {isUpdatingPassword ? <iconify-icon icon="solar:spinner-linear" className="animate-spin text-lg"></iconify-icon> : null}
+                  {isUpdatingPassword ? 'SAVING...' : 'SAVE PASSWORD'}
+                </button>
+              </form>
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -2406,6 +2501,12 @@ const Dashboard = () => {
               className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-market' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
             >
               <iconify-icon icon="solar:global-linear" className="text-lg"></iconify-icon> {t('marketIntel')}
+            </button>
+            <button 
+              onClick={() => { setActiveMenu('tab-account'); setIsSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-account' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
+            >
+              <iconify-icon icon="solar:shield-keyhole-linear" className="text-lg"></iconify-icon> {t('accountSecurity')}
             </button>
           </nav>
         </div>
