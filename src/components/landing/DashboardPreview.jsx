@@ -1,7 +1,65 @@
 import React, { useState } from 'react';
 
+const TIKTOK_MESSAGES = [
+  "AI-nya lagi latian joget pargoy nyari inspirasi hook maut. Biar dia nggak encok pinggang, stopin pakai cara login yuk! 🕺",
+  "Waduh, skrip FYP-nya ngumpet di dalem guling! Katanya malu kalau belum kenal. Tarik keluar pakai tombol daftar yuk! 🛌",
+  "Maaf, mesin perangkai kata kita tertidur pulas dengerin sound JJ (Jedag Jedug) slowmo. Bangunin pakai tombol Register ya! 😴",
+  "Koneksi ke pusat satelit FYP kerasa berat nih. Kayaknya butuh 'tumbal' akun baru. Daftar dulu dong, Kak! 🛸",
+  "Otak AI-nya ngebul kebanyakan mikirin penempatan keranjang kuning. Kasih napas bentar nyeduh kopi sambil Kakak bikin akun ya! ☕",
+  "Skrip ini berpotensi bikin HP Kakak error saking banyaknya notif pesanan. Tanda tangan (register) dulu dong buat asuransinya! 📜",
+  "Lagi sibuk ngelobi algoritma TikTok nih! Biar proposal masuk FYP-nya di-ACC, titip absen (daftar) di sini dulu ya. 💼",
+  "AI-nya insecure, takut dibilang SKSD kalau ngasih naskah ke orang asing. Bikin status kita resmi lewat tombol login yuk! 💍",
+  "Trauma di-ghosting penonton, AI-nya sekarang minta kepastian. Yuk kasih kepastian pakai email Kakak di menu Register! 👻",
+  "Bentar Kak, scriptwriter gaib kita lagi benerin ringlight. Sambil nunggu dia on-camera, mending daftar akun dulu gih! 💡"
+];
+
+const MARKETPLACE_MESSAGES = [
+  "AI-nya lagi sibuk ngegulung bubble wrap mikirin deskripsi produk. Biar kerjanya makin sat-set, Kakak bikin akun dulu gih! 📦",
+  "Takut paket kata-katanya di-retur COD gara-gara alamat pembeli nggak jelas. Tulis alamat (register) dulu yuk Kak di mari! 🚚",
+  "Lagi ngeracik pelet online biar pembeli nggak cuma masukin keranjang doang. Masukin mantra 'Login' dulu yuk biar manjur! 🧙‍♂️",
+  "Maaf, shift penjaga gudang kosa katanya lagi pergantian. Sambil nunggu yang baru dateng, ngisi buku tamu (daftar) dulu ya Kak! 📋",
+  "Wah, ide deskripsi mautnya kejebak macet di lampu merah. Buka jalan tolnya pakai tombol Register yuk! 🚥",
+  "Sistem kita lagi laper, butuh asupan data pendaftaran. Suapin satu akun baru dong Kak, biar dia kuat ngetik deskripsi laris! 🍔",
+  "AI-nya mau tipes kebanyakan mikirin promo gratis ongkir buat Kakak. Biar cepet sembuh, tolong suntik pakai pendaftaran akun baru ya! 💉",
+  "Sistemnya overthinking takut deskripsinya di-copas toko sebelah. Kasih jaminan keamanan pakai cara register dulu yuk! 🔒",
+  "Udah nyiapin karpet merah buat review Bintang 5 nih! Tapi tiket masuk ke venue-nya Kakak harus login dulu ya. 🎟️",
+  "Timbangan cuan kita agak oleng nih. Bantuin seimbangin pakai berat badan akun baru Kakak yuk, tinggal klik daftar! ⚖️"
+];
+
+const INSTAGRAM_MESSAGES = [
+  "Caption-nya lagi maskeran dulu biar hasilnya lebih aesthetic dan glowing. Sambil nunggu kering, Kakak bikin akun yuk! 🥒",
+  "AI kita lagi semedi di pucuk gunung nyari wangsit buat caption jualan Kakak. Panggil pulang pakai tombol Register ya! 🧘‍♂️",
+  "Lagi kena writer's block nih gegara belum ngopi senja. Traktir kopi pakai cara daftar akun yuk, dijamin idenya ngalir deres! 🌅",
+  "Duh, ide caption-nya tutup muka pas disorot kamera. Kayaknya dia butuh temen yang udah punya akun deh buat nemenin. 🥺",
+  "AI-nya lagi ngorek-ngorek gudang nyari hashtag yang belum basi. Bantuin nyenterin pakai tombol Login dong Kak! 🔦",
+  "Sistemnya lagi sibuk ngapus background foto mantan... eh, maksudnya nyiapin caption! Kakak ngisi form daftar dulu aja ya. ✂️",
+  "Biar caption-nya se-cool selebgram centang biru, sistem kita lagi pakai kacamata hitam. Yuk kenalan (daftar) dulu sama si cool ini! 😎",
+  "Lagi pusing misahin emoji api 🔥 sama emoji nangis 😭 buat diselipin di caption. Hibur AI-nya dengan cara bikin akun yuk! 😵‍💫",
+  "Mesin penarik likes-nya lagi mogok kerja minta naik gaji. Sogok pakai pendaftaran akun baru yuk biar mesinnya nyala lagi! 💸",
+  "Caption ini mengandung rahasia dapur persaingan olshop. AI-nya cuma mau bisikin ke member resmi. Daftar yuk buat ikutan ngegosip! 🤫"
+];
+
 const DashboardPreview = () => {
   const [activeTab, setActiveTab] = useState('tab-dash');
+  const [aiFormat, setAiFormat] = useState('TikTok Video');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiResult, setAiResult] = useState('');
+
+  const handleGenerateAI = () => {
+    setIsGenerating(true);
+    setAiResult('');
+    
+    // Simulate thinking
+    setTimeout(() => {
+      let pool = TIKTOK_MESSAGES;
+      if (aiFormat === 'Marketplace') pool = MARKETPLACE_MESSAGES;
+      if (aiFormat === 'Instagram Feed') pool = INSTAGRAM_MESSAGES;
+      
+      const randomMsg = pool[Math.floor(Math.random() * pool.length)];
+      setAiResult(randomMsg);
+      setIsGenerating(false);
+    }, 1500);
+  };
 
   return (
     <div className="w-full bg-zinc-900 rounded-[2rem] border border-zinc-800 shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[42rem] md:h-[42rem]">
@@ -301,26 +359,57 @@ const DashboardPreview = () => {
                   Pilih Format Output
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                  <button className="relative bg-orange-950/30 border-2 border-orange-500 shadow-sm px-4 py-4 rounded-xl text-xs font-medium text-orange-400 flex flex-col items-center justify-center gap-2 transition-all">
+                  <button 
+                    onClick={() => { setAiFormat('TikTok Video'); setAiResult(''); }}
+                    className={`relative px-4 py-4 rounded-xl text-xs font-medium flex flex-col items-center justify-center gap-2 transition-all ${aiFormat === 'TikTok Video' ? 'bg-orange-950/30 border-2 border-orange-500 text-orange-400 shadow-sm' : 'bg-black border border-zinc-800 text-zinc-400 hover:border-orange-500/50 hover:bg-orange-950/20'}`}
+                  >
                     <iconify-icon icon="solar:video-frame-play-horizontal-linear" className="text-2xl"></iconify-icon>
                     TikTok Video
                   </button>
-                  <button className="bg-black border border-zinc-800 hover:border-orange-500/50 hover:bg-orange-950/20 px-4 py-4 rounded-xl text-xs font-medium text-zinc-400 hover:text-orange-400 flex flex-col items-center justify-center gap-2 transition-all">
+                  <button 
+                    onClick={() => { setAiFormat('Marketplace'); setAiResult(''); }}
+                    className={`relative px-4 py-4 rounded-xl text-xs font-medium flex flex-col items-center justify-center gap-2 transition-all ${aiFormat === 'Marketplace' ? 'bg-orange-950/30 border-2 border-orange-500 text-orange-400 shadow-sm' : 'bg-black border border-zinc-800 text-zinc-400 hover:border-orange-500/50 hover:bg-orange-950/20'}`}
+                  >
                     <iconify-icon icon="solar:shop-linear" className="text-2xl"></iconify-icon>
                     Marketplace
                   </button>
-                  <button className="bg-black border border-zinc-800 hover:border-orange-500/50 hover:bg-orange-950/20 px-4 py-4 rounded-xl text-xs font-medium text-zinc-400 hover:text-orange-400 flex flex-col items-center justify-center gap-2 transition-all">
+                  <button 
+                    onClick={() => { setAiFormat('Instagram Feed'); setAiResult(''); }}
+                    className={`relative px-4 py-4 rounded-xl text-xs font-medium flex flex-col items-center justify-center gap-2 transition-all ${aiFormat === 'Instagram Feed' ? 'bg-orange-950/30 border-2 border-orange-500 text-orange-400 shadow-sm' : 'bg-black border border-zinc-800 text-zinc-400 hover:border-orange-500/50 hover:bg-orange-950/20'}`}
+                  >
                     <iconify-icon icon="solar:camera-linear" className="text-2xl"></iconify-icon>
                     Instagram Feed
                   </button>
                 </div>
               </div>
               
-              <button className="w-full bg-orange-600 text-white py-3.5 rounded-xl text-sm font-medium shadow-md hover:bg-orange-500 transition-all hover:shadow-lg active:scale-[0.99] flex justify-center items-center gap-2 border border-orange-500">
-                <iconify-icon icon="solar:magic-stick-3-linear" className="text-lg"></iconify-icon> 
-                Generate Magic Content
+              <button 
+                onClick={handleGenerateAI}
+                disabled={isGenerating}
+                className="w-full bg-orange-600 text-white py-3.5 rounded-xl text-sm font-medium shadow-md hover:bg-orange-500 transition-all hover:shadow-lg active:scale-[0.99] flex justify-center items-center gap-2 border border-orange-500 disabled:opacity-70"
+              >
+                {isGenerating ? (
+                   <><iconify-icon icon="solar:spinner-linear" className="text-lg animate-spin"></iconify-icon> AI lagi nyari wangsit...</>
+                ) : (
+                  <><iconify-icon icon="solar:magic-stick-3-linear" className="text-lg"></iconify-icon> Generate Magic Content</>
+                )}
               </button>
-            </div>
+
+              {aiResult && (
+                <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="flex items-center gap-2 mb-3 text-orange-500 text-[10px] font-black uppercase tracking-widest">
+                    <iconify-icon icon="solar:stars-bold" className="text-sm"></iconify-icon>
+                    Hasil Generate
+                  </div>
+                  <p className="text-sm text-zinc-300 leading-relaxed italic">
+                    "{aiResult}"
+                  </p>
+                  <div className="mt-4 pt-4 border-t border-zinc-800/50 flex flex-col sm:flex-row gap-3">
+                    <button onClick={() => window.location.href='#pricing'} className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Daftar Sekarang</button>
+                    <button onClick={() => window.location.href='#pricing'} className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Lihat Paket Premium</button>
+                  </div>
+                </div>
+              )}
           </div>
         )}
 
