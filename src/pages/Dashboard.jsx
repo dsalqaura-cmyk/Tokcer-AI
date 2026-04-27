@@ -1,4 +1,4 @@
-﻿// Last Updated: 2026-04-27 12:20:00 (Trigger Re-deploy)
+// Last Updated: 2026-04-27 12:20:00 (Trigger Re-deploy)
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
@@ -538,7 +538,7 @@ const Dashboard = () => {
     
     // 1. Check Credits
     if (!profile || (profile.tokens || 0) < 1) {
-      setAiResult("ΓÜá∩╕Å Maaf, sisa token AI Anda habis. Silakan hubungi admin untuk top-up.");
+      setAiResult("⚠️ Maaf, sisa token AI Anda habis. Silakan hubungi admin untuk top-up.");
       return;
     }
 
@@ -577,7 +577,7 @@ const Dashboard = () => {
       }]);
 
     } catch (e) {
-      setAiResult(`Γ¥î Error: ${e.message}`);
+      setAiResult(`❌ Error: ${e.message}`);
     } finally {
       setIsGenerating(false);
     }
@@ -588,7 +588,7 @@ const Dashboard = () => {
 
     // 1. Check Credits
     if (!profile || (profile.tokens || 0) < 1) {
-      setTrendResult("ΓÜá∩╕Å Maaf, sisa token AI Anda habis.");
+      setTrendResult("⚠️ Maaf, sisa token AI Anda habis.");
       return;
     }
 
@@ -627,7 +627,7 @@ const Dashboard = () => {
       }]);
 
     } catch (e) {
-      setTrendResult(`Γ¥î Error: ${e.message}`);
+      setTrendResult(`❌ Error: ${e.message}`);
     } finally {
       setIsTrendAnalyzing(false);
     }
@@ -1017,7 +1017,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Omzet Hari Ini ΓÇö enhanced with profit */}
+              {/* Omzet Hari Ini — enhanced with profit */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-orange-500/30 transition-colors">
                 <div className="text-xs font-medium text-zinc-400 mb-2">{t('omzetToday')}</div>
                 <div className="text-2xl font-semibold text-white tracking-tight">Rp 4.25M</div>
@@ -1223,7 +1223,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                           <div className="text-xs font-medium text-white">{trx.item}</div>
-                          <div className="text-[10px] text-zinc-500 font-mono">{trx.id} ΓÇó {trx.platform}</div>
+                          <div className="text-[10px] text-zinc-500 font-mono">{trx.id} • {trx.platform}</div>
                         </div>
                       </div>
                       <div className="text-xs font-medium text-white">{trx.price}</div>
@@ -1612,11 +1612,11 @@ const Dashboard = () => {
                 <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-6">{t('marketPulseIdeas')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</div>
                 <div className="flex-1 space-y-4">
                   <div className="p-4 bg-orange-600/10 border border-orange-500/20 rounded-xl">
-                    <div className="text-xs font-bold text-orange-500 mb-1">≡ƒöÑ {t('hotIdea')}</div>
+                    <div className="text-xs font-bold text-orange-500 mb-1">🔥 {t('hotIdea')}</div>
                     <p className="text-[11px] text-zinc-300 leading-relaxed">{t('hotIdeaDesc')}</p>
                   </div>
                   <div className="p-4 bg-zinc-800 rounded-xl border border-zinc-700">
-                    <div className="text-xs font-bold text-white mb-1">≡ƒÆí {t('contentTip')}</div>
+                    <div className="text-xs font-bold text-white mb-1">💡 {t('contentTip')}</div>
                     <p className="text-[11px] text-zinc-400 leading-relaxed">{t('contentTipDesc')}</p>
                   </div>
                 </div>
@@ -1762,7 +1762,7 @@ const Dashboard = () => {
                 <p className="text-3xl font-bold text-white">{hd.score}<span className="text-base text-zinc-500 font-normal">/100</span></p>
                 <p className="text-xs text-zinc-400 mt-1">
                   {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
-                  {hd.score >= 90 ? (lang === 'id' ? ' ┬╖ Sangat Baik ≡ƒÅå' : ' ┬╖ Excellent ≡ƒÅå') : hd.score >= 80 ? (lang === 'id' ? ' ┬╖ Baik Γ£à' : ' ┬╖ Good Γ£à') : (lang === 'id' ? ' ┬╖ Perlu Perhatian ΓÜá∩╕Å' : ' ┬╖ Needs Attention ΓÜá∩╕Å')}
+                  {hd.score >= 90 ? (lang === 'id' ? ' · Sangat Baik 🏆' : ' · Excellent 🏆') : hd.score >= 80 ? (lang === 'id' ? ' · Baik ✅' : ' · Good ✅') : (lang === 'id' ? ' · Perlu Perhatian ⚠️' : ' · Needs Attention ⚠️')}
                 </p>
               </div>
             </div>
@@ -1811,7 +1811,7 @@ const Dashboard = () => {
               <p className="text-sm text-zinc-400 mt-1">{t('aiDesc')}</p>
             </header>
 
-            {/* Sub-tab: Content only ΓÇö Trend Radar moved to Market Intel */}
+            {/* Sub-tab: Content only — Trend Radar moved to Market Intel */}
             <div className="flex gap-2 mb-8 bg-black border border-zinc-800 rounded-xl p-1 w-fit">
               <button
                 onClick={() => { setAiSubTab('content'); setAiResult(''); }}
@@ -2037,13 +2037,13 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h3 className="text-base font-semibold text-white">{t('trendRadarAI')}</h3>
-                  <p className="text-[10px] text-zinc-500">Sample data ΓÇö powered by AI Market Intelligence</p>
+                  <p className="text-[10px] text-zinc-500">Sample data — powered by AI Market Intelligence</p>
                 </div>
               </div>
 
               {/* Manual Search Input */}
               <div className="mb-5">
-                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">≡ƒöì {lang === 'id' ? 'Cari Kategori / Niche Manual' : 'Search Custom Category / Niche'}</div>
+                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">🔍 {lang === 'id' ? 'Cari Kategori / Niche Manual' : 'Search Custom Category / Niche'}</div>
                 <div className="flex gap-2">
                   <div className={`flex-1 flex items-center gap-2 bg-black border rounded-xl px-3 py-2.5 transition-all ${
                     isSearchingTrend ? 'border-indigo-500/50 ring-1 ring-indigo-500/30' : 'border-zinc-800 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/30'
@@ -2105,11 +2105,11 @@ const Dashboard = () => {
               {/* Sample Category Pills */}
               <div className="flex flex-wrap gap-2 mb-5">
                 {[
-                  { key: 'running', label: '≡ƒæƒ Sepatu Lari' },
-                  { key: 'skincare', label: 'Γ£¿ Skincare Pria' },
-                  { key: 'thrifting', label: '≡ƒæö Outfit Thrifting' },
-                  { key: 'gadget', label: '≡ƒÄ« Gadget Gaming' },
-                  { key: 'supplement', label: '≡ƒÆè Suplemen Kesehatan' },
+                  { key: 'running', label: '👟 Sepatu Lari' },
+                  { key: 'skincare', label: '✨ Skincare Pria' },
+                  { key: 'thrifting', label: '👔 Outfit Thrifting' },
+                  { key: 'gadget', label: '🎮 Gadget Gaming' },
+                  { key: 'supplement', label: '💊 Suplemen Kesehatan' },
                 ].map(({ key, label }) => (
                   <button
                     key={key}
@@ -2136,16 +2136,16 @@ const Dashboard = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-orange-600/10 border border-orange-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">≡ƒöÑ Tren Terkini</p>
+                        <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">🔥 Tren Terkini</p>
                         <p className="text-sm text-zinc-200">Kategori <strong className="text-white">{query}</strong> menunjukkan pertumbuhan signifikan di marketplace Indonesia. Permintaan meningkat terutama di TikTok Shop & Shopee dalam 3 bulan terakhir.</p>
                       </div>
                       <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">≡ƒÄ» Target Demografi</p>
-                        <p className="text-sm text-zinc-200">Segmen utama berusia 18ΓÇô35 tahun, aktif di media sosial. Perilaku pembelian didorong oleh konten video dan ulasan produk autentik.</p>
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">🎯 Target Demografi</p>
+                        <p className="text-sm text-zinc-200">Segmen utama berusia 18–35 tahun, aktif di media sosial. Perilaku pembelian didorong oleh konten video dan ulasan produk autentik.</p>
                       </div>
                     </div>
                     <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">≡ƒÆí Top 5 Produk Potensial</p>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">💡 Top 5 Produk Potensial</p>
                       <div className="space-y-1.5">
                         {[
                           `1. Produk ${query} varian terlaris (best-seller)`,
@@ -2160,11 +2160,11 @@ const Dashboard = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-rose-600/10 border border-rose-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">ΓÜá∩╕Å Risiko</p>
+                        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">⚠️ Risiko</p>
                         <p className="text-sm text-zinc-200">Persaingan harga ketat dari penjual lain. Pastikan diferensiasi produk melalui kualitas, packaging, atau layanan purna jual yang unggul.</p>
                       </div>
                       <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">≡ƒÜÇ Strategi</p>
+                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">🚀 Strategi</p>
                         <p className="text-sm text-zinc-200">Manfaatkan konten video TikTok untuk edukasi produk. Aktifkan program Flash Sale Shopee di akhir pekan. Optimalkan foto produk untuk SEO marketplace.</p>
                       </div>
                     </div>
@@ -2179,39 +2179,39 @@ const Dashboard = () => {
               {trendSampleKey && (() => {
                 const sampleData = {
                   running: {
-                    trend: '≡ƒöÑ Naik 35% di TikTok Shop. Kategori lari outdoor & trail running jadi favorit.',
-                    demo: '≡ƒÄ» Pria 18-35 thn, komunitas lari, gym-goer. Aktif di TikTok & Shopee.',
+                    trend: '🔥 Naik 35% di TikTok Shop. Kategori lari outdoor & trail running jadi favorit.',
+                    demo: '🎯 Pria 18-35 thn, komunitas lari, gym-goer. Aktif di TikTok & Shopee.',
                     top5: ['1. Sepatu Trail Running ringan', '2. Insole anti-blister', '3. Kaus kaki kompresi', '4. Sepatu road running wanita', '5. Sandal recovery post-run'],
-                    risk: 'ΓÜá∩╕Å Banyak seller baru masuk, margin tipis di Shopee. Fokus diferensiasi di TikTok.',
-                    strategy: '≡ƒÜÇ Buat konten "Before & After" performa lari. Kolaborasi micro-influencer komunitas lari.',
+                    risk: '⚠️ Banyak seller baru masuk, margin tipis di Shopee. Fokus diferensiasi di TikTok.',
+                    strategy: '🚀 Buat konten "Before & After" performa lari. Kolaborasi micro-influencer komunitas lari.',
                   },
                   skincare: {
-                    trend: '≡ƒöÑ Tren pria makin peduli kulit. Produk moisturizer & sunscreen pria naik 28%.',
-                    demo: '≡ƒÄ» Pria 20-40 thn, pekerja kantoran & mahasiswa. Aktif di TikTok & Instagram.',
+                    trend: '🔥 Tren pria makin peduli kulit. Produk moisturizer & sunscreen pria naik 28%.',
+                    demo: '🎯 Pria 20-40 thn, pekerja kantoran & mahasiswa. Aktif di TikTok & Instagram.',
                     top5: ['1. Moisturizer ringan SPF30', '2. Serum Vitamin C pria', '3. Facial wash oil control', '4. Toner eksfoliasi', '5. Eye cream anti-kantung'],
-                    risk: 'ΓÜá∩╕Å Brand Korea masih dominasi. Perlu keunggulan harga atau formula lokal yang terbukti.',
-                    strategy: '≡ƒÜÇ Konten edukasi "skincare routine pria 3 langkah" sangat viral. Bundling starter kit.',
+                    risk: '⚠️ Brand Korea masih dominasi. Perlu keunggulan harga atau formula lokal yang terbukti.',
+                    strategy: '🚀 Konten edukasi "skincare routine pria 3 langkah" sangat viral. Bundling starter kit.',
                   },
                   thrifting: {
-                    trend: '≡ƒöÑ "Vintage aesthetic" & "Y2K fashion" masih kuat. Pencarian naik 40% di Tokopedia.',
-                    demo: '≡ƒÄ» Gen Z 16-25 thn, mahasiswa. Budget sensitif tapi fashion-conscious.',
+                    trend: '🔥 "Vintage aesthetic" & "Y2K fashion" masih kuat. Pencarian naik 40% di Tokopedia.',
+                    demo: '🎯 Gen Z 16-25 thn, mahasiswa. Budget sensitif tapi fashion-conscious.',
                     top5: ['1. Kemeja flanel vintage', '2. Jaket denim second', '3. Celana cargo oversize', '4. Kaos band retro', '5. Bucket hat & aksesoris retro'],
-                    risk: 'ΓÜá∩╕Å Kualitas tidak konsisten bisa bikin return tinggi. Foto produk harus sangat detail.',
-                    strategy: '≡ƒÜÇ "GRWM thrift haul" di TikTok paling efektif. Live selling malam hari boost konversi.',
+                    risk: '⚠️ Kualitas tidak konsisten bisa bikin return tinggi. Foto produk harus sangat detail.',
+                    strategy: '🚀 "GRWM thrift haul" di TikTok paling efektif. Live selling malam hari boost konversi.',
                   },
                   gadget: {
-                    trend: '≡ƒöÑ Gaming mobile & PC peripheral naik 22%. Aksesori HP gaming paling dicari.',
-                    demo: '≡ƒÄ» Pria 15-28 thn, gamer & content creator. Loyal brand tapi price-sensitive.',
+                    trend: '🔥 Gaming mobile & PC peripheral naik 22%. Aksesori HP gaming paling dicari.',
+                    demo: '🎯 Pria 15-28 thn, gamer & content creator. Loyal brand tapi price-sensitive.',
                     top5: ['1. Controller gamepad Bluetooth', '2. Cooling fan HP gaming', '3. Headset gaming under 300k', '4. Stand HP lipat portabel', '5. Power bank 20.000mAh fast charge'],
-                    risk: 'ΓÜá∩╕Å Produk KW banyak beredar, reputasi toko krusial. Garansi jadi pembeda utama.',
-                    strategy: '≡ƒÜÇ Review & unboxing di YouTube Shorts + TikTok. Bundle dengan aksesoris relevan.',
+                    risk: '⚠️ Produk KW banyak beredar, reputasi toko krusial. Garansi jadi pembeda utama.',
+                    strategy: '🚀 Review & unboxing di YouTube Shorts + TikTok. Bundle dengan aksesoris relevan.',
                   },
                   supplement: {
-                    trend: '≡ƒöÑ Kesadaran kesehatan post-COVID masih tinggi. Vitamin C, D & Omega-3 paling populer.',
-                    demo: '≡ƒÄ» Semua usia, terutama 25-50 thn. Wanita lebih dominan sebagai pembeli keluarga.',
+                    trend: '🔥 Kesadaran kesehatan post-COVID masih tinggi. Vitamin C, D & Omega-3 paling populer.',
+                    demo: '🎯 Semua usia, terutama 25-50 thn. Wanita lebih dominan sebagai pembeli keluarga.',
                     top5: ['1. Vitamin C 1000mg effervescent', '2. Multivitamin anak', '3. Kolagen minuman', '4. Probiotik digestive', '5. Suplemen mata lutein'],
-                    risk: 'ΓÜá∩╕Å Regulasi BPOM ketat. Pastikan semua produk terdaftar. Klaim berlebihan bisa kena suspend.',
-                    strategy: '≡ƒÜÇ Konten edukasi manfaat vs testimoni. Bundling paket keluarga meningkatkan AOV.',
+                    risk: '⚠️ Regulasi BPOM ketat. Pastikan semua produk terdaftar. Klaim berlebihan bisa kena suspend.',
+                    strategy: '🚀 Konten edukasi manfaat vs testimoni. Bundling paket keluarga meningkatkan AOV.',
                   },
                 };
                 const d = sampleData[trendSampleKey];
@@ -2219,16 +2219,16 @@ const Dashboard = () => {
                   <div className="space-y-4 border-t border-zinc-800 pt-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-orange-600/10 border border-orange-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">≡ƒöÑ Tren Terkini</p>
+                        <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">🔥 Tren Terkini</p>
                         <p className="text-sm text-zinc-200">{d.trend}</p>
                       </div>
                       <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">≡ƒÄ» Target Demografi</p>
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">🎯 Target Demografi</p>
                         <p className="text-sm text-zinc-200">{d.demo}</p>
                       </div>
                     </div>
                     <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">≡ƒÆí Top 5 Produk Potensial</p>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">💡 Top 5 Produk Potensial</p>
                       <div className="space-y-1.5">
                         {d.top5.map((item, i) => (
                           <p key={i} className="text-sm text-zinc-200">{item}</p>
@@ -2237,11 +2237,11 @@ const Dashboard = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-rose-600/10 border border-rose-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">ΓÜá∩╕Å Risiko</p>
+                        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">⚠️ Risiko</p>
                         <p className="text-sm text-zinc-200">{d.risk}</p>
                       </div>
                       <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">≡ƒÜÇ Strategi</p>
+                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">🚀 Strategi</p>
                         <p className="text-sm text-zinc-200">{d.strategy}</p>
                       </div>
                     </div>
@@ -2444,7 +2444,7 @@ const Dashboard = () => {
                     <p className="text-xs font-bold text-amber-300 leading-none">{t('ultimatePlan')}</p>
                   </div>
                 </div>
-                <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">Γ£ô {t('active')}</span>
+                <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">✓ {t('active')}</span>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-[9px]">
