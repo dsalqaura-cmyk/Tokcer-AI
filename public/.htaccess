@@ -6,14 +6,14 @@
   DirectoryIndex index.html admin.html
 
   # 2. KHUSUS SUBDOMAIN DASHBOARD (dashboard.tokcer-ai.com & dashboardstaging.tokcer-ai.com)
-  # Jika akses datang dari dashboard subdomain, PAKSA ke admin.html
+  # Jika akses datang dari dashboard subdomain, PAKSA ke rute /admin
   RewriteCond %{HTTP_HOST} ^(dashboard|dashboardstaging)\.tokcer-ai\.com$ [NC]
-  RewriteRule ^$ admin.html [L]
+  RewriteRule ^$ /admin [L,R=301]
   
   RewriteCond %{HTTP_HOST} ^(dashboard|dashboardstaging)\.tokcer-ai\.com$ [NC]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^(.*)$ admin.html [L]
+  RewriteRule ^(.*)$ index.html [L]
 
   # 3. UNTUK DOMAIN UTAMA (tokcer-ai.com / staging.tokcer-ai.com)
   # Pastikan tetap di index.html dan dukung React Router (SPA)
