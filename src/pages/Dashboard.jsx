@@ -2262,12 +2262,12 @@ const Dashboard = () => {
                     ]).map((t, i) => (
                       <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl animate-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color_class || 'text-zinc-400'}`}>
+                          <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color_class || (t.platform === 'TikTok' ? 'text-zinc-300' : t.platform === 'Shopee' ? 'text-orange-500' : 'text-teal-400')}`}>
                             <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : t.platform === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'}></iconify-icon>
                           </div>
                           <div>
                             <div className="text-xs font-bold text-white">{t.topic}</div>
-                            <div className="text-[10px] text-zinc-500">{t.platform} Trends</div>
+                            <div className="text-[10px] text-zinc-500 capitalize">{t.platform} Trends</div>
                           </div>
                         </div>
                         <div className="text-xs font-black text-emerald-500">{t.trend_percent}</div>
