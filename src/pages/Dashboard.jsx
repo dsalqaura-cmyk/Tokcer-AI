@@ -453,7 +453,8 @@ const Dashboard = () => {
           .single();
         if (prof) setProfile(prof);
       } else if (isAdmin) {
-        setUser({ email: 'admin@tokcer-ai.com' });
+        setUser({ email: 'admin@tokcer-ai.com', id: 'admin-bypass' });
+        setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
       }
     };
     getUser();
@@ -544,8 +545,9 @@ const Dashboard = () => {
   const handleGenerateAI = async () => {
     if (!aiPrompt || !user) return;
     
-    // 1. Check Credits
-    if (!profile || (profile.tokens || 0) < 1) {
+    // 1. Check Credits (Bypass for Admin)
+    const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+    if (!isAdmin && (!profile || (profile.tokens || 0) < 1)) {
       setAiResult("⚠️ Maaf, sisa token AI Anda habis. Silakan hubungi admin untuk top-up.");
       return;
     }
@@ -571,18 +573,20 @@ const Dashboard = () => {
       const result = await callDeepSeek(fullSystemPrompt, userMessage);
       setAiResult(result);
 
-      // 4. Update Tokens & Log Usage
-      const newTokens = (profile.tokens || 0) - 1;
-      await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
-      setProfile({ ...profile, tokens: newTokens });
+      // 4. Update Tokens & Log Usage (Only for non-admin)
+      if (!isAdmin) {
+        const newTokens = (profile.tokens || 0) - 1;
+        await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
+        setProfile({ ...profile, tokens: newTokens });
 
-      await supabase.from('ai_usage_logs').insert([{
-        user_id: user.id,
-        prompt: userMessage,
-        response: result,
-        tokens_used: 1,
-        feature: 'content_generator'
-      }]);
+        await supabase.from('ai_usage_logs').insert([{
+          user_id: user.id,
+          prompt: userMessage,
+          response: result,
+          tokens_used: 1,
+          feature: 'content_generator'
+        }]);
+      }
 
     } catch (e) {
       setAiResult(`❌ Error: ${e.message}`);
@@ -594,8 +598,9 @@ const Dashboard = () => {
   const handleAnalyzeTrend = async () => {
     if (!trendPrompt || !user) return;
 
-    // 1. Check Credits
-    if (!profile || (profile.tokens || 0) < 1) {
+    // 1. Check Credits (Bypass for Admin)
+    const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+    if (!isAdmin && (!profile || (profile.tokens || 0) < 1)) {
       setTrendResult("⚠️ Maaf, sisa token AI Anda habis.");
       return;
     }
@@ -621,18 +626,20 @@ const Dashboard = () => {
       const result = await callDeepSeek(fullSystemPrompt, userMessage);
       setTrendResult(result);
 
-      // 4. Update Tokens
-      const newTokens = (profile.tokens || 0) - 1;
-      await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
-      setProfile({ ...profile, tokens: newTokens });
+      // 4. Update Tokens (Only for non-admin)
+      if (!isAdmin) {
+        const newTokens = (profile.tokens || 0) - 1;
+        await supabase.from('profiles').update({ tokens: newTokens }).eq('id', user.id);
+        setProfile({ ...profile, tokens: newTokens });
 
-      await supabase.from('ai_usage_logs').insert([{
-        user_id: user.id,
-        prompt: userMessage,
-        response: result,
-        tokens_used: 1,
-        feature: 'market_analyst'
-      }]);
+        await supabase.from('ai_usage_logs').insert([{
+          user_id: user.id,
+          prompt: userMessage,
+          response: result,
+          tokens_used: 1,
+          feature: 'market_analyst'
+        }]);
+      }
 
     } catch (e) {
       setTrendResult(`❌ Error: ${e.message}`);
