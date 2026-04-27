@@ -55,6 +55,11 @@ const Dashboard = () => {
   const [liveSummary, setLiveSummary] = useState(null);
   const [isFetchingTrends, setIsFetchingTrends] = useState(false);
 
+  // Operational States (Inventory & Orders)
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [isFetchingOperational, setIsFetchingOperational] = useState(false);
+
   const translations = {
     id: {
       dashboard: "Dashboard",
@@ -469,6 +474,9 @@ const Dashboard = () => {
         if (metadata?.platforms && metadata?.store_links) {
             await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
         }
+
+        // FETCH OPERATIONAL DATA
+        fetchOperationalData(session.user.id);
       } else if (isAdmin) {
         setUser({ email: 'admin@tokcer-ai.com', id: 'admin-bypass' });
         setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
@@ -500,6 +508,52 @@ const Dashboard = () => {
         } catch (err) {
             console.error("AutoConnect Error:", err);
         }
+    };
+
+    const fetchOperationalData = async (userId) => {
+        setIsFetchingOperational(true);
+        try {
+            // Fetch Products
+            const { data: prodData } = await supabase
+                .from('products')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+            if (prodData) setProducts(prodData);
+
+            // Fetch Orders
+            const { data: ordData } = await supabase
+                .from('orders')
+                .select('*')
+                .eq('user_id', userId)
+                .order('order_date', { ascending: false });
+            if (ordData) setOrders(ordData);
+        } catch (err) {
+            console.error("Fetch Operational Error:", err);
+        } finally {
+            setIsFetchingOperational(false);
+        }
+    };
+
+    const getPlatformStats = () => {
+        const stats = {
+            tiktok: { revenue: 0, orders: 0 },
+            shopee: { revenue: 0, orders: 0 },
+            tokopedia: { revenue: 0, orders: 0 },
+            other: { revenue: 0, orders: 0 }
+        };
+        
+        orders.forEach(o => {
+            const p = (o.platform || 'other').toLowerCase();
+            if (stats[p]) {
+                stats[p].revenue += Number(o.total_amount || 0);
+                stats[p].orders += 1;
+            } else {
+                stats.other.revenue += Number(o.total_amount || 0);
+                stats.other.orders += 1;
+            }
+        });
+        return stats;
     };
 
     getUser();
@@ -1024,23 +1078,29 @@ const Dashboard = () => {
     switch (activeMenu) {
       case 'tab-admin': return renderAdminApproval();
       case 'tab-dash': {
-        // Dynamic dummy data based on time filter
-        let estimasiProfit = "Rp 42.120.000";
-        let estimasiOmzet = "Rp 128.450.000";
+        // REAL DATA CALCULATION
+        let totalRevenue = 0;
+        const now = new Date();
         
         if (timeFilter === 'Hari Ini') {
-          estimasiProfit = "Rp 1.400.000";
-          estimasiOmzet = "Rp 4.250.000";
-        } else if (timeFilter === '1 Bulan Terakhir') {
-          estimasiProfit = "Rp 40.500.000";
-          estimasiOmzet = "Rp 120.000.000";
-        } else if (timeFilter === '2 Bulan Terakhir') {
-          estimasiProfit = "Rp 78.000.000";
-          estimasiOmzet = "Rp 230.500.000";
-        } else if (timeFilter === '3 Bulan Terakhir') {
-          estimasiProfit = "Rp 115.200.000";
-          estimasiOmzet = "Rp 340.800.000";
+          const today = now.toISOString().split('T')[0];
+          totalRevenue = orders.filter(o => o.order_date.startsWith(today)).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+        } else if (timeFilter === 'Bulan Ini') {
+          const thisMonth = now.getMonth();
+          const thisYear = now.getFullYear();
+          totalRevenue = orders.filter(o => {
+            const d = new Date(o.order_date);
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+          }).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+        } else if (timeFilter.includes('Bulan Terakhir')) {
+          const months = parseInt(timeFilter);
+          const cutoff = new Date();
+          cutoff.setMonth(cutoff.getMonth() - months);
+          totalRevenue = orders.filter(o => new Date(o.order_date) >= cutoff).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
         }
+
+        const estimasiOmzet = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
+        const estimasiProfit = `Rp ${(totalRevenue * 0.2).toLocaleString('id-ID')}`; // 20% estimated margin
 
         return (
           <div className="relative z-10 space-y-6">
@@ -1116,42 +1176,6 @@ const Dashboard = () => {
               </div>
             </header>
             
-            {/* Row 1: Top Metrics Grid (4 columns) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Live Visitors */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-emerald-500/30 transition-colors">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs font-medium text-zinc-400">{t('visitors')}</div>
-                  <div className="flex h-2 w-2 rounded-full bg-emerald-500 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <iconify-icon icon="ri:tiktok-fill" className="text-white text-lg"></iconify-icon>
-                      <span className="text-[10px] text-zinc-400">TikTok Live</span>
-                    </div>
-                    <div className="text-lg font-semibold text-white tracking-tight">842</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <iconify-icon icon="ri:instagram-fill" className="text-pink-500 text-lg"></iconify-icon>
-                      <span className="text-[10px] text-zinc-400">Insta Live</span>
-                    </div>
-                    <div className="text-lg font-semibold text-white tracking-tight">398</div>
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-zinc-800 flex justify-between items-center">
-                  <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">Total</span>
-                  <span className="text-xs font-bold text-emerald-500">1,240</span>
-                </div>
-              </div>
-
-              {/* Omzet Hari Ini — enhanced with profit */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-orange-500/30 transition-colors">
-                <div className="text-xs font-medium text-zinc-400 mb-2">{t('omzetToday')}</div>
-                <div className="text-2xl font-semibold text-white tracking-tight">Rp 4.25M</div>
                 <div className="text-[10px] text-orange-500 mt-1 flex items-center gap-1">
                   <iconify-icon icon="solar:arrow-up-linear"></iconify-icon> +12% {t('vsYesterday')}
                 </div>
@@ -1202,94 +1226,117 @@ const Dashboard = () => {
                     <div className="text-xs font-medium text-zinc-400 mb-1">{t('totOmzet')} ({t(timeFilter)})</div>
                     <div className="text-xl font-semibold text-zinc-300">{estimasiOmzet}</div>
                   </div>
-                </div>
+            {/* Row 1: Top Metrics Grid (4 columns) */}
+            {(() => {
+                const today = new Date().toISOString().split('T')[0];
+                const todayOrders = orders.filter(o => o.order_date.startsWith(today));
+                const todayRev = todayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+                const totalRev = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+                const healthScore = products.length > 0 
+                    ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
+                    : 100;
 
+                return (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {/* Revenue Card */}
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-orange-500/30 transition-colors">
+                      <div className="text-xs font-medium text-zinc-400 mb-2">{t('revenue')}</div>
+                      <div className="text-2xl font-semibold text-white tracking-tight">Rp {totalRev.toLocaleString('id-ID')}</div>
+                      <div className="mt-3 pt-3 border-t border-zinc-800">
+                        <div className="text-[10px] text-zinc-500 mb-1">{t('revenueToday')}</div>
+                        <div className="text-base font-semibold text-orange-500">Rp {todayRev.toLocaleString('id-ID')}</div>
+                      </div>
+                    </div>
 
-                {/* Combined Bar + Line Chart */}
+                    {/* Profit Card */}
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-emerald-500/30 transition-colors">
+                      <div className="text-xs font-medium text-zinc-400 mb-2">Est. Profit</div>
+                      <div className="text-2xl font-semibold text-white tracking-tight">Rp {(totalRev * 0.2).toLocaleString('id-ID')}</div>
+                      <div className="mt-3 pt-3 border-t border-zinc-800">
+                        <div className="text-[10px] text-zinc-500 mb-1">Profit Hari Ini</div>
+                        <div className="text-base font-semibold text-emerald-400">Rp {(todayRev * 0.2).toLocaleString('id-ID')}</div>
+                      </div>
+                    </div>
+
+                    {/* Conversion Rate Card */}
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-blue-500/30 transition-colors">
+                      <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
+                      <div className="text-2xl font-semibold text-white tracking-tight">3.8%</div>
+                      <div className="mt-3 pt-3 border-t border-zinc-800 flex items-center justify-between">
+                        <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">Status</span>
+                        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Good</span>
+                      </div>
+                    </div>
+
+                    {/* Shop Health Card */}
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-rose-500/30 transition-colors">
+                      <div className="text-xs font-medium text-zinc-400 mb-2">Shop Health</div>
+                      <div className="text-2xl font-semibold text-white tracking-tight">{healthScore}%</div>
+                      <div className="mt-3 pt-3 border-t border-zinc-800 flex items-center justify-between">
+                        <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">Stock</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${healthScore < 100 ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                          {healthScore < 100 ? 'Alert' : 'Safe'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+            })()}
                 {(() => {
-                  const chartData = {
-                    'Hari Ini': {
-                      labels: ['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00'],
-                      omzet:   [15, 28, 45, 60, 72, 100, 88, 65],
-                      profit:  [10, 18, 28, 38, 45,  62, 55, 40],
-                    },
-                    'Bulan Ini': {
-                      labels: lang === 'id' ? ['Mg 1','Mg 2','Mg 3','Mg 4'] : ['Wk 1','Wk 2','Wk 3','Wk 4'],
-                      omzet:   [45, 70, 85, 100],
-                      profit:  [28, 42, 55,  62],
-                    },
-                    '1 Bulan Terakhir': {
-                      labels: lang === 'id' ? ['Mg 1','Mg 2','Mg 3','Mg 4'] : ['Wk 1','Wk 2','Wk 3','Wk 4'],
-                      omzet:   [60, 80, 75, 90],
-                      profit:  [35, 50, 45, 56],
-                    },
-                    '2 Bulan Terakhir': {
-                      labels: lang === 'id' ? ['Bln 1','Bln 2'] : ['Mo 1','Mo 2'],
-                      omzet:   [80, 100],
-                      profit:  [48,  62],
-                    },
-                    '3 Bulan Terakhir': {
-                      labels: lang === 'id' ? ['Jan','Feb','Mar'] : ['Jan','Feb','Mar'],
-                      omzet:   [70, 85, 100],
-                      profit:  [42, 52,  62],
-                    },
-                  };
-                  const data = chartData[timeFilter] || chartData['Bulan Ini'];
-                  const maxVal = Math.max(...data.omzet, 100);
-                  const n = data.labels.length;
-                  const W = 400; const H = 140; const pad = 16;
-                  const colW = (W - pad * 2) / n;
-                  const barW = colW * 0.45;
-                  const toY = (v) => pad + (1 - v / maxVal) * (H - pad * 2);
-                  // line path
-                  const pts = data.profit.map((v, i) => [
-                    pad + i * colW + colW / 2,
-                    toY(v)
-                  ]);
-                  const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
-                  const areaPath = linePath + ` L${pts[n-1][0].toFixed(1)},${H-pad} L${pts[0][0].toFixed(1)},${H-pad} Z`;
+                  // Real Daily Data Aggregation (Last 7 Days)
+                  const labels = [];
+                  const dailyOmzet = [];
+                  const dailyProfit = [];
+                  
+                  for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    const dateStr = d.toISOString().split('T')[0];
+                    labels.push(d.toLocaleDateString('id-ID', { weekday: 'short' }));
+                    
+                    const dayOrders = orders.filter(o => o.order_date.startsWith(dateStr));
+                    const revenue = dayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+                    dailyOmzet.push(revenue / 1000); // in K
+                    dailyProfit.push((revenue * 0.2) / 1000); // 20% margin in K
+                  }
+
+                  const maxVal = Math.max(...dailyOmzet, 100);
+                  
                   return (
-                    <div className="bg-black border border-zinc-800 rounded-xl p-3 flex-1 mt-auto">
-                      {/* Legend */}
-                      <div className="flex items-center gap-4 mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-sm bg-orange-600"></div>
-                          <span className="text-[10px] text-zinc-400">{t('revenueLabel')}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-6 h-0.5 bg-emerald-400"></div>
-                          <span className="text-[10px] text-zinc-400">{t('profitLabel')}</span>
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm mb-8">
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
+                            <iconify-icon icon="solar:chart-square-bold" className="text-orange-500"></iconify-icon>
+                            {t('revenueTrend')}
+                          </h3>
+                          <p className="text-[10px] text-zinc-500 mt-1">Data penjualan harian (Ribu Rupiah)</p>
                         </div>
                       </div>
-                      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:'130px'}}>
-                        {/* Grid lines */}
-                        {[0.25,0.5,0.75].map(f => (
-                          <line key={f} x1={pad} y1={toY(maxVal*f)} x2={W-pad} y2={toY(maxVal*f)}
-                            stroke="#3f3f46" strokeWidth="0.5" strokeDasharray="4,4" />
+                      
+                      <div className="h-64 flex items-end justify-between gap-2 px-2 relative">
+                        {/* Y-Axis labels */}
+                        <div className="absolute -left-2 inset-y-0 flex flex-col justify-between text-[8px] text-zinc-600 font-mono py-2">
+                          <span>{Math.round(maxVal)}k</span>
+                          <span>{Math.round(maxVal/2)}k</span>
+                          <span>0</span>
+                        </div>
+
+                        {dailyOmzet.map((val, i) => (
+                          <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                            {/* Omzet Bar */}
+                            <div 
+                              className="w-full max-w-[30px] bg-zinc-800 rounded-t-lg group-hover:bg-orange-600 transition-all duration-500 relative"
+                              style={{ height: `${(val / maxVal) * 100}%` }}
+                            >
+                              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black border border-zinc-800 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                                Rp {Math.round(val)}k
+                              </div>
+                            </div>
+                            <span className="text-[10px] text-zinc-500 mt-3 font-medium">{labels[i]}</span>
+                          </div>
                         ))}
-                        {/* Bars */}
-                        {data.omzet.map((v, i) => {
-                          const x = pad + i * colW + (colW - barW) / 2;
-                          const y = toY(v);
-                          const h = H - pad - y;
-                          return <rect key={i} x={x} y={y} width={barW} height={h}
-                            fill={v === Math.max(...data.omzet) ? '#ea580c' : '#7c2d12'}
-                            rx="3" opacity="0.85" />;
-                        })}
-                        {/* Area under profit line */}
-                        <path d={areaPath} fill="#10b981" opacity="0.1" />
-                        {/* Profit line */}
-                        <path d={linePath} fill="none" stroke="#34d399" strokeWidth="1.5" strokeLinejoin="round" />
-                        {/* Profit dots */}
-                        {pts.map((p, i) => (
-                          <circle key={i} cx={p[0]} cy={p[1]} r="3" fill="#34d399" stroke="#000" strokeWidth="1" />
-                        ))}
-                        {/* X-axis labels */}
-                        {data.labels.map((lb, i) => (
-                          <text key={i} x={pad + i * colW + colW / 2} y={H - 1}
-                            textAnchor="middle" fontSize="8" fill="#71717a">{lb}</text>
-                        ))}
-                      </svg>
+                      </div>
                     </div>
                   );
                 })()}
@@ -1503,35 +1550,31 @@ const Dashboard = () => {
                   <div className="col-span-2 text-right">{t('amount')}</div>
                   <div className="col-span-2 text-right">{t('status')}</div>
                 </div>
-                <div className="divide-y divide-zinc-800">
-                  <div className="grid grid-cols-12 gap-4 p-4 items-center text-sm text-zinc-400 hover:bg-zinc-800 transition-colors group">
-                    <div className="col-span-2 font-mono text-xs text-zinc-500">#TK-9921</div>
-                    <div className="col-span-4 font-medium text-white truncate">Sepatu Sneakers A1</div>
-                    <div className="col-span-2 flex items-center gap-1.5"><iconify-icon icon="ri:tiktok-fill" className="text-zinc-300"></iconify-icon> TikTok</div>
-                    <div className="col-span-2 text-right text-white">Rp 350.000</div>
-                    <div className="col-span-2 text-right flex justify-end">
-                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-950/50 text-emerald-500 border border-emerald-900/50">{t('done')}</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-12 gap-4 p-4 items-center text-sm text-zinc-400 hover:bg-zinc-800 transition-colors group">
-                    <div className="col-span-2 font-mono text-xs text-zinc-500">#SP-8834</div>
-                    <div className="col-span-4 font-medium text-white truncate">Kaos Polos Premium</div>
-                    <div className="col-span-2 flex items-center gap-1.5"><iconify-icon icon="simple-icons:shopee" className="text-orange-500"></iconify-icon> Shopee</div>
-                    <div className="col-span-2 text-right text-white">Rp 120.000</div>
-                    <div className="col-span-2 text-right flex justify-end">
-                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-amber-950/50 text-amber-500 border border-amber-900/50">{t('processing')}</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-12 gap-4 p-4 items-center text-sm text-zinc-400 hover:bg-zinc-800 transition-colors group">
-                    <div className="col-span-2 font-mono text-xs text-zinc-500">#TP-7712</div>
-                    <div className="col-span-4 font-medium text-white truncate">Jaket Hoodie Urban</div>
-                    <div className="col-span-2 flex items-center gap-1.5"><iconify-icon icon="solar:shop-2-linear" className="text-teal-400"></iconify-icon> Tokopedia</div>
-                    <div className="col-span-2 text-right text-white">Rp 450.000</div>
-                    <div className="col-span-2 text-right flex justify-end">
-                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-950/50 text-emerald-500 border border-emerald-900/50">{t('done')}</span>
-                    </div>
-                  </div>
-                </div>
+                <tbody className="divide-y divide-zinc-800">
+                {orders.length > 0 ? orders.map((trx, idx) => (
+                  <tr key={trx.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                    <td className="py-4 text-xs font-mono text-zinc-500 uppercase">{trx.order_number}</td>
+                    <td className="py-4 text-sm font-medium text-white">{trx.customer_name || 'Customer'}</td>
+                    <td className="py-4 text-xs text-zinc-400 capitalize">{trx.platform}</td>
+                    <td className="py-4 text-sm font-bold text-white">Rp {trx.total_amount?.toLocaleString('id-ID')}</td>
+                    <td className="py-4">
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        trx.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' : 
+                        trx.status === 'pending' ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-500/10 text-blue-500'
+                      }`}>
+                        {trx.status}
+                      </span>
+                    </td>
+                    <td className="py-4 text-xs text-zinc-500">
+                      {new Date(trx.order_date).toLocaleDateString('id-ID')}
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="6" className="py-20 text-center text-zinc-600 italic">Belum ada riwayat transaksi.</td>
+                  </tr>
+                )}
+              </tbody>
               </div>
             </div>
           </div>
@@ -1556,26 +1599,26 @@ const Dashboard = () => {
                   <div className="col-span-2 text-right">{t('status')}</div>
                 </div>
                 <div className="divide-y divide-zinc-800">
-                  {[
-                    { name: 'Sepatu Sneakers A1', sku: 'SS-A1-BLU', stock: 142, status: t('optimal'), statusColor: 'text-orange-500' },
-                    { name: 'Kaos Polos Premium', sku: 'KP-PRM-BLK', stock: 12, status: t('runningLow'), statusColor: 'text-amber-500' },
-                    { name: 'Jaket Hoodie Urban', sku: 'JH-URB-GRY', stock: 0, status: t('outOfStock'), statusColor: 'text-rose-500' }
-                  ].map((p, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-4 p-4 items-center text-sm text-zinc-400 hover:bg-zinc-800/50 transition-colors">
+                  {products.length > 0 ? products.map((p, i) => (
+                    <div key={p.id} className="grid grid-cols-12 gap-4 p-4 items-center text-sm text-zinc-400 hover:bg-zinc-800/50 transition-colors">
                       <div className="col-span-5 flex items-center gap-3 md:gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-orange-500 transition-colors border border-zinc-700 shrink-0"><iconify-icon icon="solar:sneakers-linear" className="text-xl"></iconify-icon></div>
+                        <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-orange-500 transition-colors border border-zinc-700 shrink-0">
+                          <iconify-icon icon="solar:box-linear" className="text-xl"></iconify-icon>
+                        </div>
                         <span className="font-medium text-white truncate">{p.name}</span>
                       </div>
-                      <div className="col-span-3 text-zinc-500 font-mono text-xs bg-zinc-800 w-fit px-2 py-1 rounded border border-zinc-700 truncate">{p.sku}</div>
+                      <div className="col-span-3 text-zinc-500 font-mono text-xs bg-zinc-800 w-fit px-2 py-1 rounded border border-zinc-700 truncate">{p.sku || 'NO-SKU'}</div>
                       <div className="col-span-2 text-right text-white">{p.stock}</div>
                       <div className="col-span-2 text-right flex justify-end">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] md:text-xs font-medium uppercase tracking-wider shrink-0 ${p.status === t('optimal') ? 'bg-orange-950/50 text-orange-500 border border-orange-900/50' : p.status === t('runningLow') ? 'bg-amber-950/50 text-amber-500 border border-amber-900/50' : 'bg-rose-950/50 text-rose-500 border border-rose-900/50'}`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${p.status === t('optimal') ? 'bg-orange-500' : p.status === t('runningLow') ? 'bg-amber-500 animate-pulse' : 'bg-rose-500'}`}></div> 
-                          {p.status}
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] md:text-xs font-medium uppercase tracking-wider shrink-0 ${p.stock > 10 ? 'bg-orange-950/50 text-orange-500 border border-orange-900/50' : 'bg-rose-950/50 text-rose-500 border border-rose-900/50'}`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${p.stock > 10 ? 'bg-orange-500' : 'bg-rose-500 animate-pulse'}`}></div> 
+                          {p.stock > 10 ? t('optimal') : t('runningLow')}
                         </span>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="p-10 text-center text-zinc-600 italic">Belum ada data produk.</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1655,20 +1698,6 @@ const Dashboard = () => {
 
             {/* Platform Comparison Cards - Only show if 'all' is selected, or show single platform detail */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(analyticsPlatform === 'all' ? [
-                { name: 'TikTok Shop', revenue: 'Rp 52.4M', orders: 1240, color: 'text-zinc-300', icon: 'ri:tiktok-fill', trend: '+12.5%' },
-                { name: 'Shopee', revenue: 'Rp 48.2M', orders: 1180, color: 'text-orange-500', icon: 'simple-icons:shopee', trend: '+8.2%' },
-                { name: 'Tokopedia', revenue: 'Rp 32.1M', orders: 840, color: 'text-teal-400', icon: 'solar:shop-2-linear', trend: '-2.4%' },
-              ] : [
-                analyticsPlatform === 'TikTok' ? { name: 'TikTok Shop', revenue: 'Rp 52.4M', orders: 1240, color: 'text-zinc-300', icon: 'ri:tiktok-fill', trend: '+12.5%' } :
-                analyticsPlatform === 'Shopee' ? { name: 'Shopee', revenue: 'Rp 48.2M', orders: 1180, color: 'text-orange-500', icon: 'simple-icons:shopee', trend: '+8.2%' } :
-                { name: 'Tokopedia', revenue: 'Rp 32.1M', orders: 840, color: 'text-teal-400', icon: 'solar:shop-2-linear', trend: '-2.4%' }
-              ]).map((p, i) => (
-                <div key={i} className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm ${analyticsPlatform !== 'all' ? 'md:col-span-3' : ''}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center ${p.color}`}>
-                      <iconify-icon icon={p.icon} className="text-xl"></iconify-icon>
-                    </div>
                     <div className="flex flex-col items-end">
                       <span className={`text-xs font-bold ${p.trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{p.trend}</span>
                       <span className="text-[9px] text-zinc-500 uppercase tracking-tighter">Growth</span>
@@ -1764,31 +1793,6 @@ const Dashboard = () => {
                 <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center">
                   <iconify-icon icon="solar:globus-linear" className="text-white"></iconify-icon>
                 </div>
-                <h3 className="text-lg font-semibold text-white">{t('priceOpt')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</h3>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <p className="text-sm text-zinc-400 leading-relaxed">
-                    {t('priceOptDesc')}
-                  </p>
-                  <div className="space-y-3">
-                    {[
-                      { item: 'Sepatu Sneakers A1', current: 'Rp 350k', rec: 'Rp 375k', reason: t('demandTikTok'), action: t('increase') + ' 7%' },
-                      { item: 'Kaos Polos Premium', current: 'Rp 120k', rec: 'Rp 115k', reason: t('competitionShopee'), action: t('decrease') + ' 4%' },
-                      { item: 'Jaket Hoodie Urban', current: 'Rp 450k', rec: 'Rp 450k', reason: t('optimalPrice'), action: t('maintain') },
-                    ].map((r, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-black border border-zinc-800 rounded-xl">
-                        <div>
-                          <div className="text-xs font-medium text-white">{r.item}</div>
-                          <div className="text-[10px] text-zinc-500 mt-1">{r.reason}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs font-bold text-orange-500">{r.rec}</div>
-                          <div className={`text-[10px] ${r.action.includes('Naik') || r.action.includes('Inc') ? 'text-emerald-500' : r.action.includes('Turun') || r.action.includes('Dec') ? 'text-rose-500' : 'text-zinc-500'}`}>{r.action}</div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
                 
