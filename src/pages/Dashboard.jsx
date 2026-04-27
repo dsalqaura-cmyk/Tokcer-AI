@@ -50,6 +50,11 @@ const Dashboard = () => {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [securityMessage, setSecurityMessage] = useState({ type: '', text: '' });
 
+  // Market Intel Dynamic States
+  const [viralTopics, setViralTopics] = useState([]);
+  const [liveSummary, setLiveSummary] = useState(null);
+  const [isFetchingTrends, setIsFetchingTrends] = useState(false);
+
   const translations = {
     id: {
       dashboard: "Dashboard",
@@ -705,6 +710,32 @@ const Dashboard = () => {
       setTrendResult(`❌ Error: ${e.message}`);
     } finally {
       setIsTrendAnalyzing(false);
+    }
+  };
+
+  const fetchGlobalMarketTrends = async () => {
+    if (viralTopics.length > 0 || isFetchingTrends) return;
+    setIsFetchingTrends(true);
+    try {
+      const bizType = profile?.business_type || 'General E-commerce';
+      const systemPrompt = `You are a Market Trend Scout. Provide 3 viral topics and a short live summary for the "${bizType}" category in Indonesia. 
+      Format: JSON object with keys: "topics" (array of {topic, platform, trend_percent, color_class}), "summary" (string).`;
+      
+      const result = await callDeepSeek(systemPrompt, "Fetch current viral trends for " + bizType);
+      const cleanJson = result.replace(/```json|```/g, '').trim();
+      const data = JSON.parse(cleanJson);
+      
+      if (data.topics) setViralTopics(data.topics);
+      if (data.summary) setLiveSummary(data.summary);
+    } catch (e) {
+      console.error("Fetch Trends Error:", e);
+      // Fallback
+      setViralTopics([
+        { topic: 'Local Pride Brand', platform: 'TikTok', trend_percent: '+120%', color_class: 'text-orange-500' },
+        { topic: 'Budget Skincare', platform: 'Shopee', trend_percent: '+88%', color_class: 'text-pink-500' }
+      ]);
+    } finally {
+      setIsFetchingTrends(false);
     }
   };
 
@@ -2020,6 +2051,8 @@ const Dashboard = () => {
           </div>
         );
       case 'tab-market':
+        // Trigger fetch on load
+        if (viralTopics.length === 0) fetchGlobalMarketTrends();
         return (
           <div className="relative z-10 space-y-6">
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -2222,14 +2255,14 @@ const Dashboard = () => {
                     <span className="text-[10px] text-zinc-500 font-mono">LIVE FEED</span>
                   </div>
                   <div className="space-y-4">
-                    {[
-                      { topic: 'Old Money Aesthetic', platform: 'TikTok', trend: '+142%', color: 'text-zinc-300' },
-                      { topic: 'Skincare Barrier Repair', platform: 'Shopee', trend: '+85%', color: 'text-orange-500' },
-                      { topic: 'Eco-friendly Home Living', platform: 'Tokopedia', trend: '+64%', color: 'text-teal-400' },
-                    ].map((t, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl">
+                    {(viralTopics.length > 0 ? viralTopics : [
+                      { topic: 'Old Money Aesthetic', platform: 'TikTok', trend_percent: '+142%', color_class: 'text-zinc-300' },
+                      { topic: 'Skincare Barrier Repair', platform: 'Shopee', trend_percent: '+85%', color_class: 'text-orange-500' },
+                      { topic: 'Eco-friendly Home Living', platform: 'Tokopedia', trend_percent: '+64%', color_class: 'text-teal-400' },
+                    ]).map((t, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl animate-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color}`}>
+                          <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color_class || 'text-zinc-400'}`}>
                             <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : t.platform === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'}></iconify-icon>
                           </div>
                           <div>
@@ -2237,7 +2270,7 @@ const Dashboard = () => {
                             <div className="text-[10px] text-zinc-500">{t.platform} Trends</div>
                           </div>
                         </div>
-                        <div className="text-xs font-black text-emerald-500">{t.trend}</div>
+                        <div className="text-xs font-black text-emerald-500">{t.trend_percent}</div>
                       </div>
                     ))}
                   </div>
@@ -2264,9 +2297,9 @@ const Dashboard = () => {
                       </div>
                       <p className="text-[11px] text-indigo-300 font-bold mb-1 uppercase tracking-wider">{t('aiSummary')}</p>
                       <p className="text-xs text-zinc-300 leading-relaxed italic">
-                        {lang === 'id' 
-                          ? '"Produk kategori Home & Living mengalami kenaikan volume pencarian 3x lipat menjelang akhir pekan. Rekomendasi: Fokus pada keyword \'minimalist\' dan \'aesthetic\'."'
-                          : '"Home & Living category products saw a 3x increase in search volume leading into the weekend. Recommendation: Focus on \'minimalist\' and \'aesthetic\' keywords."'
+                        {liveSummary || (lang === 'id' 
+                          ? '"Menganalisis tren pasar terbaru untuk bisnis Anda..." '
+                          : '"Analyzing latest market trends for your business..." ')
                         }
                       </p>
                     </div>
