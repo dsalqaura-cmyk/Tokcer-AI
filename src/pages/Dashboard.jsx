@@ -948,14 +948,22 @@ const Dashboard = () => {
   };
 
   const handleDownloadReport = () => {
-    // Generate simple CSV content for Excel
+    if (orders.length === 0) {
+      alert("Belum ada data untuk diunduh.");
+      return;
+    }
+
+    // Generate CSV from real orders data
     const csvRows = [
       ['Order ID', 'Produk Terjual', 'Platform', 'Nominal (Rp)', 'Status', 'Tanggal'],
-      ['#TK-9921', 'Sepatu Sneakers A1', 'TikTok', '350000', 'Selesai', '2023-10-24'],
-      ['#SP-8834', 'Kaos Polos Premium', 'Shopee', '120000', 'Dikirim', '2023-10-24'],
-      ['#TP-7712', 'Jaket Hoodie Urban', 'Tokopedia', '450000', 'Selesai', '2023-10-23'],
-      ['#TK-9920', 'Topi Baseball Hitam', 'TikTok', '85000', 'Selesai', '2023-10-23'],
-      ['#SP-8833', 'Kemeja Flannel Pria', 'Shopee', '180000', 'Selesai', '2023-10-22'],
+      ...orders.map(o => [
+        o.order_number || o.id,
+        o.customer_name || 'Customer',
+        o.platform || 'N/A',
+        o.total_amount || 0,
+        o.status || 'N/A',
+        o.order_date || 'N/A'
+      ])
     ];
 
     const csvContent = "data:text/csv;charset=utf-8," 
@@ -964,7 +972,7 @@ const Dashboard = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "Laporan_Omzet_TokcerAI.csv");
+    link.setAttribute("download", `Laporan_Omzet_TokcerAI_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
