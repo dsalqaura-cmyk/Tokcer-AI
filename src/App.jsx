@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -51,6 +51,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route 
@@ -77,7 +78,6 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
