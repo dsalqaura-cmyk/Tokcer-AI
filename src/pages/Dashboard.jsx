@@ -512,44 +512,8 @@ const Dashboard = () => {
   const t = (key) => translations[lang][key] || key;
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
-      
-      if (session) {
-        setUser(session.user);
-        // Fetch profile and tokens
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (prof) {
-            // Support both 'tokens' and 'ai_credits_remaining'
-            const activeTokens = prof.tokens !== undefined ? prof.tokens : prof.ai_credits_remaining;
-            setProfile({ ...prof, tokens: activeTokens });
-        }
-
-        // AUTO-CONNECT STORES FROM METADATA
-        const metadata = session.user.user_metadata;
-        if (metadata?.platforms && metadata?.store_links) {
-            await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
-        }
-
-        // FETCH OPERATIONAL DATA
-        fetchOperationalData(session.user.id);
-      } else if (isAdmin) {
-        setUser({ email: 'admin@tokcer-ai.com', id: 'admin-bypass' });
-        setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
-        fetchOperationalData('admin-bypass');
-      }
-    };
-
     const autoConnectStores = async (userId, platforms, links) => {
         try {
-            // Check if already connected
             const { data: existing } = await supabase
                 .from('marketplace_connections')
                 .select('id')
@@ -557,7 +521,6 @@ const Dashboard = () => {
             
             if (existing && existing.length > 0) return;
 
-            // Create connections
             const connections = platforms.map(plat => ({
                 user_id: userId,
                 platform: plat.toLowerCase(),
@@ -574,65 +537,10 @@ const Dashboard = () => {
         }
     };
 
-    const handleImportOrders = async (data) => {
-        if (!user || data.length === 0) return;
-        
-        setIsFetchingOperational(true);
-        try {
-            const formattedData = data.map(item => ({
-                user_id: user.id,
-                order_number: item.order_number,
-                customer_name: item.customer_name,
-                platform: item.platform,
-                total_amount: Number(item.total_amount || 0),
-                status: item.status || 'completed',
-                order_date: item.order_date || new Date().toISOString()
-            }));
-
-            const { error } = await supabase.from('orders').insert(formattedData);
-            if (error) throw error;
-            
-            alert(`✅ Berhasil mengimpor ${data.length} transaksi!`);
-            fetchOperationalData(user.id);
-        } catch (err) {
-            console.error("Import Error:", err);
-            alert("❌ Gagal mengimpor data. Pastikan format CSV benar.");
-        } finally {
-            setIsFetchingOperational(false);
-        }
-    };
-
-    const handleImportProducts = async (data) => {
-        if (!user || data.length === 0) return;
-        
-        setIsFetchingOperational(true);
-        try {
-            const formattedData = data.map(item => ({
-                user_id: user.id,
-                name: item.name,
-                sku: item.sku,
-                stock: Number(item.stock || 0),
-                price: Number(item.price || 0),
-                description: item.description || ''
-            }));
-
-            const { error } = await supabase.from('products').insert(formattedData);
-            if (error) throw error;
-            
-            alert(`✅ Berhasil mengimpor ${data.length} produk ke katalog!`);
-            fetchOperationalData(user.id);
-        } catch (err) {
-            console.error("Import Error:", err);
-            alert("❌ Gagal mengimpor produk. Pastikan format CSV benar.");
-        } finally {
-            setIsFetchingOperational(false);
-        }
-    };
-
     const fetchOperationalData = async (userId) => {
+        if (!userId) return;
         setIsFetchingOperational(true);
         try {
-            // Admin sees everything, users see only their data
             let prodQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
             let ordQuery = supabase.from('orders').select('*').order('order_date', { ascending: false });
 
@@ -663,71 +571,82 @@ const Dashboard = () => {
         }
     };
 
-    const getPlatformStats = () => {
-        const stats = {
-            tiktok: { revenue: 0, orders: 0 },
-            shopee: { revenue: 0, orders: 0 },
-            tokopedia: { revenue: 0, orders: 0 },
-            other: { revenue: 0, orders: 0 }
-        };
-        
-        orders.forEach(o => {
-            const p = (o.platform || 'other').toLowerCase();
-            if (stats[p]) {
-                stats[p].revenue += Number(o.total_amount || 0);
-                stats[p].orders += 1;
-            } else {
-                stats.other.revenue += Number(o.total_amount || 0);
-                stats.other.orders += 1;
-            }
-        });
-        return stats;
-    };
-
-    const callDeepSeek = async (system, prompt) => {
-        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer sk-34bbe3cdd5664996a4777f4e6c21aba0'
-            },
-            body: JSON.stringify({
-                model: "deepseek-chat",
-                messages: [
-                    { role: "system", content: system },
-                    { role: "user", content: prompt }
-                ],
-                temperature: 0.2
-            })
-        });
-        const data = await response.json();
-        return data.choices[0].message.content;
-    };
-
-    const fetchTrends = async () => {
-        setIsFetchingTrends(true);
+    const handleImportOrders = async (data) => {
+        if (!user || data.length === 0) return;
+        setIsFetchingOperational(true);
         try {
-            const bizType = profile?.business_type || 'E-commerce';
-            const systemPrompt = "You are an AI Market Analyst for Tokcer AI. Return ONLY a JSON object with 'topics' (array of 3 objects with topic, platform, trend_percent, color_class) and 'summary' (object with summary, risk, strategy).";
-            const result = await callDeepSeek(systemPrompt, "Fetch current viral trends for " + bizType);
-            const data = JSON.parse(result.replace(/```json|```/g, '').trim());
-            if (data.topics) setViralTopics(data.topics);
-            if (data.summary) setLiveSummary(data.summary);
-        } catch (e) { console.error(e); }
-        finally { setIsFetchingTrends(false); }
+            const formattedData = data.map(item => ({
+                user_id: user.id === 'admin-bypass' ? null : user.id,
+                order_number: item.order_number,
+                customer_name: item.customer_name,
+                platform: item.platform,
+                total_amount: Number(item.total_amount || 0),
+                status: item.status || 'completed',
+                order_date: item.order_date || new Date().toISOString()
+            }));
+
+            const { error } = await supabase.from('orders').insert(formattedData);
+            if (error) throw error;
+            
+            alert(`✅ Berhasil mengimpor ${data.length} transaksi!`);
+            fetchOperationalData(user.id);
+        } catch (err) {
+            console.error("Import Error:", err);
+            alert("❌ Gagal mengimpor data. Pastikan format CSV benar.");
+        } finally {
+            setIsFetchingOperational(false);
+        }
     };
 
-    const handleGenerate = async () => {
-        if (!aiPrompt) return;
-        setIsGenerating(true);
+    const handleImportProducts = async (data) => {
+        if (!user || data.length === 0) return;
+        setIsFetchingOperational(true);
         try {
-            const systemPrompt = `You are an expert ${aiFormat} writer for Tokcer AI.`;
-            const result = await callDeepSeek(systemPrompt, aiPrompt);
-            setAiResult(result);
-        } catch (e) { console.error(e); }
-        finally { setIsGenerating(false); }
+            const formattedData = data.map(item => ({
+                user_id: user.id === 'admin-bypass' ? null : user.id,
+                name: item.name,
+                sku: item.sku,
+                stock: Number(item.stock || 0),
+                price: Number(item.price || 0),
+                description: item.description || ''
+            }));
+
+            const { error } = await supabase.from('products').insert(formattedData);
+            if (error) throw error;
+            
+            alert(`✅ Berhasil mengimpor ${data.length} produk ke katalog!`);
+            fetchOperationalData(user.id);
+        } catch (err) {
+            console.error("Import Error:", err);
+            alert("❌ Gagal mengimpor produk. Pastikan format CSV benar.");
+        } finally {
+            setIsFetchingOperational(false);
+        }
     };
 
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+      
+      if (session) {
+        setUser(session.user);
+        const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (prof) {
+            const activeTokens = prof.tokens !== undefined ? prof.tokens : prof.ai_credits_remaining;
+            setProfile({ ...prof, tokens: activeTokens });
+        }
+        const metadata = session.user.user_metadata;
+        if (metadata?.platforms && metadata?.store_links) {
+            await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
+        }
+        fetchOperationalData(session.user.id);
+      } else if (isAdmin) {
+        setUser({ email: 'admin@tokcer-ai.com', id: 'admin-bypass' });
+        setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
+        fetchOperationalData('admin-bypass');
+      }
+    };
     getUser();
   }, []);
 

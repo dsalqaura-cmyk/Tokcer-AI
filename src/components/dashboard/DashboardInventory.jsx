@@ -6,6 +6,8 @@ const DashboardInventory = ({
   setShowProductModal,
   handleImportProducts
 }) => {
+  const safeProducts = Array.isArray(products) ? products : [];
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -72,7 +74,7 @@ const DashboardInventory = ({
               <div className="col-span-2 text-right">{t('status')}</div>
             </div>
             <div className="divide-y divide-zinc-800/50">
-              {products.length > 0 ? products.map((p) => (
+              {safeProducts.length > 0 ? safeProducts.map((p) => (
                 <div key={p.id} className="grid grid-cols-12 gap-4 p-5 items-center text-sm text-zinc-400 hover:bg-zinc-800/30 transition-all group">
                   <div className="col-span-5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-orange-500 group-hover:border-orange-500/30 transition-all border border-zinc-700 shrink-0">

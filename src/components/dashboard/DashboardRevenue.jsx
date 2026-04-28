@@ -14,10 +14,14 @@ const DashboardRevenue = ({
   handleDownloadReport,
   handleImportOrders
 }) => {
+  // --- SAFETY CHECKS ---
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const safeTimeFilter = omzetTimeFilter || 'all';
+
   // --- REAL DATA CALCULATIONS ---
   const filteredByPlatform = platformFilter === 'all' 
-    ? orders 
-    : orders.filter(o => (o.platform || '').toLowerCase() === platformFilter.toLowerCase());
+    ? safeOrders 
+    : safeOrders.filter(o => (o.platform || '').toLowerCase() === platformFilter.toLowerCase());
 
   const getFilteredByTime = (data, filter) => {
     const today = new Date();
@@ -37,7 +41,7 @@ const DashboardRevenue = ({
     return data;
   };
 
-  const finalOrders = getFilteredByTime(filteredByPlatform, omzetTimeFilter);
+  const finalOrders = getFilteredByTime(filteredByPlatform, safeTimeFilter);
   const totalIncome = finalOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const activeOrdersCount = finalOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length;
   
@@ -115,7 +119,7 @@ const DashboardRevenue = ({
               className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-700 transition-colors w-full justify-between sm:justify-start shadow-sm"
             >
               <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon>
-              {omzetTimeFilter === 'all' ? t('omzetFilterAll') : t(`omzetFilter${omzetTimeFilter.charAt(0).toUpperCase() + omzetTimeFilter.slice(1)}`) || omzetTimeFilter}
+              {safeTimeFilter === 'all' ? t('omzetFilterAll') : (t(`omzetFilter${safeTimeFilter.charAt(0).toUpperCase() + safeTimeFilter.slice(1)}`) || safeTimeFilter)}
               <iconify-icon icon={showOmzetTimeDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="text-zinc-500"></iconify-icon>
             </div>
             {showOmzetTimeDropdown && (
