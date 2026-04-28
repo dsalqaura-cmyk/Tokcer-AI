@@ -73,8 +73,8 @@ const PartnerModal = ({ isOpen, onClose }) => {
             <div className="w-12 h-12 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <iconify-icon icon="solar:check-circle-bold" className="text-2xl"></iconify-icon>
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">Pendaftaran Berhasil!</h4>
-            <p className="text-sm text-zinc-400">Tim kami akan segera me-review profil Anda dan menghubungi via WhatsApp dalam 1x24 jam.</p>
+            <h4 className="text-lg font-semibold text-white mb-2">Data Terkirim!</h4>
+            <p className="text-sm text-zinc-400">Terima kasih telah mendaftar. Silakan <strong>cek email Anda</strong> untuk menyetujui Skema Komisi & mengaktifkan akun Partner Anda.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

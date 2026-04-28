@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import PartnerDashboard from './pages/PartnerDashboard';
 import InternalDashboard from './pages/InternalDashboard';
 import AdminLogin from './pages/AdminLogin';
+import PartnerAgreement from './pages/PartnerAgreement';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -76,6 +77,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
