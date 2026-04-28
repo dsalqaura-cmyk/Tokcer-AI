@@ -1055,9 +1055,6 @@ const Dashboard = () => {
             setOmzetTimeFilter={setOmzetTimeFilter}
             showOmzetTimeDropdown={showOmzetTimeDropdown}
             setShowOmzetTimeDropdown={setShowOmzetTimeDropdown}
-            setOmzetTimeFilter={setOmzetTimeFilter}
-            showOmzetTimeDropdown={showOmzetTimeDropdown}
-            setShowOmzetTimeDropdown={setShowOmzetTimeDropdown}
             handleDownloadReport={handleDownloadReport}
             handleImportOrders={handleImportOrders}
           />
