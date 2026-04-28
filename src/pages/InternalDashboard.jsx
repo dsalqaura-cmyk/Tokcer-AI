@@ -52,6 +52,9 @@ const InternalDashboard = ({ onLogout }) => {
   const [aiConfig, setAiConfig] = useState({ system_prompt: '', rag_knowledge_base: '' });
   const [aiLogs, setAiLogs] = useState([]);
   const [partnerApps, setPartnerApps] = useState([]);
+  const [selectedPartnerApp, setSelectedPartnerApp] = useState(null);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [approvalAccount, setApprovalAccount] = useState({ username: '', password: '' });
 
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
   const translations = {
@@ -285,26 +288,41 @@ const InternalDashboard = ({ onLogout }) => {
     }
   };
 
-  const handleApprovePartner = async (app) => {
-    const confirm = window.confirm(`Setujui ${app.nama} sebagai Partner resmi Tokcer AI?`);
-    if (!confirm) return;
+  const handleApproveWithAccount = async () => {
+    if (!selectedPartnerApp || !approvalAccount.username || !approvalAccount.password) {
+      alert("Harap isi username dan password partner!");
+      return;
+    }
 
     setIsLoading(true);
     try {
       const { error } = await supabase
         .from('partner_applications')
-        .update({ status: 'approved' })
-        .eq('id', app.id);
+        .update({ 
+          status: 'approved',
+          approved_username: approvalAccount.username,
+          approved_password: approvalAccount.password
+        })
+        .eq('id', selectedPartnerApp.id);
 
       if (error) throw error;
       
-      alert(`Selamat! ${app.nama} sekarang telah resmi menjadi Partner.`);
+      alert(`Berhasil! Akun untuk ${selectedPartnerApp.nama} telah aktif dan email instruksi telah dikirim.`);
+      setShowApproveModal(false);
+      setApprovalAccount({ username: '', password: '' });
+      setSelectedPartnerApp(null);
       await fetchPartnerApps();
     } catch (err) {
-      alert("Error approving partner: " + err.message);
+      alert("Error: " + err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleApprovePartner = async (app) => {
+    // Legacy function - redirected to the new flow
+    setSelectedPartnerApp(app);
+    setShowApproveModal(true);
   };
 
   useEffect(() => {
@@ -672,13 +690,33 @@ const InternalDashboard = ({ onLogout }) => {
                             <div className="flex items-center justify-end gap-3">
                               {item.status === 'pending' || !item.status ? (
                                 <>
-                                  <button 
-                                    onClick={() => activeAppTab === 'new-partner' ? handleApprovePartner(item) : handleApprove(item)} 
-                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                                  >
-                                    Approve
-                                  </button>
-                                  <button className="px-6 py-2 bg-zinc-800 hover:bg-rose-600 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
+                                  {activeAppTab === 'new-partner' ? (
+                                    <>
+                                      <button 
+                                        onClick={() => setSelectedPartnerApp(item)} 
+                                        className="w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-white hover:text-black rounded-xl border border-zinc-700 transition-all shadow-lg"
+                                        title="Lihat Detail Strategi"
+                                      >
+                                        <iconify-icon icon="solar:eye-bold-duotone" className="text-xl"></iconify-icon>
+                                      </button>
+                                      <button 
+                                        onClick={() => { setSelectedPartnerApp(item); setShowApproveModal(true); }} 
+                                        className="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-amber-600/20 active:scale-95"
+                                      >
+                                        Approve & Setup
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button 
+                                        onClick={() => handleApprove(item)} 
+                                        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                                      >
+                                        Approve
+                                      </button>
+                                      <button className="px-6 py-2 bg-zinc-800 hover:bg-rose-600 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
+                                    </>
+                                  )}
                                 </>
                               ) : (
                                 <span className="text-emerald-500 text-[10px] font-black uppercase px-4 flex items-center gap-2">
@@ -1026,6 +1064,117 @@ const InternalDashboard = ({ onLogout }) => {
             <div className="flex gap-4">
               <button onClick={() => handleApprove(selectedClient)} className="flex-1 py-4 bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl">{t('confirm')}</button>
               <button onClick={() => setShowModal(false)} className="flex-1 py-4 bg-zinc-800 text-zinc-400 font-black uppercase text-[10px] tracking-widest rounded-2xl">{t('cancel')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* MODAL: PARTNER DETAIL & STRATEGY */}
+      {selectedPartnerApp && !showApproveModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="p-8 border-b border-zinc-800 flex justify-between items-center bg-zinc-950/50">
+              <div>
+                <h2 className="text-xl font-black text-white uppercase tracking-tight">Review Strategi Partner</h2>
+                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mt-1">ID: {selectedPartnerApp.id}</p>
+              </div>
+              <button onClick={() => setSelectedPartnerApp(null)} className="text-zinc-500 hover:text-white"><iconify-icon icon="solar:close-circle-bold" className="text-3xl"></iconify-icon></button>
+            </div>
+            <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Nama Partner</p>
+                  <p className="text-white font-bold">{selectedPartnerApp.nama}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Email</p>
+                  <p className="text-white font-bold">{selectedPartnerApp.email}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Niche</p>
+                  <p className="text-amber-500 font-black uppercase">{selectedPartnerApp.niche}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Followers</p>
+                  <p className="text-white font-bold">{selectedPartnerApp.followers}</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-2">Metode Promosi</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedPartnerApp.promo_methods?.map((m, i) => (
+                    <span key={i} className="px-3 py-1 bg-zinc-800 text-zinc-300 text-[10px] font-black uppercase rounded-lg border border-zinc-700">{m}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800">
+                <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <iconify-icon icon="solar:lightbulb-bold-duotone"></iconify-icon>
+                  Strategi Promosi
+                </p>
+                <p className="text-zinc-400 text-sm leading-relaxed italic">"{selectedPartnerApp.promo_strategy}"</p>
+              </div>
+            </div>
+            <div className="p-8 border-t border-zinc-800 bg-zinc-950/50 flex justify-end gap-4">
+              <button onClick={() => setSelectedPartnerApp(null)} className="px-6 py-3 text-zinc-500 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors">Tutup</button>
+              <button 
+                onClick={() => setShowApproveModal(true)} 
+                className="px-8 py-3 bg-amber-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-amber-500 transition-all shadow-xl shadow-amber-600/20"
+              >
+                Lanjut Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ACCOUNT SETUP & APPROVAL */}
+      {showApproveModal && selectedPartnerApp && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[110] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="p-10 text-center border-b border-zinc-800 bg-zinc-950/50">
+              <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-amber-500/20">
+                <iconify-icon icon="solar:shield-user-bold-duotone" className="text-4xl"></iconify-icon>
+              </div>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Setup Akun Partner</h2>
+              <p className="text-zinc-500 text-xs mt-2 font-medium">Berikan akses Dashboard User dengan Tier Ultimate 60 Hari</p>
+            </div>
+            <div className="p-10 space-y-6">
+              <div>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 block">Username Dashboard</label>
+                <input 
+                  type="text" 
+                  value={approvalAccount.username}
+                  onChange={(e) => setApprovalAccount({...approvalAccount, username: e.target.value})}
+                  placeholder="Cth: budipartner" 
+                  className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 text-white text-sm focus:outline-none focus:border-amber-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 block">Password Sementara</label>
+                <input 
+                  type="text" 
+                  value={approvalAccount.password}
+                  onChange={(e) => setApprovalAccount({...approvalAccount, password: e.target.value})}
+                  placeholder="Cth: TokcerPartner123" 
+                  className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 text-white text-sm focus:outline-none focus:border-amber-500 transition-colors"
+                />
+              </div>
+              <div className="bg-amber-600/5 border border-amber-600/20 p-4 rounded-2xl flex items-start gap-3">
+                <iconify-icon icon="solar:info-circle-bold-duotone" className="text-amber-500 text-xl shrink-0"></iconify-icon>
+                <p className="text-[10px] text-amber-500/80 leading-relaxed font-medium">Data ini akan dikirim otomatis ke email <span className="font-black text-amber-500">{selectedPartnerApp.email}</span> setelah Bapak klik tombol di bawah.</p>
+              </div>
+            </div>
+            <div className="p-10 bg-zinc-950/50 flex flex-col gap-3">
+              <button 
+                onClick={handleApproveWithAccount}
+                disabled={isLoading}
+                className="w-full py-5 bg-amber-600 text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl hover:bg-amber-500 transition-all shadow-2xl shadow-amber-600/20 active:scale-95 disabled:opacity-50"
+              >
+                {isLoading ? 'MEMPROSES...' : 'AKTIFKAN & KIRIM EMAIL'}
+              </button>
+              <button onClick={() => setShowApproveModal(false)} className="w-full py-4 text-zinc-500 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors">Batal</button>
             </div>
           </div>
         </div>
