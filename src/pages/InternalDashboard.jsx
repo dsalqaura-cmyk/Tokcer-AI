@@ -51,6 +51,7 @@ const InternalDashboard = ({ onLogout }) => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [aiConfig, setAiConfig] = useState({ system_prompt: '', rag_knowledge_base: '' });
   const [aiLogs, setAiLogs] = useState([]);
+  const [partnerApps, setPartnerApps] = useState([]);
 
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
   const translations = {
@@ -230,6 +231,16 @@ const InternalDashboard = ({ onLogout }) => {
     setIsLoading(false);
   };
 
+  const fetchPartnerApps = async () => {
+    const { data, error } = await supabase
+      .from('partner_applications')
+      .select('*')
+      .eq('status', 'agreed')
+      .order('agreed_at', { ascending: false });
+    
+    if (!error) setPartnerApps(data);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('tokcer_admin_auth');
     navigate('/admin-login');
@@ -274,10 +285,33 @@ const InternalDashboard = ({ onLogout }) => {
     }
   };
 
+  const handleApprovePartner = async (app) => {
+    const confirm = window.confirm(`Setujui ${app.nama} sebagai Partner resmi Tokcer AI?`);
+    if (!confirm) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('partner_applications')
+        .update({ status: 'approved' })
+        .eq('id', app.id);
+
+      if (error) throw error;
+      
+      alert(`Selamat! ${app.nama} sekarang telah resmi menjadi Partner.`);
+      await fetchPartnerApps();
+    } catch (err) {
+      alert("Error approving partner: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchClients();
     fetchAiConfig();
     fetchAiLogs();
+    fetchPartnerApps();
   }, []);
 
   const handleApprove = async (client) => {
@@ -617,7 +651,7 @@ const InternalDashboard = ({ onLogout }) => {
                     <tbody>
                       {(activeAppTab === 'app-subs' 
                         ? adminClients.filter(c => !c.status || c.status.toLowerCase() === 'pending') 
-                        : activeAppTab === 'new-partner' ? MOCK_PARTNERS.filter(p => !p.status || p.status.toLowerCase() === 'pending') 
+                        : activeAppTab === 'new-partner' ? partnerApps 
                         : MOCK_USERS.filter(u => !u.status || u.status.toLowerCase() === 'pending' || u.status.toLowerCase() === 'warning')
                       ).map((item, i) => (
                         <tr key={i} className="bg-zinc-900/30 hover:bg-zinc-800/50 transition-all group">
@@ -638,7 +672,12 @@ const InternalDashboard = ({ onLogout }) => {
                             <div className="flex items-center justify-end gap-3">
                               {item.status === 'pending' || !item.status ? (
                                 <>
-                                  <button onClick={() => { setSelectedClient(item); setShowModal(true); }} className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95">Approve</button>
+                                  <button 
+                                    onClick={() => activeAppTab === 'new-partner' ? handleApprovePartner(item) : handleApprove(item)} 
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                                  >
+                                    Approve
+                                  </button>
                                   <button className="px-6 py-2 bg-zinc-800 hover:bg-rose-600 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
                                 </>
                               ) : (
