@@ -137,7 +137,9 @@ const DashboardAnalytics = ({
              <div className="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm z-20 flex items-center justify-center rounded-2xl">
                 <div className="flex flex-col items-center gap-3">
                    <iconify-icon icon="solar:magic-stick-3-bold-duotone" className="text-4xl text-orange-500 animate-pulse"></iconify-icon>
-                   <p className="text-xs text-zinc-400 font-medium animate-pulse tracking-widest uppercase">DeepSeek Analyzing Business...</p>
+                   <p className="text-xs text-zinc-400 font-medium animate-pulse tracking-widest uppercase">
+                      {lang === 'id' ? 'Menganalisa Performa Bisnis...' : 'Analyzing Business Performance...'}
+                   </p>
                 </div>
              </div>
           )}
@@ -208,7 +210,9 @@ const DashboardAnalytics = ({
             <div className="absolute inset-0 bg-zinc-900/30 backdrop-blur-[2px] z-20 flex items-center justify-center">
                <div className="flex items-center gap-2 bg-black/80 px-4 py-2 rounded-full border border-zinc-800">
                   <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
-                  <span className="text-[10px] text-white font-bold tracking-tighter uppercase">Recalculating Prices...</span>
+                  <span className="text-[10px] text-white font-bold tracking-tighter uppercase">
+                     {lang === 'id' ? 'Menghitung Rekomendasi Harga...' : 'Recalculating Prices...'}
+                  </span>
                </div>
             </div>
         )}

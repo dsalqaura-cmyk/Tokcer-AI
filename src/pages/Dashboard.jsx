@@ -635,9 +635,11 @@ const Dashboard = () => {
             const bizType = profile?.business_type || 'E-commerce';
             const productNames = products.slice(0, 10).map(p => p.name).join(', ');
             const recentOrdersCount = orders.length;
+            const targetLang = lang === 'id' ? 'Bahasa Indonesia' : 'English';
             
             const systemPrompt = `You are a Senior E-commerce Growth Strategist for Tokcer AI. 
             Analyze the user's business (${bizType}) and their products: [${productNames}]. 
+            Respond strictly in ${targetLang}.
             Provide actionable strategy in JSON format.
             Keys: 
             "ads_opt": { "golden_hours": string, "strategy": string },
