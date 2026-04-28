@@ -73,6 +73,10 @@ const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [isFetchingOperational, setIsFetchingOperational] = useState(false);
 
+  // Analytics Insight States
+  const [analyticsInsight, setAnalyticsInsight] = useState(null);
+  const [isAnalyzingAnalytics, setIsAnalyzingAnalytics] = useState(false);
+
   const translations = {
     id: {
       dashboard: "Dashboard",
@@ -624,6 +628,43 @@ const Dashboard = () => {
         }
     };
 
+    const fetchAnalyticsInsight = async () => {
+        if (!user || analyticsInsight || isAnalyzingAnalytics) return;
+        setIsAnalyzingAnalytics(true);
+        try {
+            const bizType = profile?.business_type || 'E-commerce';
+            const productNames = products.slice(0, 10).map(p => p.name).join(', ');
+            const recentOrdersCount = orders.length;
+            
+            const systemPrompt = `You are a Senior E-commerce Growth Strategist for Tokcer AI. 
+            Analyze the user's business (${bizType}) and their products: [${productNames}]. 
+            Provide actionable strategy in JSON format.
+            Keys: 
+            "ads_opt": { "golden_hours": string, "strategy": string },
+            "bundling": [ { "title": string, "desc": string } ],
+            "market_pulse": { "hot_idea": string, "hot_desc": string, "content_tip": string, "content_desc": string },
+            "pricing": { "potential_profit": string, "tip": string, "margin_increase": string }`;
+
+            const userPrompt = `Generate analytics insight for my shop selling ${bizType}. I have ${recentOrdersCount} recent orders and these products: ${productNames}.`;
+            
+            const result = await callDeepSeek(systemPrompt, userPrompt);
+            const cleanJson = result.replace(/```json|```/g, '').trim();
+            const data = JSON.parse(cleanJson);
+            setAnalyticsInsight(data);
+        } catch (err) {
+            console.error("Analytics Analysis Error:", err);
+            // Fallback empty data to prevent crash
+            setAnalyticsInsight({
+                ads_opt: { golden_hours: "19:00 - 21:00", strategy: "Fokus pada flash sale malam hari." },
+                bundling: [{ title: "Paket Hemat", desc: "Bundling produk terlaris dengan pelengkap." }],
+                market_pulse: { hot_idea: "Live Streaming", hot_desc: "Tingkatkan interaksi via Live.", content_tip: "Video Unboxing", content_desc: "Buat konten unboxing estetik." },
+                pricing: { potential_profit: "Rp 0", tip: "Lakukan riset harga kompetitor.", margin_increase: "0%" }
+            });
+        } finally {
+            setIsAnalyzingAnalytics(false);
+        }
+    };
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -649,6 +690,12 @@ const Dashboard = () => {
     };
     getUser();
   }, []);
+
+  useEffect(() => {
+    if (activeMenu === 'tab-analytics') {
+      fetchAnalyticsInsight();
+    }
+  }, [activeMenu, products, orders]);
 
   const [adminClients, setAdminClients] = useState([]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);
@@ -1024,6 +1071,10 @@ const Dashboard = () => {
             showAnalyticsPlatformDropdown={showAnalyticsPlatformDropdown}
             setShowAnalyticsPlatformDropdown={setShowAnalyticsPlatformDropdown}
             lang={lang}
+            orders={orders}
+            products={products}
+            analyticsInsight={analyticsInsight}
+            isAnalyzingAnalytics={isAnalyzingAnalytics}
           />
         );
       case 'tab-health':

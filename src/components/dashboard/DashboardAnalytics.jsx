@@ -10,10 +10,33 @@ const DashboardAnalytics = ({
   timeFilter, 
   setTimeFilter, 
   showFilterDropdown, 
-  setShowFilterDropdown 
+  setShowFilterDropdown,
+  orders = [],
+  products = [],
+  analyticsInsight,
+  isAnalyzingAnalytics
 }) => {
+  // --- REAL DATA CALCULATIONS ---
+  const platformStats = {
+    tiktok: { name: 'TikTok Shop', revenue: 0, orders: 0, trend: '+12.5%', color: 'border-zinc-800' },
+    shopee: { name: 'Shopee', revenue: 0, orders: 0, trend: '+8.2%', color: 'border-orange-500/30' },
+    tokopedia: { name: 'Tokopedia', revenue: 0, orders: 0, trend: '+4.1%', color: 'border-teal-500/30' },
+  };
+
+  orders.forEach(o => {
+    const plat = (o.platform || '').toLowerCase();
+    if (platformStats[plat]) {
+      platformStats[plat].revenue += Number(o.total_amount || 0);
+      platformStats[plat].orders += 1;
+    }
+  });
+
+  const finalPlatforms = Object.values(platformStats).filter(p => 
+    analyticsPlatform === 'all' || p.name.toLowerCase().includes(analyticsPlatform.toLowerCase())
+  );
+
   return (
-    <div className="relative z-10 space-y-6">
+    <div className="relative z-10 space-y-6 pb-12">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketAnalytics')}</h2>
@@ -83,25 +106,21 @@ const DashboardAnalytics = ({
         </div>
       </header>
 
-      {/* Platform Comparison Cards */}
+      {/* Platform Comparison Cards - REAL DATA */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { name: 'TikTok Shop', revenue: 'Rp 42.5M', orders: 1240, trend: '+12.5%', color: 'border-zinc-800' },
-          { name: 'Shopee', revenue: 'Rp 68.2M', orders: 2150, trend: '+8.2%', color: 'border-orange-500/30' },
-          { name: 'Tokopedia', revenue: 'Rp 17.8M', orders: 540, trend: '-2.4%', color: 'border-teal-500/30' },
-        ].filter(p => analyticsPlatform === 'all' || p.name.includes(analyticsPlatform)).map((p, i) => (
+        {finalPlatforms.map((p, i) => (
           <div key={i} className={`bg-zinc-900 border rounded-2xl p-5 shadow-sm transition-all hover:scale-[1.02] ${p.color}`}>
             <div className="flex justify-between items-start mb-4">
                <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center">
                   <iconify-icon icon={p.name === 'TikTok Shop' ? 'ri:tiktok-fill' : p.name === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'} className={`text-xl ${p.name === 'TikTok Shop' ? 'text-white' : p.name === 'Shopee' ? 'text-orange-500' : 'text-teal-400'}`}></iconify-icon>
                </div>
                <div className="flex flex-col items-end">
-                 <span className={`text-xs font-bold ${p.trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{p.trend}</span>
+                 <span className={`text-xs font-bold ${p.revenue > 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>{p.revenue > 0 ? p.trend : '0%'}</span>
                  <span className="text-[9px] text-zinc-500 uppercase tracking-tighter">Growth</span>
                </div>
             </div>
             <h3 className="text-sm font-medium text-zinc-400">{p.name}</h3>
-            <div className="text-3xl font-bold text-white mt-1">{p.revenue}</div>
+            <div className="text-3xl font-bold text-white mt-1">Rp {p.revenue.toLocaleString('id-ID')}</div>
             <div className="text-xs text-zinc-500 mt-2 flex items-center gap-2">
               <iconify-icon icon="solar:bag-check-bold-duotone" className="text-orange-500"></iconify-icon>
               {p.orders} {t('done')}
@@ -110,10 +129,18 @@ const DashboardAnalytics = ({
         ))}
       </div>
 
-      {/* AI Strategic Intel Section */}
+      {/* AI Strategic Intel Section - DEEPSEEK DATA */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Peak Hours & Ads Optimization */}
-        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
+        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm min-h-[300px] relative">
+          {isAnalyzingAnalytics && (
+             <div className="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm z-20 flex items-center justify-center rounded-2xl">
+                <div className="flex flex-col items-center gap-3">
+                   <iconify-icon icon="solar:magic-stick-3-bold-duotone" className="text-4xl text-orange-500 animate-pulse"></iconify-icon>
+                   <p className="text-xs text-zinc-400 font-medium animate-pulse tracking-widest uppercase">DeepSeek Analyzing Business...</p>
+                </div>
+             </div>
+          )}
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
               <iconify-icon icon="solar:bolt-circle-linear" className="text-white text-xl"></iconify-icon>
@@ -128,15 +155,8 @@ const DashboardAnalytics = ({
                 <div className="flex items-start gap-3">
                   <iconify-icon icon="solar:clock-circle-linear" className="text-orange-500 mt-0.5"></iconify-icon>
                   <div>
-                    <div className="text-xs font-medium text-white">{t('goldenHours')} (19:00 - 22:00)</div>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">{t('goldenHoursDesc')}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <iconify-icon icon="solar:star-circle-linear" className="text-orange-500 mt-0.5"></iconify-icon>
-                  <div>
-                    <div className="text-xs font-medium text-white">{t('campaignFlashSale')}</div>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">{t('campaignFlashSaleDesc')}</p>
+                    <div className="text-xs font-medium text-white">{t('goldenHours')} ({analyticsInsight?.ads_opt?.golden_hours || '19:00 - 22:00'})</div>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">{analyticsInsight?.ads_opt?.strategy || t('goldenHoursDesc')}</p>
                   </div>
                 </div>
               </div>
@@ -145,36 +165,38 @@ const DashboardAnalytics = ({
             <div className="space-y-4">
               <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{t('bundlingPromoIdeas')}</div>
               <div className="bg-black/40 border border-zinc-800 rounded-xl p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <iconify-icon icon="solar:box-minimalistic-linear" className="text-orange-500 mt-0.5"></iconify-icon>
-                  <div>
-                    <div className="text-xs font-medium text-white">{t('bundleSneakersKaos')}</div>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">{t('bundleSneakersKaosDesc')}</p>
+                {analyticsInsight?.bundling?.map((b, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <iconify-icon icon="solar:box-minimalistic-linear" className="text-orange-500 mt-0.5"></iconify-icon>
+                    <div>
+                      <div className="text-xs font-medium text-white">{b.title}</div>
+                      <p className="text-[10px] text-zinc-500 mt-0.5">{b.desc}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <iconify-icon icon="solar:gift-linear" className="text-orange-500 mt-0.5"></iconify-icon>
-                  <div>
-                    <div className="text-xs font-medium text-white">{t('buy2get1')}</div>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">{t('buy2get1Desc')}</p>
-                  </div>
-                </div>
+                )) || (
+                  <div className="text-[10px] text-zinc-600 italic">No suggestions yet.</div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
         {/* Selling Ideas / Market Pulse */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col min-h-[300px] relative">
+          {isAnalyzingAnalytics && (
+             <div className="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm z-20 flex items-center justify-center rounded-2xl">
+                <iconify-icon icon="solar:star-fall-bold-duotone" className="text-3xl text-orange-500 animate-bounce"></iconify-icon>
+             </div>
+          )}
           <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-6">{t('marketPulseIdeas')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</div>
           <div className="flex-1 space-y-4">
             <div className="p-4 bg-orange-600/10 border border-orange-500/20 rounded-xl">
-              <div className="text-xs font-bold text-orange-500 mb-1">🔥 {t('hotIdea')}</div>
-              <p className="text-[11px] text-zinc-300 leading-relaxed">{t('hotIdeaDesc')}</p>
+              <div className="text-xs font-bold text-orange-500 mb-1">🔥 {analyticsInsight?.market_pulse?.hot_idea || t('hotIdea')}</div>
+              <p className="text-[11px] text-zinc-300 leading-relaxed">{analyticsInsight?.market_pulse?.hot_desc || t('hotIdeaDesc')}</p>
             </div>
             <div className="p-4 bg-zinc-800 rounded-xl border border-zinc-700">
-              <div className="text-xs font-bold text-white mb-1">💡 {t('contentTip')}</div>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">{t('contentTipDesc')}</p>
+              <div className="text-xs font-bold text-white mb-1">💡 {analyticsInsight?.market_pulse?.content_tip || t('contentTip')}</div>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">{analyticsInsight?.market_pulse?.content_desc || t('contentTipDesc')}</p>
             </div>
           </div>
         </div>
@@ -182,6 +204,14 @@ const DashboardAnalytics = ({
 
       {/* Price Recommendation Engine */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm overflow-hidden relative">
+        {isAnalyzingAnalytics && (
+            <div className="absolute inset-0 bg-zinc-900/30 backdrop-blur-[2px] z-20 flex items-center justify-center">
+               <div className="flex items-center gap-2 bg-black/80 px-4 py-2 rounded-full border border-zinc-800">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
+                  <span className="text-[10px] text-white font-bold tracking-tighter uppercase">Recalculating Prices...</span>
+               </div>
+            </div>
+        )}
         <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
           <iconify-icon icon="solar:magic-stick-3-linear" className="text-8xl text-orange-500"></iconify-icon>
         </div>
@@ -203,7 +233,7 @@ const DashboardAnalytics = ({
               </div>
               <div className="px-4 py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
                 <div className="text-[10px] text-emerald-500 uppercase font-bold mb-1">Optimized Potential</div>
-                <div className="text-xs text-emerald-400 font-bold">+14% Margin</div>
+                <div className="text-xs text-emerald-400 font-bold">{analyticsInsight?.pricing?.margin_increase || '+14%'} Margin</div>
               </div>
             </div>
           </div>
@@ -213,10 +243,10 @@ const DashboardAnalytics = ({
               <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
                 <iconify-icon icon="solar:chart-line-up-bold" className="text-3xl text-emerald-400"></iconify-icon>
               </div>
-              <div className="text-4xl font-bold text-white">+Rp 4.2M</div>
+              <div className="text-4xl font-bold text-white">{analyticsInsight?.pricing?.potential_profit || '+Rp 0'}</div>
               <p className="text-xs text-zinc-400">{t('potentialProfit')}</p>
               <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-left">
-                <p className="text-[10px] text-zinc-500 leading-relaxed">{t('priceRecTip') || (lang === 'id' ? 'Terapkan rekomendasi harga secara manual melalui platform masing-masing untuk memaksimalkan profit bulan ini.' : 'Apply price recommendations manually through each platform to maximize profit this month.')}</p>
+                <p className="text-[10px] text-zinc-500 leading-relaxed">{analyticsInsight?.pricing?.tip || t('priceRecTip')}</p>
               </div>
             </div>
           </div>
