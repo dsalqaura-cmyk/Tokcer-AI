@@ -116,7 +116,7 @@ const DashboardHealth = ({
           <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">{t('healthTitle')}</p>
           <p className="text-3xl font-bold text-white">{hd.score}<span className="text-base text-zinc-500 font-normal">/100</span></p>
           <p className="text-xs text-zinc-400 mt-1">
-            {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
+            {healthPlatform === 'all' ? t('allPlatforms') : healthPlatform}
             {hd.score >= 90 ? (lang === 'id' ? ' · Sangat Baik 🏆' : ' · Excellent 🏆') : hd.score >= 80 ? (lang === 'id' ? ' · Baik ✅' : ' · Good ✅') : (lang === 'id' ? ' · Perlu Perhatian ⚠️' : ' · Needs Attention ⚠️')}
           </p>
         </div>
