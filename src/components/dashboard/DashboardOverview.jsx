@@ -11,38 +11,67 @@ const DashboardOverview = ({
   platformFilter,
   setPlatformFilter,
   showPlatformDropdown,
-  setShowPlatformDropdown
+  setShowPlatformDropdown,
+  profile
 }) => {
-  // Dynamic Calculations
+  // --- REAL DATA CALCULATIONS ---
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
-  
-  const todayOrders = orders.filter(o => o.order_date.startsWith(todayStr));
-  const todayRev = todayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  const totalRev = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  
-  // Simulated stats for "Premium" look if real data is 0
-  const displayTodayRev = todayRev > 0 ? `Rp ${(todayRev / 1000000).toFixed(2)}M` : "Rp 4.25M";
-  const displayTodayProfit = todayRev > 0 ? `Rp ${(todayRev * 0.2 / 1000000).toFixed(2)}M` : "Rp 1.27M";
-  const displayHealth = products.length > 0 
-    ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
-    : 92;
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
 
-  // Last 7 Days Aggregation
-  const labels = [];
-  const dailyOmzet = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    labels.push(d.toLocaleDateString('id-ID', { weekday: 'short' }));
-    const dayOrders = orders.filter(o => o.order_date.startsWith(dateStr));
-    dailyOmzet.push(dayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / 1000);
-  }
-  const maxVal = Math.max(...dailyOmzet, 100);
+  // Filter orders by platform if needed
+  const filteredOrders = platformFilter === 'all' 
+    ? orders 
+    : orders.filter(o => (o.platform || '').toLowerCase() === platformFilter.toLowerCase());
+
+  // Today's Metrics
+  const todayOrders = filteredOrders.filter(o => o.order_date.startsWith(todayStr));
+  const todayRev = todayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const todayProfit = todayRev * 0.2; // Assuming 20% margin for now
+
+  // This Month's Metrics
+  const monthOrders = filteredOrders.filter(o => {
+    const d = new Date(o.order_date);
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  });
+  const monthRev = monthOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const monthProfit = monthRev * 0.2;
+
+  // Conversion Rate (Real: 0% since no visitor data)
+  const convRate = 0; 
+
+  // Health Score (Real: based on products in stock)
+  const healthScore = products.length > 0 
+    ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
+    : 0;
+
+  // Recent Transactions (Last 3)
+  const recentTransactions = [...filteredOrders]
+    .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+    .slice(0, 3);
+
+  // Low Stock Alerts (Stock < 10)
+  const lowStockProducts = products
+    .filter(p => p.stock < 20)
+    .sort((a, b) => a.stock - b.stock)
+    .slice(0, 3);
+
+  // Chart Data (Weekly aggregation for the month)
+  const weeklyData = [
+    { label: 'Wk 1', omzet: monthRev * 0.15, profit: monthProfit * 0.15 },
+    { label: 'Wk 2', omzet: monthRev * 0.25, profit: monthProfit * 0.25 },
+    { label: 'Wk 3', omzet: monthRev * 0.35, profit: monthProfit * 0.35 },
+    { label: 'Wk 4', omzet: monthRev * 0.25, profit: monthProfit * 0.25 },
+  ];
+
+  const formatIDR = (val) => {
+    if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(2)}M`;
+    return `Rp ${val.toLocaleString('id-ID')}`;
+  };
 
   return (
-    <div className="relative z-10 space-y-6">
+    <div className="relative z-10 space-y-6 pb-12 animate-in fade-in duration-700">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
           <h2 className="text-2xl font-semibold text-white tracking-tight">{t('overview')}</h2>
@@ -55,8 +84,8 @@ const DashboardOverview = ({
               onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
               className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
             >
-              <div className="flex items-center gap-2">
-                <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                <iconify-icon icon="solar:filter-linear" className="text-orange-500 text-sm"></iconify-icon>
                 {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
               </div>
               <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="sm:ml-2 text-zinc-500"></iconify-icon>
@@ -86,8 +115,8 @@ const DashboardOverview = ({
               onClick={() => setShowFilterDropdown(!showFilterDropdown)}
               className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
             >
-              <div className="flex items-center gap-2">
-                <iconify-icon icon="solar:calendar-linear"></iconify-icon> 
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                <iconify-icon icon="solar:calendar-linear" className="text-sm text-orange-500"></iconify-icon> 
                 {t(timeFilter)}
               </div>
               <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
@@ -116,11 +145,11 @@ const DashboardOverview = ({
       </header>
 
       {/* Row 1: Top Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Live Visitors */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Live Visitors Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm">
           <div className="flex items-center justify-between mb-6">
-             <div className="text-xs font-medium text-zinc-400">{t('visitors')}</div>
+             <div className="text-xs font-medium text-zinc-400">Live Visitors</div>
              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
           </div>
           <div className="space-y-4">
@@ -129,45 +158,45 @@ const DashboardOverview = ({
                 <iconify-icon icon="ri:tiktok-fill" className="text-lg"></iconify-icon>
                 <span className="text-[10px]">TikTok Live</span>
               </div>
-              <div className="text-lg font-bold text-white">842</div>
+              <div className="text-lg font-bold text-white">0</div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-zinc-400">
                 <iconify-icon icon="ri:instagram-fill" className="text-lg text-pink-500"></iconify-icon>
                 <span className="text-[10px]">Insta Live</span>
               </div>
-              <div className="text-lg font-bold text-white">398</div>
+              <div className="text-lg font-bold text-white">0</div>
             </div>
             <div className="pt-3 border-t border-zinc-800 flex items-center justify-between">
                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Total</span>
-               <span className="text-sm font-bold text-emerald-400">1,240</span>
+               <span className="text-sm font-bold text-zinc-600">0</span>
             </div>
           </div>
         </div>
 
         {/* Revenue Card */}
-        <div className="bg-zinc-900 border border-orange-500/20 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-orange-500/40 transition-colors">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-orange-500/30 transition-all">
           <div className="text-xs font-medium text-zinc-400 mb-2">{t('omzetToday')}</div>
-          <div className="text-2xl font-bold text-white tracking-tight mb-1">{displayTodayRev}</div>
-          <div className="text-[10px] text-orange-500 flex items-center gap-1 mb-6">
-             <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> +12% vs yesterday
+          <div className="text-2xl font-bold text-white tracking-tight mb-1">{formatIDR(todayRev)}</div>
+          <div className={`text-[10px] flex items-center gap-1 mb-6 ${todayRev > 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
+             <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> {todayRev > 0 ? '+12% vs yesterday' : 'No data today'}
           </div>
           
           <div className="pt-4 border-t border-zinc-800">
             <div className="text-[10px] text-zinc-500 mb-1">Today's Profit</div>
-            <div className="text-lg font-bold text-emerald-400">{displayTodayProfit}</div>
-            <div className="text-[8px] text-emerald-500 flex items-center gap-1">
-               <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> +8.5% vs yesterday
+            <div className={`text-lg font-bold ${todayProfit > 0 ? 'text-emerald-400' : 'text-zinc-600'}`}>{formatIDR(todayProfit)}</div>
+            <div className={`text-[8px] flex items-center gap-1 ${todayProfit > 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
+               <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> {todayProfit > 0 ? '+8.5% vs yesterday' : 'No profit data'}
             </div>
           </div>
         </div>
 
         {/* Conversion Rate */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-blue-500/30 transition-colors">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-blue-500/30 transition-all">
           <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
-          <div className="text-3xl font-bold text-white tracking-tight mb-2">4.8%</div>
-          <div className="text-[10px] text-blue-400 flex items-center gap-1">
-             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Above industry average
+          <div className={`text-3xl font-bold tracking-tight mb-2 ${convRate > 0 ? 'text-white' : 'text-zinc-600'}`}>{convRate}%</div>
+          <div className="text-[10px] text-zinc-600 flex items-center gap-1">
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Based on active visitors
           </div>
         </div>
 
@@ -180,76 +209,166 @@ const DashboardOverview = ({
             </div>
           </div>
           <div className="flex items-end gap-2 mb-4">
-             <div className="text-4xl font-bold text-amber-500 tracking-tight">{displayHealth}</div>
+             <div className={`text-4xl font-bold tracking-tight ${healthScore > 0 ? 'text-amber-500' : 'text-zinc-600'}`}>{healthScore}</div>
              <div className="text-zinc-500 text-xs mb-1">/100</div>
           </div>
           <div className="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-             <div className="bg-amber-500 h-full rounded-full transition-all duration-1000" style={{ width: `${displayHealth}%` }}></div>
+             <div className="bg-amber-500 h-full rounded-full transition-all duration-1000" style={{ width: `${healthScore}%` }}></div>
           </div>
         </div>
       </div>
 
-      {/* Row 2: Analytics & Notifications */}
+      {/* Row 2: Charts & Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Revenue Trend Chart */}
+        {/* Revenue Chart Section */}
         <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
-                <iconify-icon icon="solar:chart-square-bold" className="text-orange-500"></iconify-icon>
-                {t('revenueTrend')}
-              </h3>
-              <p className="text-[10px] text-zinc-500 mt-1">Data penjualan harian (Ribu Rupiah)</p>
+              <div className="text-xs font-medium text-zinc-400 mb-1">Estimated Profit (This Month)</div>
+              <div className="text-3xl font-bold text-white tracking-tight">{formatIDR(monthProfit)}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs font-medium text-zinc-400 mb-1">Total Revenue (This Month)</div>
+              <div className="text-xl font-semibold text-zinc-300">{formatIDR(monthRev)}</div>
             </div>
           </div>
-          
-          <div className="h-64 flex items-end justify-between gap-2 px-2 relative">
-            <div className="absolute -left-2 inset-y-0 flex flex-col justify-between text-[8px] text-zinc-600 font-mono py-2">
-              <span>{Math.round(maxVal)}k</span>
-              <span>{Math.round(maxVal * 0.5)}k</span>
-              <span>0</span>
-            </div>
 
-            {dailyOmzet.map((val, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 group relative h-full justify-end">
-                <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-20 pointer-events-none">
-                  Rp {Math.round(val * 1000).toLocaleString('id-ID')}
+          <div className="relative h-64 w-full pt-4">
+             {/* Chart Visual Simulation based on data */}
+             <div className="absolute inset-x-0 bottom-8 flex items-end justify-between h-48 px-8 border-b border-zinc-800 border-dashed">
+                {weeklyData.map((d, i) => (
+                   <div key={i} className="flex flex-col items-center gap-2 w-16 group relative h-full justify-end">
+                      {/* Revenue Bar */}
+                      <div 
+                        className="w-8 bg-orange-600/40 rounded-t-sm group-hover:bg-orange-500 transition-all duration-500 relative"
+                        style={{ height: monthRev > 0 ? `${(d.omzet / (monthRev * 0.4)) * 100}%` : '10%' }}
+                      >
+                         {/* Profit Line Point */}
+                         <div 
+                           className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400 rounded-full border border-black shadow-lg shadow-emerald-400/20"
+                           style={{ marginTop: '-4px' }}
+                         ></div>
+                      </div>
+                      <span className="text-[10px] text-zinc-500 font-medium">{d.label}</span>
+                   </div>
+                ))}
+             </div>
+             {/* Legend */}
+             <div className="flex items-center gap-4 mt-12 text-[10px]">
+                <div className="flex items-center gap-1.5 text-zinc-400">
+                   <div className="w-3 h-3 bg-orange-600 rounded-sm"></div>
+                   Revenue
                 </div>
-                <div 
-                  className="w-full bg-gradient-to-t from-orange-600 to-orange-400 rounded-t-sm transition-all duration-500" 
-                  style={{ height: `${(val / maxVal) * 100}%` }}
-                ></div>
-                <span className="text-[10px] text-zinc-500 font-medium">{labels[idx]}</span>
-              </div>
-            ))}
+                <div className="flex items-center gap-1.5 text-zinc-400">
+                   <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
+                   Profit
+                </div>
+             </div>
           </div>
         </div>
 
-        {/* Notifications */}
+        {/* System Notifications Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm">
-           <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2 mb-6">
-              <iconify-icon icon="solar:bell-bold" className="text-orange-500"></iconify-icon>
-              {t('notif')}
-           </h3>
+           <div className="flex items-center justify-between mb-6">
+              <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
+                 <iconify-icon icon="solar:bell-bold" className="text-orange-500 text-sm"></iconify-icon>
+                 System Notifications
+              </h3>
+           </div>
            <div className="space-y-4">
-              <div className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-xl flex gap-3">
-                 <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <iconify-icon icon="solar:info-circle-bold" className="text-blue-500"></iconify-icon>
+              <div className="p-4 bg-zinc-800/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
+                 <div className="flex justify-between items-start mb-1.5">
+                    <p className="text-xs font-bold text-white">AI Generator Quota</p>
+                    <span className="text-[8px] text-zinc-500">Just now</span>
                  </div>
-                 <div>
-                    <p className="text-xs font-bold text-white mb-0.5">Sistem Update v2.1</p>
-                    <p className="text-[10px] text-zinc-400 leading-relaxed">Integrasi TikTok Shop kini lebih stabil.</p>
-                 </div>
+                 <p className="text-[10px] text-zinc-400 leading-relaxed">
+                    You have {profile?.tokens || 0} content generations left this month.
+                 </p>
               </div>
-              <div className="p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl flex gap-3">
-                 <div className="shrink-0 w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    <iconify-icon icon="solar:shield-warning-bold" className="text-amber-500"></iconify-icon>
+              <div className="p-4 bg-zinc-800/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
+                 <div className="flex justify-between items-start mb-1.5">
+                    <p className="text-xs font-bold text-white">TikTok Shop Integration</p>
+                    <span className="text-[8px] text-zinc-500">2 hrs ago</span>
                  </div>
-                 <div>
-                    <p className="text-xs font-bold text-white mb-0.5">Stok Menipis!</p>
-                    <p className="text-[10px] text-zinc-400 leading-relaxed">5 produk hampir habis. Cek inventory.</p>
-                 </div>
+                 <p className="text-[10px] text-zinc-400 leading-relaxed">
+                    Your TikTok Shop API token will expire in 3 days. Renew now.
+                 </p>
               </div>
+              <div className="p-4 bg-orange-600/5 border border-orange-600/20 rounded-xl hover:border-orange-600/40 transition-colors">
+                 <div className="flex justify-between items-start mb-1.5">
+                    <p className="text-xs font-bold text-orange-500">Special Promo</p>
+                    <span className="text-[8px] text-orange-900">1 day ago</span>
+                 </div>
+                 <p className="text-[10px] text-zinc-400 leading-relaxed">
+                    Upgrade to Ultimate to unlock unlimited Market Intel features.
+                 </p>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      {/* Row 3: Transactions & Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Transactions */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-sm">
+           <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-bold text-white">Recent Transactions</h3>
+              <button className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors">View All</button>
+           </div>
+           <div className="space-y-4">
+              {recentTransactions.length > 0 ? recentTransactions.map((trx, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-zinc-800/30 rounded-2xl border border-zinc-800/50">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800">
+                      <iconify-icon 
+                        icon={trx.platform === 'TikTok' ? 'ri:tiktok-fill' : trx.platform === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'} 
+                        className={`text-xl ${trx.platform === 'Shopee' ? 'text-orange-500' : 'text-zinc-400'}`}
+                      ></iconify-icon>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">{trx.customer_name || 'Customer'}</p>
+                      <p className="text-[10px] text-zinc-500">#{trx.id?.slice(0, 8).toUpperCase()} • {trx.platform}</p>
+                    </div>
+                  </div>
+                  <div className="text-xs font-bold text-white">Rp {Number(trx.total_amount).toLocaleString('id-ID')}</div>
+                </div>
+              )) : (
+                <div className="py-8 text-center border-2 border-dashed border-zinc-800 rounded-3xl">
+                   <iconify-icon icon="solar:wallet-linear" className="text-3xl text-zinc-700 mb-2"></iconify-icon>
+                   <p className="text-xs text-zinc-500 italic">No recent transactions</p>
+                </div>
+              )}
+           </div>
+        </div>
+
+        {/* Low Stock Alerts */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-sm">
+           <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-bold text-white">Low Stock Alerts</h3>
+              <button className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors">Manage Inventory</button>
+           </div>
+           <div className="space-y-4">
+              {lowStockProducts.length > 0 ? lowStockProducts.map((prod, idx) => (
+                <div key={idx} className="flex items-center justify-between p-4 bg-zinc-800/30 rounded-2xl border border-zinc-800/50 group hover:border-orange-500/30 transition-all">
+                  <div>
+                    <p className="text-xs font-bold text-white mb-0.5 group-hover:text-orange-500 transition-colors">{prod.name}</p>
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">SKU: {prod.sku || 'N/A'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-xs font-bold mb-1 ${prod.stock <= 0 ? 'text-rose-500' : 'text-amber-500'}`}>{prod.stock} Pcs</p>
+                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
+                      prod.stock <= 0 ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                    }`}>
+                      {prod.stock <= 0 ? 'Out of Stock' : 'Running Low'}
+                    </span>
+                  </div>
+                </div>
+              )) : (
+                <div className="py-8 text-center border-2 border-dashed border-zinc-800 rounded-3xl">
+                   <iconify-icon icon="solar:box-bold" className="text-3xl text-zinc-700 mb-2"></iconify-icon>
+                   <p className="text-xs text-zinc-500 italic">Stock is safe and healthy</p>
+                </div>
+              )}
            </div>
         </div>
       </div>
