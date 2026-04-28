@@ -559,6 +559,61 @@ const Dashboard = () => {
         }
     };
 
+    const handleImportOrders = async (data) => {
+        if (!user || data.length === 0) return;
+        
+        setIsFetchingOperational(true);
+        try {
+            const formattedData = data.map(item => ({
+                user_id: user.id,
+                order_number: item.order_number,
+                customer_name: item.customer_name,
+                platform: item.platform,
+                total_amount: Number(item.total_amount || 0),
+                status: item.status || 'completed',
+                order_date: item.order_date || new Date().toISOString()
+            }));
+
+            const { error } = await supabase.from('orders').insert(formattedData);
+            if (error) throw error;
+            
+            alert(`✅ Berhasil mengimpor ${data.length} transaksi!`);
+            fetchOperationalData(user.id);
+        } catch (err) {
+            console.error("Import Error:", err);
+            alert("❌ Gagal mengimpor data. Pastikan format CSV benar.");
+        } finally {
+            setIsFetchingOperational(false);
+        }
+    };
+
+    const handleImportProducts = async (data) => {
+        if (!user || data.length === 0) return;
+        
+        setIsFetchingOperational(true);
+        try {
+            const formattedData = data.map(item => ({
+                user_id: user.id,
+                name: item.name,
+                sku: item.sku,
+                stock: Number(item.stock || 0),
+                price: Number(item.price || 0),
+                description: item.description || ''
+            }));
+
+            const { error } = await supabase.from('products').insert(formattedData);
+            if (error) throw error;
+            
+            alert(`✅ Berhasil mengimpor ${data.length} produk ke katalog!`);
+            fetchOperationalData(user.id);
+        } catch (err) {
+            console.error("Import Error:", err);
+            alert("❌ Gagal mengimpor produk. Pastikan format CSV benar.");
+        } finally {
+            setIsFetchingOperational(false);
+        }
+    };
+
     const fetchOperationalData = async (userId) => {
         setIsFetchingOperational(true);
         try {
@@ -992,7 +1047,11 @@ const Dashboard = () => {
             setOmzetTimeFilter={setOmzetTimeFilter}
             showOmzetTimeDropdown={showOmzetTimeDropdown}
             setShowOmzetTimeDropdown={setShowOmzetTimeDropdown}
+            setOmzetTimeFilter={setOmzetTimeFilter}
+            showOmzetTimeDropdown={showOmzetTimeDropdown}
+            setShowOmzetTimeDropdown={setShowOmzetTimeDropdown}
             handleDownloadReport={handleDownloadReport}
+            handleImportOrders={handleImportOrders}
           />
         );
       case 'tab-inventory':
@@ -1001,6 +1060,7 @@ const Dashboard = () => {
             t={t}
             products={products}
             setShowProductModal={setShowProductModal}
+            handleImportProducts={handleImportProducts}
           />
         );
       case 'tab-analytics':
