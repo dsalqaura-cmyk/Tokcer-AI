@@ -769,7 +769,7 @@ const Dashboard = () => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
         ],
-        temperature: 0.2, // Increased slightly for variety while maintaining high accuracy
+        temperature: 0.8, // Increased for more variety as requested
         max_tokens: 2048,
       })
     });
@@ -802,11 +802,40 @@ const Dashboard = () => {
         .eq('type', 'generator')
         .single();
 
-      const systemPrompt = config?.system_prompt || `Kamu adalah Copywriter Senior spesialis e-commerce Indonesia. Gunakan Bahasa Indonesia yang natural.`;
+      const targetLang = lang === 'id' ? 'Bahasa Indonesia' : 'English';
+      
+      let platformContext = "";
+      if (aiFormat === 'TikTok Video') {
+        platformContext = `Buatlah naskah video TikTok durasi 3 menit. Sertakan: Hook viral di 3 detik pertama, Breakdown adegan (Scene by Scene), saran musik latar yang sedang tren, dan narasi yang enerjik.`;
+      } else if (aiFormat === 'Instagram Reels') {
+        platformContext = `Buatlah naskah Instagram Reels yang estetik. Sertakan: Hook yang menarik perhatian, transisi antar adegan, saran filter/mood, dan caption singkat yang powerful.`;
+      } else if (aiFormat === 'Shopee Description') {
+        platformContext = `Buatlah deskripsi produk khusus Shopee. Gunakan banyak emoji, highlight promo/voucher, dan gaya bahasa yang persuasif serta "hype" untuk menarik pembeli diskon.`;
+      } else if (aiFormat === 'Tokopedia Description') {
+        platformContext = `Buatlah deskripsi produk khusus Tokopedia. Gunakan gaya bahasa profesional, informatif, jelaskan spesifikasi produk dengan detail dan layout yang bersih/rapi.`;
+      } else if (aiFormat === 'TikTok Shop Description') {
+        platformContext = `Buatlah deskripsi produk TikTok Shop. Fokus pada 'USP' produk secara cepat, buat kesan urgensi/kelangkaan, dan arahkan ke keranjang kuning.`;
+      }
+
+      if (lang === 'en') {
+        platformContext = platformContext
+            .replace('Buatlah naskah video TikTok durasi 3 menit', 'Create a 3-minute TikTok video script')
+            .replace('Sertakan: Hook viral di 3 detik pertama, Breakdown adegan (Scene by Scene), saran musik latar yang sedang tren, dan narasi yang enerjik.', 'Include: Viral hook in the first 3 seconds, Scene by Scene breakdown, trending background music suggestions, and energetic narration.')
+            .replace('Buatlah naskah Instagram Reels yang estetik', 'Create an aesthetic Instagram Reels script')
+            .replace('Sertakan: Hook yang menarik perhatian, transisi antar adegan, saran filter/mood, dan caption singkat yang powerful.', 'Include: Attention-grabbing hook, transitions between scenes, filter/mood suggestions, and a powerful short caption.')
+            .replace('Buatlah deskripsi produk khusus Shopee', 'Create a specific Shopee product description')
+            .replace('Gunakan banyak emoji, highlight promo/voucher, dan gaya bahasa yang persuasif serta "hype" untuk menarik pembeli diskon.', 'Use plenty of emojis, highlight promos/vouchers, and use persuasive "hype" language to attract discount hunters.')
+            .replace('Buatlah deskripsi produk khusus Tokopedia', 'Create a specific Tokopedia product description')
+            .replace('Gunakan gaya bahasa profesional, informatif, jelaskan spesifikasi produk dengan detail dan layout yang bersih/rapi.', 'Use professional, informative language, explain product specs in detail, and use a clean/neat layout.')
+            .replace('Buatlah deskripsi produk TikTok Shop', 'Create a TikTok Shop product description')
+            .replace("Fokus pada 'USP' produk secara cepat, buat kesan urgensi/kelangkaan, dan arahkan ke keranjang kuning.", "Focus on the product's USP quickly, create a sense of urgency/scarcity, and direct to the yellow basket.");
+      }
+
+      const systemPrompt = config?.system_prompt || `Kamu adalah Copywriter Senior spesialis e-commerce. Gunakan ${targetLang} yang natural.`;
       const ragKnowledge = config?.rag_knowledge_base ? `\n\nGunakan referensi pengetahuan berikut ini untuk menjawab (Strict Knowledge):\n${config.rag_knowledge_base}` : '';
       
-      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}`;
-      const userMessage = `Buat konten promosi format "${aiFormat}" untuk produk berikut:\n\n${aiPrompt}\n\nSertakan: Hook yang menarik, Body (penjelasan produk), dan CTA yang kuat.`;
+      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
+      const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
       // 3. Call DeepSeek
       const result = await callDeepSeek(fullSystemPrompt, userMessage);
