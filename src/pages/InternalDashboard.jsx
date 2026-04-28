@@ -458,7 +458,12 @@ const InternalDashboard = ({ onLogout }) => {
         <nav className="flex-1 mt-6 overflow-y-auto custom-scrollbar space-y-1">
           {[
             { id: 'overview', label: t('overview'), icon: 'solar:chart-square-bold-duotone' },
-            { id: 'approvals', label: t('approvals'), icon: 'solar:check-circle-bold-duotone', badge: 12 },
+            { 
+              id: 'approvals', 
+              label: t('approvals'), 
+              icon: 'solar:check-circle-bold-duotone', 
+              badge: (adminClients.filter(c => !c.status || c.status.toLowerCase() === 'pending').length + partnerApps.length) || null 
+            },
             { id: 'users', label: t('users'), icon: 'solar:users-group-rounded-bold-duotone' },
             { id: 'partners', label: t('partners'), icon: 'solar:users-group-two-rounded-bold-duotone' },
             { id: 'tickets', label: t('tickets'), icon: 'solar:bug-bold-duotone', badge: 3 },
@@ -674,7 +679,9 @@ const InternalDashboard = ({ onLogout }) => {
                       ).map((item, i) => (
                         <tr key={i} className="bg-zinc-900/30 hover:bg-zinc-800/50 transition-all group">
                           <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800/50">
-                            <div className="font-black text-white text-sm tracking-tight group-hover:text-blue-400 transition-colors">{item.name || item.shop_name}</div>
+                            <div className="font-black text-white text-sm tracking-tight group-hover:text-blue-400 transition-colors">
+                              {item.nama || item.name || item.shop_name}
+                            </div>
                             <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">{item.email}</div>
                           </td>
                           <td className="p-4 border-y border-zinc-800/50">
