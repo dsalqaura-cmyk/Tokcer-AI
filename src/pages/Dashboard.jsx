@@ -637,8 +637,10 @@ const Dashboard = () => {
         setIsAnalyzingAnalytics(true);
         try {
             const bizType = profile?.business_type || 'E-commerce';
-            const productNames = products.slice(0, 10).map(p => p.name).join(', ');
-            const recentOrdersCount = orders.length;
+            const safeProducts = Array.isArray(products) ? products : [];
+            const safeOrders = Array.isArray(orders) ? orders : [];
+            const productNames = safeProducts.slice(0, 10).map(p => p.name).join(', ');
+            const recentOrdersCount = safeOrders.length;
             const targetLang = lang === 'id' ? 'Bahasa Indonesia' : 'English';
             
             const systemPrompt = `You are a Senior E-commerce Growth Strategist for Tokcer AI. 
@@ -729,8 +731,9 @@ const Dashboard = () => {
       fetchAnalyticsInsight();
     } else if (activeMenu === 'tab-health') {
         // Calculate basic metrics for AI prompt
-        const total = orders.length || 1;
-        const cancelled = orders.filter(o => o.status === 'cancelled' || o.status === 'returned').length;
+        const safeOrders = Array.isArray(orders) ? orders : [];
+        const total = safeOrders.length || 1;
+        const cancelled = safeOrders.filter(o => o.status === 'cancelled' || o.status === 'returned').length;
         const returnRate = ((cancelled / total) * 100).toFixed(1) + '%';
         
         fetchHealthInsight({

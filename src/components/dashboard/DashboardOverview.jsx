@@ -25,11 +25,12 @@ const DashboardOverview = ({
     today.setHours(0,0,0,0);
     if (filter === 'Hari Ini') {
       const todayStr = today.toISOString().split('T')[0];
-      return data.filter(o => o.order_date.startsWith(todayStr));
+      return data.filter(o => (o.order_date || '').startsWith(todayStr));
     } else if (filter === 'Bulan Ini') {
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
       return data.filter(o => {
+        if (!o.order_date) return false;
         const d = new Date(o.order_date);
         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
       });
@@ -37,7 +38,7 @@ const DashboardOverview = ({
       const months = parseInt(filter);
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - months);
-      return data.filter(o => new Date(o.order_date) >= cutoff);
+      return data.filter(o => o.order_date && new Date(o.order_date) >= cutoff);
     }
     return data;
   };
@@ -51,6 +52,7 @@ const DashboardOverview = ({
     : 0;
 
   const recentTransactions = [...platformFilteredOrders]
+    .filter(o => o.order_date)
     .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
     .slice(0, 3);
 
