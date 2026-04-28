@@ -1,14 +1,15 @@
 import React from 'react';
 
-const DashboardHealth = ({
-  t,
-  lang,
-  healthPlatform,
-  setHealthPlatform,
-  timeFilter,
-  setTimeFilter,
-  showFilterDropdown,
-  setShowFilterDropdown
+const DashboardHealth = ({ 
+  t, 
+  lang, 
+  healthPlatform, 
+  setHealthPlatform, 
+  timeFilter, 
+  setTimeFilter, 
+  showFilterDropdown, 
+  setShowFilterDropdown,
+  platformFilter
 }) => {
   const healthData = {
     all:       { chat: '98%', ship: '1.2 Days', return: '0.4%', rating: '4.9/5.0', score: 92 },
@@ -19,7 +20,7 @@ const DashboardHealth = ({
   const hd = healthData[healthPlatform] || healthData.all;
 
   return (
-    <div className="relative z-10 space-y-6 animate-in fade-in duration-700">
+    <div className="relative z-10 space-y-6">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
           <h2 className="text-2xl font-semibold text-white tracking-tight">{t('shopHealth')}</h2>
@@ -77,7 +78,7 @@ const DashboardHealth = ({
         ))}
       </div>
 
-      {/* Health Score Card */}
+      {/* Health Score Big Number */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex items-center gap-6 shadow-sm">
         <div className="relative w-20 h-20 shrink-0">
           <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
@@ -94,8 +95,8 @@ const DashboardHealth = ({
           <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">{t('healthTitle')}</p>
           <p className="text-3xl font-bold text-white">{hd.score}<span className="text-base text-zinc-500 font-normal">/100</span></p>
           <p className="text-xs text-zinc-400 mt-1">
-            {healthPlatform === 'all' ? t('allPlatforms') : healthPlatform}
-            {hd.score >= 90 ? (lang === 'id' ? ' • Sangat Baik 👍' : ' • Excellent 👍') : hd.score >= 80 ? (lang === 'id' ? ' • Baik ✅' : ' • Good ✅') : (lang === 'id' ? ' • Perlu Perhatian ⚠️' : ' • Needs Attention ⚠️')}
+            {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
+            {hd.score >= 90 ? (lang === 'id' ? ' · Sangat Baik 🏆' : ' · Excellent 🏆') : hd.score >= 80 ? (lang === 'id' ? ' · Baik ✅' : ' · Good ✅') : (lang === 'id' ? ' · Perlu Perhatian ⚠️' : ' · Needs Attention ⚠️')}
           </p>
         </div>
       </div>

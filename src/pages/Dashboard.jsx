@@ -5,6 +5,18 @@ import { supabase } from '../supabase';
 import ProductModal from '../components/modals/ProductModal';
 // Build Timestamp: 2026-04-27 11:46:00
 import logo from '../assets/logo.png';
+import DashboardSidebar from '../components/dashboard/DashboardSidebar';
+import DashboardOverview from '../components/dashboard/DashboardOverview';
+import DashboardRevenue from '../components/dashboard/DashboardRevenue';
+import DashboardInventory from '../components/dashboard/DashboardInventory';
+import DashboardAnalytics from '../components/dashboard/DashboardAnalytics';
+import DashboardAI from '../components/dashboard/DashboardAI';
+import DashboardHealth from '../components/dashboard/DashboardHealth';
+import DashboardAccount from '../components/dashboard/DashboardAccount';
+import DashboardSupport from '../components/dashboard/DashboardSupport';
+import MarketIntel from '../components/dashboard/MarketIntel';
+import DashboardAdmin from '../components/dashboard/DashboardAdmin';
+
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('tab-dash');
@@ -772,15 +784,10 @@ const Dashboard = () => {
       "trend": (detailed current market trend), 
       "demo": (specific target audience profile), 
       "top5": (array of 5 specific high-potential products), 
-      const bizType = profile?.business_type || 'E-commerce';
-      const userMessage = trendPrompt || `Fetch current viral trends for ${bizType}`;
-      const systemPrompt = "You are an AI Market Analyst for Tokcer AI. Return ONLY a JSON object with 'topics' (array of 3 objects with topic, platform, trend_percent, color_class) and 'summary' (object with summary, risk, strategy).";
+      "risk": (potential business risks),
+      "strategy": (actionable execution strategy).`;
       
-      const result = await callDeepSeek(systemPrompt, userMessage);
-      const data = JSON.parse(result.replace(/```json|```/g, '').trim());
-      
-      if (data.topics) setViralTopics(data.topics);
-      if (data.summary) setLiveSummary(data.summary);
+      const result = await callDeepSeek(systemPrompt, trendPrompt);
       setTrendResult(result);
 
       // Log Usage
@@ -906,1517 +913,161 @@ const Dashboard = () => {
     }, 2000);
   };
 
-  const renderSupportCenter = () => {
-    if (supportSubmitted) {
-      return (
-        <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
-          <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
-            <iconify-icon icon="solar:check-circle-bold" className="text-5xl text-emerald-500"></iconify-icon>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">{t('supportSuccess')}</h2>
-          <p className="text-zinc-400 max-w-sm mb-8">{t('supportSuccessDesc')}</p>
-          <button 
-            onClick={() => { setSupportSubmitted(false); setActiveMenu('tab-dash'); }}
-            className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all"
-          >
-            {t('backToDashboard')}
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <header>
-          <h2 className="text-2xl font-semibold text-white tracking-tight">{t('supportCenter')}</h2>
-          <p className="text-xs text-zinc-400 mt-1">{t('supportDesc')}</p>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Bug Report Option */}
-          <div 
-            onClick={() => setSupportType('bug')}
-            className={`cursor-pointer p-6 rounded-2xl border transition-all ${supportType === 'bug' ? 'bg-orange-950/20 border-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'}`}
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${supportType === 'bug' ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400'}`}>
-              <iconify-icon icon="solar:danger-bold" className="text-2xl"></iconify-icon>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('reportBug')}</h3>
-            <p className="text-xs text-zinc-500 leading-relaxed">{t('bugDesc')}</p>
-          </div>
-
-          {/* Feature Suggestion Option */}
-          <div 
-            onClick={() => setSupportType('feature')}
-            className={`cursor-pointer p-6 rounded-2xl border transition-all ${supportType === 'feature' ? 'bg-orange-950/20 border-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'}`}
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${supportType === 'feature' ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400'}`}>
-              <iconify-icon icon="solar:lightbulb-bold" className="text-2xl"></iconify-icon>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('suggestFeature')}</h3>
-            <p className="text-xs text-zinc-500 leading-relaxed">{t('featureDesc')}</p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSupportSubmit} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 space-y-6 shadow-sm">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
-                {supportType === 'bug' ? t('bugTitleLabel') : t('featureTitleLabel')}
-              </label>
-              <input 
-                type="text" 
-                required
-                value={supportTitle}
-                onChange={(e) => setSupportTitle(e.target.value)}
-                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition-all placeholder:text-zinc-600"
-                placeholder={supportType === 'bug' ? t('bugTitlePlaceholder') : t('featureTitlePlaceholder')}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
-                {supportType === 'bug' ? t('bugDetailLabel') : t('featureDetailLabel')}
-              </label>
-              <textarea 
-                required
-                rows="5"
-                value={supportDesc}
-                onChange={(e) => setSupportDesc(e.target.value)}
-                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition-all placeholder:text-zinc-600 resize-none"
-                placeholder={supportType === 'bug' ? t('bugDetailPlaceholder') : t('featureDetailPlaceholder')}
-              ></textarea>
-            </div>
-
-            {supportType === 'bug' && (
-              <div>
-                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
-                  {t('uploadScreenshot')}
-                </label>
-                <div className="flex items-center gap-4">
-                  <label className="cursor-pointer flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-xs font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white transition-all">
-                    <iconify-icon icon="solar:camera-linear" className="text-lg"></iconify-icon>
-                    {supportFile ? supportFile.name : t('uploadScreenshot')}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                  </label>
-                  {supportFilePreview && (
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-zinc-700">
-                      <img src={supportFilePreview} alt="Preview" className="w-full h-full object-cover" />
-                      <button 
-                        type="button"
-                        onClick={() => { setSupportFile(null); setSupportFilePreview(null); }}
-                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                      >
-                        <iconify-icon icon="solar:trash-bin-trash-bold" className="text-white"></iconify-icon>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button 
-            type="submit"
-            disabled={isSubmittingSupport}
-            className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white py-4 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2"
-          >
-            {isSubmittingSupport ? (
-              <><iconify-icon icon="solar:spinner-linear" className="text-xl animate-spin"></iconify-icon> {t('sending')}</>
-            ) : (
-              <><iconify-icon icon="solar:send-square-bold" className="text-xl"></iconify-icon> {t('sendReport')}</>
-            )}
-          </button>
-        </form>
-      </div>
-    );
-  };
-
-  const renderAdminApproval = () => {
-    return (
-      <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <header>
-          <h2 className="text-2xl font-semibold text-white tracking-tight">Dashboard Internal Admin</h2>
-          <p className="text-xs text-zinc-400 mt-1">Review dan aktivasi pendaftaran dari Partner.</p>
-        </header>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-white/5 text-[10px] text-zinc-500 font-black uppercase tracking-widest border-b border-zinc-800/50">
-                  <th className="px-6 py-4">Toko / Partner</th>
-                  <th className="px-6 py-4">Paket / Bayar</th>
-                  <th className="px-6 py-4">Bukti</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {adminClients.length === 0 && !isAdminLoading && (
-                  <tr>
-                    <td colSpan="5" className="py-20 text-center text-zinc-500 italic">Belum ada data pendaftaran.</td>
-                  </tr>
-                )}
-                {adminClients.map((client) => (
-                  <tr key={client.id} className="border-b border-zinc-800/30 hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-white">{client.shop_name}</div>
-                      <div className="text-[10px] text-zinc-500">{client.email}</div>
-                      <div className="text-[9px] text-orange-500 font-black mt-1 uppercase tracking-tighter">BY: {client.partners?.full_name || 'Partner Unknown'}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-xs font-bold text-zinc-300 uppercase">{client.plan}</div>
-                      <div className="text-[10px] text-zinc-500 uppercase">{client.payment_method}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {client.payment_proof_url ? (
-                        <button className="text-orange-500 hover:underline text-[10px] font-bold" onClick={() => window.open(client.payment_proof_url)}>Lihat Bukti</button>
-                      ) : (
-                        <span className="text-zinc-600 text-[10px]">No File</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase border ${
-                        client.status === 'active' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10' : 'text-amber-500 border-amber-500/20 bg-amber-500/10'
-                      }`}>
-                        {client.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {client.status === 'pending' && (
-                        <button 
-                          onClick={() => handleApproveClient(client.id, client.email, client.shop_name)}
-                          disabled={isAdminLoading}
-                          className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-600/20 transition-all"
-                        >
-                          Approve
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const renderContent = () => {
     switch (activeMenu) {
-      case 'tab-admin': return renderAdminApproval();
-      case 'tab-dash': {
-        // REAL DATA CALCULATION
-        let totalRevenue = 0;
-        const now = new Date();
-        
-        if (timeFilter === 'Hari Ini') {
-          const today = now.toISOString().split('T')[0];
-          totalRevenue = orders.filter(o => o.order_date.startsWith(today)).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-        } else if (timeFilter === 'Bulan Ini') {
-          const thisMonth = now.getMonth();
-          const thisYear = now.getFullYear();
-          totalRevenue = orders.filter(o => {
-            const d = new Date(o.order_date);
-            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-          }).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-        } else if (timeFilter.includes('Bulan Terakhir')) {
-          const months = parseInt(timeFilter);
-          const cutoff = new Date();
-          cutoff.setMonth(cutoff.getMonth() - months);
-          totalRevenue = orders.filter(o => new Date(o.order_date) >= cutoff).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-        }
-
-        const estimasiOmzet = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
-        const estimasiProfit = `Rp ${(totalRevenue * 0.2).toLocaleString('id-ID')}`; // 20% estimated margin
-
+      case 'tab-admin':
         return (
-          <div className="relative z-10 space-y-6">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-              <div>
-                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('overview')}</h2>
-                <p className="text-xs text-zinc-400 mt-1">{t('monitorShop')}</p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto z-50">
-                {/* Platform Filter */}
-                <div className="relative w-full sm:w-auto">
-                  <div
-                    onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
-                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                  >
-                    <div className="flex items-center gap-2">
-                      <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
-                      {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
-                    </div>
-                    <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="sm:ml-2 text-zinc-500"></iconify-icon>
-                  </div>
-                  {showPlatformDropdown && (
-                    <div className="absolute top-full left-0 sm:right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] py-1 overflow-hidden">
-                      {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
-                        <div
-                          key={val}
-                          onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${platformFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                        >
-                          {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
-                          {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                          {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
-                          {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
-                          {label}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Period Filter */}
-                <div className="relative w-full sm:w-auto">
-                  <div 
-                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                  >
-                    <div className="flex items-center gap-2">
-                      <iconify-icon icon="solar:calendar-linear"></iconify-icon> 
-                      {t(timeFilter)}
-                    </div>
-                    <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
-                  </div>
-                  {showFilterDropdown && (
-                    <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] overflow-hidden">
-                      <div className="py-1">
-                        {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
-                          <div 
-                            key={option}
-                            onClick={() => {
-                              setTimeFilter(option);
-                              setShowFilterDropdown(false);
-                            }}
-                            className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                          >
-                            {t(option)}
-                            {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </header>
-            
-                <div className="text-[10px] text-orange-500 mt-1 flex items-center gap-1">
-                  <iconify-icon icon="solar:arrow-up-linear"></iconify-icon> +12% {t('vsYesterday')}
-                </div>
-                <div className="mt-3 pt-3 border-t border-zinc-800">
-                  <div className="text-[10px] text-zinc-500 mb-1">{t('profitHariIni')}</div>
-                  <div className="text-base font-semibold text-emerald-400">Rp 1.27M</div>
-                  <div className="text-[10px] text-emerald-500 flex items-center gap-1 mt-0.5">
-                    <iconify-icon icon="solar:arrow-up-linear"></iconify-icon> +8.5% {t('vsYesterday')}
-                  </div>
-                </div>
-              </div>
-
-              {/* Conversion Rate */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-blue-500/30 transition-colors">
-                <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
-                <div className="text-2xl font-semibold text-white tracking-tight">4.8%</div>
-                <div className="text-[10px] text-blue-500 mt-1 flex items-center gap-1">
-                  <iconify-icon icon="solar:arrow-up-linear"></iconify-icon> {t('industryAvg')}
-                </div>
-              </div>
-
-              {/* Health Score */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-amber-500/30 transition-colors flex flex-col justify-between">
-                <div className="text-xs font-medium text-zinc-400 mb-2 flex items-center gap-2">
-                  {t('healthTitle')}
-                  <iconify-icon icon="solar:shield-check-linear" className="text-amber-500"></iconify-icon>
-                </div>
-                <div className="flex items-end gap-2">
-                  <div className="text-2xl font-semibold text-amber-500 tracking-tight">92</div>
-                  <div className="text-[10px] text-zinc-500 mb-1">/100</div>
-                </div>
-                <div className="w-full bg-zinc-800 rounded-full h-1.5 mt-2">
-                  <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '92%' }}></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Row 2: Analytics & Notifications */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Chart & Profit - 2/3 width */}
-              <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col shadow-sm">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-4">
-                  <div>
-                    <div className="text-xs font-medium text-zinc-400 mb-1">{t('estProfit')} ({t(timeFilter)})</div>
-                    <div className="text-3xl font-semibold text-white tracking-tight">{estimasiProfit}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-medium text-zinc-400 mb-1">{t('totOmzet')} ({t(timeFilter)})</div>
-                    <div className="text-xl font-semibold text-zinc-300">{estimasiOmzet}</div>
-                  </div>
-            {/* Row 1: Top Metrics Grid (4 columns) */}
-            {(() => {
-                const today = new Date().toISOString().split('T')[0];
-                const todayOrders = orders.filter(o => o.order_date.startsWith(today));
-                const todayRev = todayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-                const totalRev = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-                const healthScore = products.length > 0 
-                    ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
-                    : 100;
-
-                return (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {/* Revenue Card */}
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-orange-500/30 transition-colors">
-                      <div className="text-xs font-medium text-zinc-400 mb-2">{t('revenue')}</div>
-                      <div className="text-2xl font-semibold text-white tracking-tight">Rp {totalRev.toLocaleString('id-ID')}</div>
-                      <div className="mt-3 pt-3 border-t border-zinc-800">
-                        <div className="text-[10px] text-zinc-500 mb-1">{t('revenueToday')}</div>
-                        <div className="text-base font-semibold text-orange-500">Rp {todayRev.toLocaleString('id-ID')}</div>
-                      </div>
-                    </div>
-
-                    {/* Profit Card */}
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-emerald-500/30 transition-colors">
-                      <div className="text-xs font-medium text-zinc-400 mb-2">Est. Profit</div>
-                      <div className="text-2xl font-semibold text-white tracking-tight">Rp {(totalRev * 0.2).toLocaleString('id-ID')}</div>
-                      <div className="mt-3 pt-3 border-t border-zinc-800">
-                        <div className="text-[10px] text-zinc-500 mb-1">Profit Hari Ini</div>
-                        <div className="text-base font-semibold text-emerald-400">Rp {(todayRev * 0.2).toLocaleString('id-ID')}</div>
-                      </div>
-                    </div>
-
-                    {/* Conversion Rate Card */}
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-blue-500/30 transition-colors">
-                      <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
-                      <div className="text-2xl font-semibold text-white tracking-tight">3.8%</div>
-                      <div className="mt-3 pt-3 border-t border-zinc-800 flex items-center justify-between">
-                        <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">Status</span>
-                        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Good</span>
-                      </div>
-                    </div>
-
-                    {/* Shop Health Card */}
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:border-rose-500/30 transition-colors">
-                      <div className="text-xs font-medium text-zinc-400 mb-2">Shop Health</div>
-                      <div className="text-2xl font-semibold text-white tracking-tight">{healthScore}%</div>
-                      <div className="mt-3 pt-3 border-t border-zinc-800 flex items-center justify-between">
-                        <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">Stock</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${healthScore < 100 ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                          {healthScore < 100 ? 'Alert' : 'Safe'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-            })()}
-                {(() => {
-                  // Real Daily Data Aggregation (Last 7 Days)
-                  const labels = [];
-                  const dailyOmzet = [];
-                  const dailyProfit = [];
-                  
-                  for (let i = 6; i >= 0; i--) {
-                    const d = new Date();
-                    d.setDate(d.getDate() - i);
-                    const dateStr = d.toISOString().split('T')[0];
-                    labels.push(d.toLocaleDateString('id-ID', { weekday: 'short' }));
-                    
-                    const dayOrders = orders.filter(o => o.order_date.startsWith(dateStr));
-                    const revenue = dayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-                    dailyOmzet.push(revenue / 1000); // in K
-                    dailyProfit.push((revenue * 0.2) / 1000); // 20% margin in K
-                  }
-
-                  const maxVal = Math.max(...dailyOmzet, 100);
-                  
-                  return (
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm mb-8">
-                      <div className="flex items-center justify-between mb-8">
-                        <div>
-                          <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
-                            <iconify-icon icon="solar:chart-square-bold" className="text-orange-500"></iconify-icon>
-                            {t('revenueTrend')}
-                          </h3>
-                          <p className="text-[10px] text-zinc-500 mt-1">Data penjualan harian (Ribu Rupiah)</p>
-                        </div>
-                      </div>
-                      
-                      <div className="h-64 flex items-end justify-between gap-2 px-2 relative">
-                        {/* Y-Axis labels */}
-                        <div className="absolute -left-2 inset-y-0 flex flex-col justify-between text-[8px] text-zinc-600 font-mono py-2">
-                          <span>{Math.round(maxVal)}k</span>
-                          <span>{Math.round(maxVal/2)}k</span>
-                          <span>0</span>
-                        </div>
-
-                        {dailyOmzet.map((val, i) => (
-                          <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                            {/* Omzet Bar */}
-                            <div 
-                              className="w-full max-w-[30px] bg-zinc-800 rounded-t-lg group-hover:bg-orange-600 transition-all duration-500 relative"
-                              style={{ height: `${(val / maxVal) * 100}%` }}
-                            >
-                              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black border border-zinc-800 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
-                                Rp {Math.round(val)}k
-                              </div>
-                            </div>
-                            <span className="text-[10px] text-zinc-500 mt-3 font-medium">{labels[i]}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* System Notifications - 1/3 width */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm flex flex-col">
-                <div className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                  <iconify-icon icon="solar:bell-bing-linear" className="text-orange-500"></iconify-icon>
-                  {t('notif')}
-                </div>
-                
-                <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2 max-h-[250px]">
-                  <div className="bg-black border border-zinc-800 rounded-xl p-3">
-                    <div className="flex justify-between items-start mb-1">
-                      <div className="text-xs font-medium text-white">{t('quota')}</div>
-                      <div className="text-[10px] text-zinc-500">Just now</div>
-                    </div>
-                    <div className="text-[10px] text-zinc-400 mb-2">{t('quotaDesc')}</div>
-                    <div className="w-full bg-zinc-800 rounded-full h-1">
-                      <div className="bg-orange-500 h-1 rounded-full" style={{ width: '42%' }}></div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-black border border-zinc-800 rounded-xl p-3">
-                    <div className="flex justify-between items-start mb-1">
-                      <div className="text-xs font-medium text-white">{t('tiktokIntegrate')}</div>
-                      <div className="text-[10px] text-zinc-500">2 hrs ago</div>
-                    </div>
-                    <div className="text-[10px] text-zinc-400">{t('tiktokIntegrateDesc')}</div>
-                  </div>
-
-                  <div className="bg-black border border-zinc-800 rounded-xl p-3">
-                    <div className="flex justify-between items-start mb-1">
-                      <div className="text-xs font-medium text-white">{t('specialPromo')}</div>
-                      <div className="text-[10px] text-zinc-500">1 day ago</div>
-                    </div>
-                    <div className="text-[10px] text-zinc-400">{t('specialPromoDesc')}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Row 3: Activities Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Recent Transactions */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="text-sm font-semibold text-white">{t('recentTrx')}</div>
-                  <button onClick={() => setActiveMenu('tab-omzet')} className="text-xs text-orange-500 hover:text-orange-400 transition-colors">{t('viewAll')}</button>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { id: '#TK-9921', item: 'Sepatu Sneakers A1', price: 'Rp 350.000', platform: 'TikTok', icon: 'ri:tiktok-fill', color: 'text-zinc-300' },
-                    { id: '#SP-8834', item: 'Kaos Polos Premium', price: 'Rp 120.000', platform: 'Shopee', icon: 'simple-icons:shopee', color: 'text-orange-500' },
-                    { id: '#TP-7712', item: 'Jaket Hoodie Urban', price: 'Rp 450.000', platform: 'Tokopedia', icon: 'simple-icons:tokopedia', color: 'text-teal-400' }
-                  ].map((trx, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl hover:bg-zinc-800/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${trx.color}`}>
-                          <iconify-icon icon={trx.icon}></iconify-icon>
-                        </div>
-                        <div>
-                          <div className="text-xs font-medium text-white">{trx.item}</div>
-                          <div className="text-[10px] text-zinc-500 font-mono">{trx.id} • {trx.platform}</div>
-                        </div>
-                      </div>
-                      <div className="text-xs font-medium text-white">{trx.price}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Low Stock Alerts */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="text-sm font-semibold text-white">{t('lowStock')}</div>
-                  <button onClick={() => setActiveMenu('tab-inventory')} className="text-xs text-orange-500 hover:text-orange-400 transition-colors">{t('manageInv')}</button>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { item: 'Jaket Hoodie Urban (Abu)', sku: 'JH-URB-GRY', stock: 0, status: t('outOfStock'), statusColor: 'text-rose-500', bg: 'bg-rose-500/10 border-rose-500/20' },
-                    { item: 'Kaos Polos Premium (Hitam)', sku: 'KP-PRM-BLK', stock: 12, status: t('runningLow'), statusColor: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/20' },
-                    { item: 'Celana Cargo Pria (Cream)', sku: 'CC-M-CRM', stock: 15, status: t('runningLow'), statusColor: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/20' }
-                  ].map((prod, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl hover:bg-zinc-800/50 transition-colors">
-                      <div>
-                        <div className="text-xs font-medium text-white">{prod.item}</div>
-                        <div className="text-[10px] text-zinc-500 font-mono">{t('sku')}: {prod.sku}</div>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <div className={`text-xs font-semibold ${prod.statusColor}`}>{prod.stock} Pcs</div>
-                        <div className={`text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider mt-1 border ${prod.bg} ${prod.statusColor}`}>{prod.status}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardAdmin 
+            adminClients={adminClients}
+            isAdminLoading={isAdminLoading}
+            handleApproveClient={handleApproveClient}
+          />
         );
-      }
+      case 'tab-dash':
+        return (
+          <DashboardOverview 
+            t={t} 
+            orders={orders} 
+            products={products} 
+            timeFilter={timeFilter}
+            setTimeFilter={setTimeFilter}
+            showFilterDropdown={showFilterDropdown}
+            setShowFilterDropdown={setShowFilterDropdown}
+            platformFilter={platformFilter}
+            setPlatformFilter={setPlatformFilter}
+            showPlatformDropdown={showPlatformDropdown}
+            setShowPlatformDropdown={setShowPlatformDropdown}
+          />
+        );
       case 'tab-omzet':
         return (
-          <div className="relative z-10">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-              <div>
-                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('revenue')}</h2>
-                <p className="text-xs text-zinc-400 mt-1">{t('revenueDesc') || 'Detailed sales performance across multiple channels.'}</p>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap justify-end w-full sm:w-auto">
-                {/* Platform Filter Dropdown */}
-                <div className="relative w-full sm:w-auto">
-                  <div
-                    onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
-                    className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-700 transition-colors w-full justify-between sm:justify-start"
-                  >
-                    <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
-                    {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
-                    <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="text-zinc-500"></iconify-icon>
-                  </div>
-                  {showPlatformDropdown && (
-                    <div className="absolute top-full right-0 mt-1 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
-                      {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
-                        <div
-                          key={val}
-                          onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${platformFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                        >
-                          {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
-                          {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                          {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
-                          {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
-                          {label}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Time Filter Dropdown */}
-                <div className="relative w-full sm:w-auto">
-                  <div
-                    onClick={() => setShowOmzetTimeDropdown(!showOmzetTimeDropdown)}
-                    className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-700 transition-colors w-full justify-between sm:justify-start"
-                  >
-                    <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon>
-                    {omzetTimeFilter === 'all' ? t('omzetFilterAll') : t(`omzetFilter${omzetTimeFilter.charAt(0).toUpperCase() + omzetTimeFilter.slice(1)}`) || omzetTimeFilter}
-                    <iconify-icon icon={showOmzetTimeDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="text-zinc-500"></iconify-icon>
-                  </div>
-                  {showOmzetTimeDropdown && (
-                    <div className="absolute top-full right-0 mt-1 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
-                      {[
-                        ['all', t('omzetFilterAll')],
-                        ['Today', t('omzetFilterToday')],
-                        ['Yesterday', t('omzetFilterYesterday')],
-                        ['Week', t('omzetFilterWeek')],
-                        ['Month', t('omzetFilterMonth')],
-                        ['2Month', t('omzetFilter2Month')],
-                        ['3Month', t('omzetFilter3Month')],
-                      ].map(([val, label]) => (
-                        <div
-                          key={val}
-                          onClick={() => { setOmzetTimeFilter(val); setShowOmzetTimeDropdown(false); }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${omzetTimeFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                        >
-                          {label}
-                          {omzetTimeFilter === val && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <button onClick={handleDownloadReport} className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 text-xs font-medium px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm">
-                  <iconify-icon icon="solar:download-linear" className="text-base"></iconify-icon>
-                  {t('downloadReport')}
-                </button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden shadow-sm hover:border-orange-500/30 transition-colors">
-                <div className="text-xs font-medium text-zinc-400 mb-2">{t('incomeToday')}</div>
-                <div className="text-xl font-semibold text-white">Rp 4.250.000</div>
-                <div className="text-[10px] text-orange-500 mt-2 flex items-center gap-1 font-medium">
-                  <iconify-icon icon="solar:arrow-up-linear"></iconify-icon> +5.2%
-                </div>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden shadow-sm hover:border-orange-500/30 transition-colors">
-                <div className="text-xs font-medium text-zinc-400 mb-2">{t('activeOrders')}</div>
-                <div className="text-xl font-semibold text-white">32 <span className="text-xs font-normal text-zinc-500 ml-1">{t('orders')}</span></div>
-                <div className="text-[10px] text-zinc-400 mt-2 flex items-center gap-1 font-medium">
-                  <iconify-icon icon="solar:clock-circle-linear"></iconify-icon> {t('processing')}
-                </div>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden shadow-sm hover:border-amber-500/30 transition-colors">
-                <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
-                <div className="text-xl font-semibold text-amber-500">4.8%</div>
-                <div className="text-[10px] text-amber-500 mt-2 flex items-center gap-1 font-medium">
-                  <iconify-icon icon="solar:arrow-up-linear"></iconify-icon> +1.2%
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-900 shadow-sm w-full overflow-x-auto custom-scrollbar">
-              <div className="min-w-[600px]">
-                <div className="grid grid-cols-12 gap-4 p-4 bg-black text-[10px] font-medium text-zinc-500 uppercase tracking-widest border-b border-zinc-800">
-                  <div className="col-span-2">{t('orderId')}</div>
-                  <div className="col-span-4">{t('productSold')}</div>
-                  <div className="col-span-2">{t('platform')}</div>
-                  <div className="col-span-2 text-right">{t('amount')}</div>
-                  <div className="col-span-2 text-right">{t('status')}</div>
-                </div>
-                <tbody className="divide-y divide-zinc-800">
-                {orders.length > 0 ? orders.map((trx, idx) => (
-                  <tr key={trx.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                    <td className="py-4 text-xs font-mono text-zinc-500 uppercase">{trx.order_number}</td>
-                    <td className="py-4 text-sm font-medium text-white">{trx.customer_name || 'Customer'}</td>
-                    <td className="py-4 text-xs text-zinc-400 capitalize">{trx.platform}</td>
-                    <td className="py-4 text-sm font-bold text-white">Rp {trx.total_amount?.toLocaleString('id-ID')}</td>
-                    <td className="py-4">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        trx.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' : 
-                        trx.status === 'pending' ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-500/10 text-blue-500'
-                      }`}>
-                        {trx.status}
-                      </span>
-                    </td>
-                    <td className="py-4 text-xs text-zinc-500">
-                      {new Date(trx.order_date).toLocaleDateString('id-ID')}
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan="6" className="py-20 text-center text-zinc-600 italic">Belum ada riwayat transaksi.</td>
-                  </tr>
-                )}
-              </tbody>
-              </div>
-            </div>
-          </div>
+          <DashboardRevenue 
+            t={t}
+            orders={orders}
+            platformFilter={platformFilter}
+            setPlatformFilter={setPlatformFilter}
+            showPlatformDropdown={showPlatformDropdown}
+            setShowPlatformDropdown={setShowPlatformDropdown}
+            omzetTimeFilter={omzetTimeFilter}
+            setOmzetTimeFilter={setOmzetTimeFilter}
+            showOmzetTimeDropdown={showOmzetTimeDropdown}
+            setShowOmzetTimeDropdown={setShowOmzetTimeDropdown}
+            handleDownloadReport={handleDownloadReport}
+          />
         );
       case 'tab-inventory':
         return (
-          <div className="relative z-10">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-              <h2 className="text-2xl font-semibold text-white tracking-tight">{t('inventory')} & Catalog</h2>
-              <button onClick={() => setShowProductModal(true)} className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                <iconify-icon icon="solar:add-circle-linear" className="text-base"></iconify-icon> 
-                {t('addProduct')}
-              </button>
-            </header>
-            
-            <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-900 shadow-sm w-full overflow-x-auto custom-scrollbar">
-              <div className="min-w-[600px]">
-                <div className="grid grid-cols-12 gap-4 p-4 bg-black text-xs font-medium text-zinc-500 uppercase tracking-widest border-b border-zinc-800">
-                  <div className="col-span-5">{t('productSold')}</div>
-                  <div className="col-span-3">{t('sku')}</div>
-                  <div className="col-span-2 text-right">{t('stock')}</div>
-                  <div className="col-span-2 text-right">{t('status')}</div>
-                </div>
-                <div className="divide-y divide-zinc-800">
-                  {products.length > 0 ? products.map((p, i) => (
-                    <div key={p.id} className="grid grid-cols-12 gap-4 p-4 items-center text-sm text-zinc-400 hover:bg-zinc-800/50 transition-colors">
-                      <div className="col-span-5 flex items-center gap-3 md:gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-orange-500 transition-colors border border-zinc-700 shrink-0">
-                          <iconify-icon icon="solar:box-linear" className="text-xl"></iconify-icon>
-                        </div>
-                        <span className="font-medium text-white truncate">{p.name}</span>
-                      </div>
-                      <div className="col-span-3 text-zinc-500 font-mono text-xs bg-zinc-800 w-fit px-2 py-1 rounded border border-zinc-700 truncate">{p.sku || 'NO-SKU'}</div>
-                      <div className="col-span-2 text-right text-white">{p.stock}</div>
-                      <div className="col-span-2 text-right flex justify-end">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] md:text-xs font-medium uppercase tracking-wider shrink-0 ${p.stock > 10 ? 'bg-orange-950/50 text-orange-500 border border-orange-900/50' : 'bg-rose-950/50 text-rose-500 border border-rose-900/50'}`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${p.stock > 10 ? 'bg-orange-500' : 'bg-rose-500 animate-pulse'}`}></div> 
-                          {p.stock > 10 ? t('optimal') : t('runningLow')}
-                        </span>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className="p-10 text-center text-zinc-600 italic">Belum ada data produk.</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardInventory 
+            t={t}
+            products={products}
+            setShowProductModal={setShowProductModal}
+          />
         );
       case 'tab-analytics':
         return (
-          <div className="relative z-10 space-y-6">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-              <div>
-                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketAnalytics')}</h2>
-                <p className="text-sm text-zinc-400 mt-1">{t('analyticsDesc') || 'Performance analysis, tactical strategy, and profit optimization.'}</p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto z-50">
-                {/* Platform Filter */}
-                <div className="relative w-full sm:w-auto">
-                  <div
-                    onClick={() => setShowAnalyticsPlatformDropdown(!showAnalyticsPlatformDropdown)}
-                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                  >
-                    <div className="flex items-center gap-2">
-                      <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
-                      {analyticsPlatform === 'all' ? t('allPlatforms') : analyticsPlatform}
-                    </div>
-                    <iconify-icon icon={showAnalyticsPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="sm:ml-2 text-zinc-500"></iconify-icon>
-                  </div>
-                  {showAnalyticsPlatformDropdown && (
-                    <div className="absolute top-full left-0 sm:right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] py-1 overflow-hidden">
-                      {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
-                        <div
-                          key={val}
-                          onClick={() => { setAnalyticsPlatform(val); setShowAnalyticsPlatformDropdown(false); }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${analyticsPlatform === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                        >
-                          {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
-                          {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                          {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
-                          {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
-                          {label}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Period Filter */}
-                <div className="relative w-full sm:w-auto">
-                  <div 
-                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                    className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                  >
-                    <div className="flex items-center gap-2">
-                      <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon> 
-                      {t(timeFilter)}
-                    </div>
-                    <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
-                  </div>
-                  {showFilterDropdown && (
-                    <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 overflow-hidden">
-                      <div className="py-1">
-                        {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
-                          <div 
-                            key={option}
-                            onClick={() => { setTimeFilter(option); setShowFilterDropdown(false); }}
-                            className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                          >
-                            {t(option)}
-                            {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </header>
-
-            {/* Platform Comparison Cards - Only show if 'all' is selected, or show single platform detail */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex flex-col items-end">
-                      <span className={`text-xs font-bold ${p.trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{p.trend}</span>
-                      <span className="text-[9px] text-zinc-500 uppercase tracking-tighter">Growth</span>
-                    </div>
-                  </div>
-                  <h3 className="text-sm font-medium text-zinc-400">{p.name}</h3>
-                  <div className="text-3xl font-bold text-white mt-1">{p.revenue}</div>
-                  <div className="text-xs text-zinc-500 mt-2 flex items-center gap-2">
-                    <iconify-icon icon="solar:bag-check-bold-duotone" className="text-orange-500"></iconify-icon>
-                    {p.orders} {t('done')}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* AI Strategic Intel Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Peak Hours & Ads Optimization */}
-              <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                    <iconify-icon icon="solar:bolt-circle-linear" className="text-white text-xl"></iconify-icon>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white">{t('strategicIntel')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{t('adsTrafficOpt')}</div>
-                    <div className="bg-black/40 border border-zinc-800 rounded-xl p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <iconify-icon icon="solar:clock-circle-linear" className="text-orange-500 mt-0.5"></iconify-icon>
-                        <div>
-                          <div className="text-xs font-medium text-white">{t('goldenHours')} (19:00 - 22:00)</div>
-                          <p className="text-[10px] text-zinc-500 mt-0.5">{t('goldenHoursDesc')}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <iconify-icon icon="solar:star-circle-linear" className="text-orange-500 mt-0.5"></iconify-icon>
-                        <div>
-                          <div className="text-xs font-medium text-white">{t('campaignFlashSale')}</div>
-                          <p className="text-[10px] text-zinc-500 mt-0.5">{t('campaignFlashSaleDesc')}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{t('bundlingPromoIdeas')}</div>
-                    <div className="bg-black/40 border border-zinc-800 rounded-xl p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <iconify-icon icon="solar:box-minimalistic-linear" className="text-orange-500 mt-0.5"></iconify-icon>
-                        <div>
-                          <div className="text-xs font-medium text-white">{t('bundleSneakersKaos')}</div>
-                          <p className="text-[10px] text-zinc-500 mt-0.5">{t('bundleSneakersKaosDesc')}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <iconify-icon icon="solar:gift-linear" className="text-orange-500 mt-0.5"></iconify-icon>
-                        <div>
-                          <div className="text-xs font-medium text-white">{t('buy2get1')}</div>
-                          <p className="text-[10px] text-zinc-500 mt-0.5">{t('buy2get1Desc')}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Selling Ideas / Market Pulse */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col">
-                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-6">{t('marketPulseIdeas')} {analyticsPlatform !== 'all' ? `(${analyticsPlatform})` : ''}</div>
-                <div className="flex-1 space-y-4">
-                  <div className="p-4 bg-orange-600/10 border border-orange-500/20 rounded-xl">
-                    <div className="text-xs font-bold text-orange-500 mb-1">🔥 {t('hotIdea')}</div>
-                    <p className="text-[11px] text-zinc-300 leading-relaxed">{t('hotIdeaDesc')}</p>
-                  </div>
-                  <div className="p-4 bg-zinc-800 rounded-xl border border-zinc-700">
-                    <div className="text-xs font-bold text-white mb-1">💡 {t('contentTip')}</div>
-                    <p className="text-[11px] text-zinc-400 leading-relaxed">{t('contentTipDesc')}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Price Recommendation Engine */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-                <iconify-icon icon="solar:magic-stick-3-linear" className="text-8xl text-orange-500"></iconify-icon>
-              </div>
-              
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center">
-                  <iconify-icon icon="solar:globus-linear" className="text-white"></iconify-icon>
-                </div>
-                  </div>
-                </div>
-                
-                <div className="bg-black/50 border border-zinc-800 rounded-xl p-5 flex flex-col justify-center">
-                  <div className="text-center space-y-4">
-                    <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
-                      <iconify-icon icon="solar:chart-line-up-bold" className="text-3xl text-emerald-400"></iconify-icon>
-                    </div>
-                    <div className="text-4xl font-bold text-white">+Rp 4.2M</div>
-                    <p className="text-xs text-zinc-400">{t('potentialProfit')}</p>
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-left">
-                      <p className="text-[10px] text-zinc-500 leading-relaxed">{t('priceRecTip') || (lang === 'id' ? 'Terapkan rekomendasi harga secara manual melalui platform masing-masing untuk memaksimalkan profit bulan ini.' : 'Apply price recommendations manually through each platform to maximize profit this month.')}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardAnalytics 
+            t={t}
+            timeFilter={timeFilter}
+            setTimeFilter={setTimeFilter}
+            showFilterDropdown={showFilterDropdown}
+            setShowFilterDropdown={setShowFilterDropdown}
+            analyticsPlatform={analyticsPlatform}
+            setAnalyticsPlatform={setAnalyticsPlatform}
+            showAnalyticsPlatformDropdown={showAnalyticsPlatformDropdown}
+            setShowAnalyticsPlatformDropdown={setShowAnalyticsPlatformDropdown}
+            lang={lang}
+          />
         );
-      case 'tab-health': {
-        const healthData = {
-          all:       { chat: '98%', ship: '1.2 Days', return: '0.4%', rating: '4.9/5.0', score: 92 },
-          TikTok:    { chat: '99%', ship: '1.0 Days', return: '0.3%', rating: '4.9/5.0', score: 95 },
-          Shopee:    { chat: '97%', ship: '1.3 Days', return: '0.5%', rating: '4.8/5.0', score: 88 },
-          Tokopedia: { chat: '96%', ship: '1.5 Days', return: '0.6%', rating: '4.7/5.0', score: 85 },
-        };
-        const hd = healthData[healthPlatform] || healthData.all;
+      case 'tab-health':
         return (
-          <div className="relative z-10 space-y-6">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-              <div>
-                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('shopHealth')}</h2>
-                <p className="text-sm text-zinc-400 mt-1">{t('shopHealthDesc')}</p>
-              </div>
-              <div className="relative w-full sm:w-auto">
-                <div 
-                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                >
-                  <div className="flex items-center gap-2">
-                    <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon> 
-                    {t(timeFilter)}
-                  </div>
-                  <iconify-icon icon={showFilterDropdown ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} className="sm:ml-2 text-zinc-400"></iconify-icon>
-                </div>
-                {showFilterDropdown && (
-                  <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 overflow-hidden">
-                    <div className="py-1">
-                      {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
-                        <div 
-                          key={option}
-                          onClick={() => { setTimeFilter(option); setShowFilterDropdown(false); }}
-                          className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${timeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                        >
-                          {t(option)}
-                          {timeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </header>
-
-            {/* Platform Tabs */}
-            <div className="flex gap-2 flex-wrap">
-              {[['all', t('allPlatforms'), 'solar:widget-linear', 'text-orange-400'],
-                ['TikTok', 'TikTok Shop', 'ri:tiktok-fill', 'text-zinc-300'],
-                ['Shopee', 'Shopee', 'simple-icons:shopee', 'text-orange-500'],
-                ['Tokopedia', 'Tokopedia', 'solar:shop-2-linear', 'text-teal-400'],
-              ].map(([key, label, icon, icolor]) => (
-                <button
-                  key={key}
-                  onClick={() => setHealthPlatform(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all border ${
-                    healthPlatform === key
-                      ? 'bg-orange-950/40 border-orange-500 text-orange-400'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
-                  }`}
-                >
-                  <iconify-icon icon={icon} className={`text-base ${healthPlatform === key ? 'text-orange-400' : icolor}`}></iconify-icon>
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* Health Score Big Number */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex items-center gap-6 shadow-sm">
-              <div className="relative w-20 h-20 shrink-0">
-                <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="#27272a" strokeWidth="8" />
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="#f97316" strokeWidth="8"
-                    strokeDasharray={`${2 * Math.PI * 34 * hd.score / 100} ${2 * Math.PI * 34}`}
-                    strokeLinecap="round" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-bold text-amber-400">{hd.score}</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">{t('healthTitle')}</p>
-                <p className="text-3xl font-bold text-white">{hd.score}<span className="text-base text-zinc-500 font-normal">/100</span></p>
-                <p className="text-xs text-zinc-400 mt-1">
-                  {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
-                  {hd.score >= 90 ? (lang === 'id' ? ' · Sangat Baik 🏆' : ' · Excellent 🏆') : hd.score >= 80 ? (lang === 'id' ? ' · Baik ✅' : ' · Good ✅') : (lang === 'id' ? ' · Perlu Perhatian ⚠️' : ' · Needs Attention ⚠️')}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { label: t('chatResponse'), value: hd.chat, icon: 'solar:chat-line-linear', color: 'text-emerald-500' },
-                { label: t('shippingSpeed'), value: hd.ship, icon: 'solar:delivery-linear', color: 'text-blue-500' },
-                { label: t('returnRate'), value: hd.return, icon: 'solar:refresh-linear', color: 'text-orange-500' },
-                { label: t('rating'), value: hd.rating, icon: 'solar:star-linear', color: 'text-amber-500' },
-              ].map((m, i) => (
-                <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-center gap-3 mb-3">
-                    <iconify-icon icon={m.icon} className={`text-xl ${m.color}`}></iconify-icon>
-                    <span className="text-xs font-medium text-zinc-500 uppercase">{m.label}</span>
-                  </div>
-                  <div className="text-2xl font-bold text-white">{m.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">{t('aiHealthRec')}</h3>
-              <div className="space-y-4">
-                <div className="flex gap-4 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
-                  <iconify-icon icon="solar:check-read-linear" className="text-emerald-500 text-xl shrink-0"></iconify-icon>
-                  <p className="text-sm text-zinc-300">{t('healthRec1')}</p>
-                </div>
-                <div className="flex gap-4 p-4 bg-orange-500/5 border border-orange-500/20 rounded-xl">
-                  <iconify-icon icon="solar:danger-linear" className="text-orange-500 text-xl shrink-0"></iconify-icon>
-                  <p className="text-sm text-zinc-300">{t('healthRec2')}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardHealth 
+            t={t}
+            lang={lang}
+            healthPlatform={healthPlatform}
+            setHealthPlatform={setHealthPlatform}
+            timeFilter={timeFilter}
+            setTimeFilter={setTimeFilter}
+            showFilterDropdown={showFilterDropdown}
+            setShowFilterDropdown={setShowFilterDropdown}
+          />
         );
-      }
       case 'tab-ai':
         return (
-          <div className="relative z-10">
-            {/* Header */}
-            <header className="mb-6">
-              <h2 className="text-2xl font-semibold text-white tracking-tight flex items-center gap-2">
-                {t('aiGenerator')}
-              </h2>
-              <p className="text-sm text-zinc-400 mt-1">{t('aiDesc')}</p>
-            </header>
-
-            {/* Sub-tab: Content only — Trend Radar moved to Market Intel */}
-            <div className="flex gap-2 mb-8 bg-black border border-zinc-800 rounded-xl p-1 w-fit">
-              <button
-                onClick={() => { setAiSubTab('content'); setAiResult(''); }}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all bg-orange-600 text-white shadow-md"
-              >
-                <iconify-icon icon="solar:magic-stick-3-linear" className="text-base"></iconify-icon>
-                {t('contentGen')}
-              </button>
-            </div>
-
-            {/* === SUB-TAB: CONTENT GENERATOR === */}
-            {aiSubTab === 'content' && (
-              <div className="max-w-2xl space-y-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-500 uppercase tracking-widest">{t('prodDesc')}</label>
-                  <div className={`relative bg-black border rounded-xl shadow-sm transition duration-300 ${isGenerating ? 'border-zinc-700 opacity-60' : 'border-zinc-800 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500/50'}`}>
-                    <textarea
-                      className="w-full bg-transparent p-4 text-sm text-white focus:outline-none placeholder:text-zinc-600 resize-none disabled:cursor-not-allowed"
-                      rows="4"
-                      placeholder={t('aiPromptPlaceholder')}
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      disabled={isGenerating}
-                    ></textarea>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-1">{t('formatOutput')}</label>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Video Content Group */}
-                    <div className={`p-4 rounded-2xl border transition-all ${aiFormat.includes('Video') ? 'bg-orange-950/20 border-orange-500/50' : 'bg-black border-zinc-800'}`}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <iconify-icon icon="solar:video-frame-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
-                        <span className="text-xs font-bold text-white uppercase tracking-wider">{t('videoContent')}</span>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {['TikTok Video', 'Instagram Reels'].map(f => (
-                          <button
-                            key={f}
-                            onClick={() => setAiFormat(f)}
-                            className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left flex items-center justify-between ${aiFormat === f ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'}`}
-                          >
-                            {f}
-                            {aiFormat === f && <iconify-icon icon="solar:check-circle-bold"></iconify-icon>}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Text Content Group */}
-                    <div className={`p-4 rounded-2xl border transition-all ${!aiFormat.includes('Video') ? 'bg-orange-950/20 border-orange-500/50' : 'bg-black border-zinc-800'}`}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <iconify-icon icon="solar:notes-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
-                        <div>
-                          <span className="text-xs font-bold text-white uppercase tracking-wider block">{t('textContent')}</span>
-                          <span className="text-[9px] text-zinc-500 italic block">(Product Name & Description)</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {['Shopee Description', 'Tokopedia Description', 'TikTok Shop Description'].map(f => (
-                          <button
-                            key={f}
-                            onClick={() => setAiFormat(f)}
-                            className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left flex items-center justify-between ${aiFormat === f ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'}`}
-                          >
-                            {f}
-                            {aiFormat === f && <iconify-icon icon="solar:check-circle-bold"></iconify-icon>}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleGenerateAI}
-                  disabled={isGenerating || !aiPrompt}
-                  className="w-full bg-orange-600 text-white py-3.5 rounded-xl text-sm font-bold shadow-md hover:bg-orange-500 transition-all flex justify-center items-center gap-2 border border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isGenerating ? (
-                    <><iconify-icon icon="solar:spinner-linear" className="text-lg animate-spin"></iconify-icon> {t('genLoading')}</>
-                  ) : (
-                    <><iconify-icon icon="solar:stars-bold" className="text-lg"></iconify-icon> Surprise Me!!!</>
-                  )}
-                </button>
-
-                {aiResult && (
-                  <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl relative group">
-                    <button
-                      onClick={() => navigator.clipboard.writeText(aiResult)}
-                      className="absolute top-4 right-4 text-zinc-500 hover:text-orange-500 transition-colors opacity-0 group-hover:opacity-100 p-2 bg-black rounded-md border border-zinc-800"
-                    >
-                      <iconify-icon icon="solar:copy-linear" className="text-lg"></iconify-icon>
-                    </button>
-                    <div className="flex items-center gap-2 mb-4 text-orange-500 text-xs font-medium uppercase tracking-widest">
-                      <iconify-icon icon="solar:check-circle-linear" className="text-base"></iconify-icon>
-                      {t('genResult')}
-                    </div>
-                    <div className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{aiResult}</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <DashboardAI 
+            t={t}
+            aiSubTab={aiSubTab}
+            setAiSubTab={setAiSubTab}
+            aiPrompt={aiPrompt}
+            setAiPrompt={setAiPrompt}
+            aiFormat={aiFormat}
+            setAiFormat={setAiFormat}
+            aiResult={aiResult}
+            setAiResult={setAiResult}
+            isGenerating={isGenerating}
+            handleGenerateAI={handleGenerateAI}
+          />
         );
       case 'tab-market':
-        // Trigger fetch on load
-        if (viralTopics.length === 0) fetchGlobalMarketTrends();
         return (
-          <div className="relative z-10 space-y-6">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketIntelTitle')}</h2>
-                <p className="text-sm text-zinc-400 mt-1">{t('monitorShop')}</p>
-              </div>
-              <div className="relative w-full sm:w-auto">
-                <div 
-                  onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
-                  className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
-                >
-                  <div className="flex items-center gap-2">
-                    <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
-                    {platformFilter === 'all' ? t('allPlatforms') : platformFilter}
-                  </div>
-                  <iconify-icon icon={showPlatformDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="sm:ml-2 text-zinc-500"></iconify-icon>
-                </div>
-                {showPlatformDropdown && (
-                  <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
-                    {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
-                      <div
-                        key={val}
-                        onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
-                        className={`px-4 py-2 text-xs cursor-pointer flex items-center gap-2 transition-colors ${platformFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
-                      >
-                        {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
-                        {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                        {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
-                        {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
-                        {label}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </header>
-
-            {/* Radar Trend AI - Sample Data */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
-                  <iconify-icon icon="solar:radar-linear" className="text-white text-xl"></iconify-icon>
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-white">{t('trendRadarAI')}</h3>
-                  <p className="text-[10px] text-zinc-500">Sample data — powered by AI Market Intelligence</p>
-                </div>
-              </div>
-
-              {/* Manual Search Input */}
-              <div className="mb-5">
-                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">🔍 {lang === 'id' ? 'Cari Kategori / Niche Manual' : 'Search Custom Category / Niche'}</div>
-                <div className="flex gap-2">
-                  <div className={`flex-1 flex items-center gap-2 bg-black border rounded-xl px-3 py-2.5 transition-all ${
-                    isSearchingTrend ? 'border-indigo-500/50 ring-1 ring-indigo-500/30' : 'border-zinc-800 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/30'
-                  }`}>
-                    <iconify-icon icon="solar:magnifer-linear" className="text-zinc-500 text-base shrink-0"></iconify-icon>
-                    <input
-                      type="text"
-                      value={trendCustomInput}
-                      onChange={(e) => { setTrendCustomInput(e.target.value); if (e.target.value) { setTrendSampleKey(null); setTrendCustomResult(null); } }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && trendCustomInput.trim()) {
-                           setTrendPrompt(trendCustomInput.trim());
-                           handleAnalyzeTrend();
-                        }
-                      }}
-                      placeholder={lang === 'id' ? 'Ketik kategori produk... (tekan Enter)' : 'Type product category... (press Enter)'}
-                      className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-600 focus:outline-none"
-                    />
-                    {trendCustomInput && (
-                      <button onClick={() => { setTrendCustomInput(''); setTrendCustomResult(null); }} className="text-zinc-600 hover:text-zinc-400 transition-colors">
-                        <iconify-icon icon="solar:close-circle-linear" className="text-base"></iconify-icon>
-                      </button>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => {
-                       if (!trendCustomInput.trim()) return;
-                       setTrendPrompt(trendCustomInput.trim());
-                       handleAnalyzeTrend();
-                    }}
-                    disabled={!trendCustomInput.trim() || isTrendAnalyzing}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition-all shrink-0"
-                  >
-                    {isTrendAnalyzing ? (
-                      <iconify-icon icon="solar:spinner-linear" className="text-base animate-spin"></iconify-icon>
-                    ) : (
-                      <iconify-icon icon="solar:radar-linear" className="text-base"></iconify-icon>
-                    )}
-                    {lang === 'id' ? 'Analisa' : 'Analyze'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px bg-zinc-800"></div>
-                <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{lang === 'id' ? 'atau pilih contoh' : 'or choose sample'}</span>
-                <div className="flex-1 h-px bg-zinc-800"></div>
-              </div>
-
-              {/* Sample Category Pills */}
-              <div className="flex flex-wrap gap-2 mb-5">
-                {[
-                  { key: 'running', label: '👟 Sepatu Lari' },
-                  { key: 'skincare', label: '✨ Skincare Pria' },
-                  { key: 'thrifting', label: '👔 Outfit Thrifting' },
-                  { key: 'gadget', label: '🎮 Gadget Gaming' },
-                  { key: 'supplement', label: '💊 Suplemen Kesehatan' },
-                ].map(({ key, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => { 
-                      setTrendSampleKey(trendSampleKey === key ? null : key); 
-                      if(trendSampleKey !== key) {
-                        setTrendPrompt(label);
-                        handleAnalyzeTrend();
-                      }
-                    }}
-                    className={`px-3 py-1.5 text-xs rounded-full border font-medium transition-all ${
-                      trendSampleKey === key
-                        ? 'bg-indigo-600 border-indigo-500 text-white'
-                        : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-indigo-500 hover:text-white'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* AI Result Rendering */}
-              {(() => {
-                let d = {
-                    trend: 'Data analisis belum tersedia.',
-                    demo: 'Data analisis belum tersedia.',
-                    top5: ['Memuat...'],
-                    risk: 'Data analisis belum tersedia.',
-                    strategy: 'Data analisis belum tersedia.'
-                };
-                
-                // Use AI result if available
-                if (trendResult) {
-                  try {
-                    // Try to parse JSON from AI response
-                    const cleanJson = trendResult.replace(/```json|```/g, '').trim();
-                    const aiData = JSON.parse(cleanJson);
-                    d = { ...d, ...aiData };
-                  } catch (e) {
-                    console.error("AI Parse Error:", e);
-                    // Fallback to trendResult as string if parsing fails
-                    return <div className="text-xs text-zinc-400 p-4 bg-zinc-800 rounded-xl whitespace-pre-wrap">{trendResult}</div>;
-                  }
-                } else if (!isTrendAnalyzing) return null;
-
-                return (
-                  <div className="space-y-4 border-t border-zinc-800 pt-5 animate-in fade-in duration-700">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-orange-600/10 border border-orange-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">🔥 Tren Terkini</p>
-                        <p className="text-sm text-zinc-200">{d.trend}</p>
-                      </div>
-                      <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">🎯 Target Demografi</p>
-                        <p className="text-sm text-zinc-200">{d.demo}</p>
-                      </div>
-                    </div>
-                    <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">💡 Top 5 Produk Potensial</p>
-                      <div className="space-y-1.5">
-                        {Array.isArray(d.top5) ? d.top5.map((item, i) => (
-                          <p key={i} className="text-sm text-zinc-200">{item}</p>
-                        )) : <p className="text-sm text-zinc-200">{d.top5}</p>}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-rose-600/10 border border-rose-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">⚠️ Risiko</p>
-                        <p className="text-sm text-zinc-200">{d.risk}</p>
-                      </div>
-                      <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-xl p-4">
-                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">🚀 Strategi</p>
-                        <p className="text-sm text-zinc-200">{d.strategy}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
-                      <iconify-icon icon="solar:fire-bold" className="text-orange-500"></iconify-icon>
-                      {t('weeklyViralTopics')}
-                    </h3>
-                    <span className="text-[10px] text-zinc-500 font-mono">LIVE FEED</span>
-                  </div>
-                  <div className="space-y-4">
-                    {(viralTopics.length > 0 ? viralTopics : [
-                      { topic: 'Old Money Aesthetic', platform: 'TikTok', trend_percent: '+142%', color_class: 'text-zinc-300' },
-                      { topic: 'Skincare Barrier Repair', platform: 'Shopee', trend_percent: '+85%', color_class: 'text-orange-500' },
-                      { topic: 'Eco-friendly Home Living', platform: 'Tokopedia', trend_percent: '+64%', color_class: 'text-teal-400' },
-                    ]).map((t, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl animate-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color_class || (t.platform === 'TikTok' ? 'text-zinc-300' : t.platform === 'Shopee' ? 'text-orange-500' : 'text-teal-400')}`}>
-                            <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : t.platform === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'}></iconify-icon>
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-white">{t.topic}</div>
-                            <div className="text-[10px] text-zinc-500 capitalize">{t.platform} Trends</div>
-                          </div>
-                        </div>
-                        <div className="text-xs font-black text-emerald-500">{t.trend_percent}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm h-full">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
-                      <iconify-icon icon="solar:chart-line-up-bold" className="text-indigo-500"></iconify-icon>
-                      {t('liveDataSampling')}
-                    </h3>
-                    <div className="flex gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20"></div>
-                    </div>
-                  </div>
-                  <div className="space-y-5">
-                    <div className="p-4 bg-indigo-600/10 border border-indigo-500/20 rounded-xl relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 p-2 opacity-5">
-                        <iconify-icon icon="solar:graph-bold" className="text-4xl text-indigo-400"></iconify-icon>
-                      </div>
-                      <p className="text-[11px] text-indigo-300 font-bold mb-1 uppercase tracking-wider">{t('aiSummary')}</p>
-                      <p className="text-xs text-zinc-300 leading-relaxed italic">
-                        {liveSummary || (lang === 'id' 
-                          ? '"Menganalisis tren pasar terbaru untuk bisnis Anda..." '
-                          : '"Analyzing latest market trends for your business..." ')
-                        }
-                      </p>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-zinc-500">{t('marketConfidence')}</span>
-                        <span className="text-emerald-500 font-bold">88%</span>
-                      </div>
-                      <div className="w-full bg-zinc-800 rounded-full h-1">
-                        <div className="bg-indigo-500 h-1 rounded-full" style={{ width: '88%' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <MarketIntel 
+            t={t}
+            lang={lang}
+            platformFilter={platformFilter}
+            setPlatformFilter={setPlatformFilter}
+            showPlatformDropdown={showPlatformDropdown}
+            setShowPlatformDropdown={setShowPlatformDropdown}
+            viralTopics={viralTopics}
+            trendCustomInput={trendCustomInput}
+            setTrendCustomInput={setTrendCustomInput}
+            isSearchingTrend={isSearchingTrend}
+            isTrendAnalyzing={isTrendAnalyzing}
+            trendPrompt={trendPrompt}
+            setTrendPrompt={setTrendPrompt}
+            handleAnalyzeTrend={handleAnalyzeTrend}
+            trendSampleKey={trendSampleKey}
+            setTrendSampleKey={setTrendSampleKey}
+            trendResult={trendResult}
+            liveSummary={liveSummary}
+            fetchGlobalMarketTrends={fetchGlobalMarketTrends}
+          />
         );
       case 'tab-support':
-        return renderSupportCenter();
+        return (
+          <DashboardSupport 
+            t={t}
+            lang={lang}
+            supportSubmitted={supportSubmitted}
+            setSupportSubmitted={setSupportSubmitted}
+            setActiveMenu={setActiveMenu}
+            supportType={supportType}
+            setSupportType={setSupportType}
+            handleSupportSubmit={handleSupportSubmit}
+            supportTitle={supportTitle}
+            setSupportTitle={setSupportTitle}
+            supportDesc={supportDesc}
+            setSupportDesc={setSupportDesc}
+            supportFile={supportFile}
+            handleFileChange={handleFileChange}
+            supportFilePreview={supportFilePreview}
+            setSupportFile={setSupportFile}
+            setSupportFilePreview={setSupportFilePreview}
+            isSubmittingSupport={isSubmittingSupport}
+          />
+        );
       case 'tab-account':
         return (
-          <div className="relative z-10 animate-in fade-in duration-500 max-w-md">
-            <header className="mb-8">
-              <h2 className="text-2xl font-semibold text-white tracking-tight">{t('accountSecurity')}</h2>
-              <p className="text-xs text-zinc-400 mt-1">
-                {lang === 'id' ? 'Atur password Anda untuk akses lebih mudah.' : 'Set your password for easier access.'}
-              </p>
-            </header>
-
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-orange-950/50 flex items-center justify-center border border-orange-900/50">
-                  <iconify-icon icon="solar:lock-password-linear" className="text-xl text-orange-500"></iconify-icon>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white">{lang === 'id' ? 'Ubah Password' : 'Change Password'}</h3>
-                  <p className="text-[10px] text-zinc-500">{lang === 'id' ? 'Gunakan kombinasi yang kuat.' : 'Use a strong combination.'}</p>
-                </div>
-              </div>
-
-              {securityMessage.text && (
-                <div className={`p-3 rounded-lg mb-6 text-xs text-center border ${
-                  securityMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-500' : 'bg-rose-500/10 border-rose-500/50 text-rose-500'
-                }`}>
-                  {securityMessage.text}
-                </div>
-              )}
-
-              <form onSubmit={handleUpdatePassword} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">{t('passwordLabel')} Baru</label>
-                  <input 
-                    type="password" 
-                    required
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                    placeholder="••••••••"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Konfirmasi Password</label>
-                  <input 
-                    type="password" 
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                    placeholder="••••••••"
-                  />
-                </div>
-                <button 
-                  type="submit" 
-                  disabled={isUpdatingPassword}
-                  className="w-full bg-orange-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-orange-500 transition-all flex justify-center items-center gap-2"
-                >
-                  {isUpdatingPassword ? <iconify-icon icon="solar:spinner-linear" className="animate-spin text-lg"></iconify-icon> : null}
-                  {isUpdatingPassword ? 'SAVING...' : 'SAVE PASSWORD'}
-                </button>
-              </form>
-            </div>
-          </div>
+          <DashboardAccount 
+            t={t}
+            lang={lang}
+            securityMessage={securityMessage}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            isUpdatingPassword={isUpdatingPassword}
+            handleUpdatePassword={handleUpdatePassword}
+          />
         );
       default:
         return null;
@@ -2425,151 +1076,19 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-screen bg-black text-white font-['Inter',sans-serif] overflow-hidden">
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" 
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <DashboardSidebar 
+        t={t}
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        lang={lang}
+        setLang={setLang}
+        profile={profile}
+        user={user}
+        handleLogout={handleLogout}
+      />
 
-      {/* Sidebar */}
-      <aside className={`fixed lg:relative inset-y-0 left-0 w-64 border-r border-zinc-800 bg-black flex flex-col shrink-0 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? '!translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <img src={logo} alt="Tokcer AI" className="h-8 w-auto" />
-          </h1>
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-zinc-400 hover:text-white">
-            <iconify-icon icon="solar:close-circle-linear" className="text-2xl"></iconify-icon>
-          </button>
-        </div>
-        
-        <div className="p-4 w-full overflow-y-auto custom-scrollbar flex-1">
-          <div className="text-xs font-medium text-zinc-500 uppercase tracking-[0.2em] mb-4 px-3">
-            {t('overview')}
-          </div>
-          <nav className="flex flex-col gap-1.5 md:gap-2">
-            <button 
-              onClick={() => { setActiveMenu('tab-dash'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-dash' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:widget-linear" className="text-lg"></iconify-icon> {t('dashboard')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-omzet'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-omzet' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:chart-square-linear" className="text-lg"></iconify-icon> {t('revenue')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-inventory'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-inventory' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:box-linear" className="text-lg"></iconify-icon> {t('inventory')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-analytics'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-analytics' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:graph-up-linear" className="text-lg"></iconify-icon> {t('analytics')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-ai'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 group/ai relative ${activeMenu === 'tab-ai' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              {activeMenu !== 'tab-ai' && <div className="absolute inset-0 bg-orange-950/50 opacity-0 group-hover/ai:opacity-100 rounded-xl transition-opacity"></div>}
-              <iconify-icon icon="solar:magic-stick-3-linear" className={`text-lg ${activeMenu !== 'tab-ai' ? 'text-orange-500' : ''} relative z-10`}></iconify-icon> 
-              <span className="relative z-10">{t('aiGenerator')}</span>
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-support'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-support' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:headphones-round-linear" className="text-lg"></iconify-icon> {t('supportCenter')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-health'); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-health' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:shield-check-linear" className="text-lg"></iconify-icon> {t('healthScore')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-market'); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-market' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:global-linear" className="text-lg"></iconify-icon> {t('marketIntel')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-account'); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-account' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:shield-keyhole-linear" className="text-lg"></iconify-icon> {t('accountSecurity')}
-            </button>
-          </nav>
-        </div>
-
-        <div className="p-4 border-t border-zinc-800">
-          {/* Language Toggle */}
-          <div className="flex items-center justify-between mb-6 px-2">
-            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Language</span>
-            <div className="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
-              <button 
-                onClick={() => { setLang('id'); localStorage.setItem('tokcer_lang', 'id'); }}
-                className={`px-2 py-1 text-[10px] font-bold rounded ${lang === 'id' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
-              >
-                ID
-              </button>
-              <button 
-                onClick={() => { setLang('en'); localStorage.setItem('tokcer_lang', 'en'); }}
-                className={`px-2 py-1 text-[10px] font-bold rounded ${lang === 'en' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
-              >
-                EN
-              </button>
-            </div>
-          </div>
-
-          {/* User Tier Card */}
-          <div className="mb-4 px-2">
-            <div className="bg-gradient-to-br from-amber-950/60 to-orange-950/40 border border-amber-700/40 rounded-xl p-3 relative overflow-hidden">
-              <div className="absolute -top-4 -right-4 w-12 h-12 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
-                    <iconify-icon icon="solar:crown-bold" className="text-white text-[10px]"></iconify-icon>
-                  </div>
-                  <div>
-                    <p className="text-[8px] text-amber-400/80 uppercase tracking-widest font-semibold">{t('planActive')}</p>
-                    <p className="text-xs font-bold text-amber-300 leading-none">{t('ultimatePlan')}</p>
-                  </div>
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">✓ {t('active')}</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between items-center text-[9px]">
-                  <span className="text-zinc-500">{t('aiQuota')}</span>
-                  <span className="text-amber-400 font-semibold">{profile?.tokens || 0} / 100</span>
-                </div>
-                <div className="w-full bg-zinc-800/80 rounded-full h-1">
-                  <div className="h-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: `${Math.min(100, (profile?.tokens || 0))}%`}}></div>
-                </div>
-              </div>
-              <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
-            </div>
-          </div>
-
-          <div className="mb-4 px-2">
-            <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1">{t('loggedAs')}</p>
-            <p className="text-sm text-zinc-300 truncate">{user?.email || 'admin@tokoanda.com'}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors border border-transparent hover:border-rose-500/50"
-          >
-            <iconify-icon icon="solar:logout-2-linear" className="text-xl"></iconify-icon>
-            {t('logout')}
-          </button>
-        </div>
-      </aside>
 
       {/* Main Content */}
       <main className="flex-1 min-w-0 bg-zinc-900 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
