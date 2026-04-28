@@ -15,17 +15,41 @@ const DashboardHealth = ({
 }) => {
   // --- REAL DATA CALCULATIONS ---
   const getMetricsForPlatform = (plat) => {
-    const filtered = plat === 'all' 
+    const platformFiltered = plat === 'all' 
       ? orders 
       : orders.filter(o => (o.platform || '').toLowerCase() === plat.toLowerCase());
+
+    const getFilteredByTime = (data, filter) => {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        if (filter === 'Hari Ini') {
+          const todayStr = today.toISOString().split('T')[0];
+          return data.filter(o => (o.order_date || '').startsWith(todayStr));
+        } else if (filter === 'Bulan Ini') {
+          const thisMonth = today.getMonth();
+          const thisYear = today.getFullYear();
+          return data.filter(o => {
+            if (!o.order_date) return false;
+            const d = new Date(o.order_date);
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+          });
+        } else if (filter.includes('Bulan Terakhir')) {
+          const months = parseInt(filter) || 1;
+          const cutoff = new Date();
+          cutoff.setMonth(cutoff.getMonth() - months);
+          return data.filter(o => o.order_date && new Date(o.order_date) >= cutoff);
+        }
+        return data;
+    };
+
+    const filtered = getFilteredByTime(platformFiltered, timeFilter);
     
     const total = filtered.length || 1;
     const cancelled = filtered.filter(o => o.status === 'cancelled' || o.status === 'returned').length;
     const retRate = ((cancelled / total) * 100).toFixed(1) + '%';
     
     // Simulations for non-existing DB fields (Chat & Rating)
-    // We base them on platform for "realism"
-    const seed = plat.length; 
+    const seed = plat.length + timeFilter.length; 
     const chatBase = plat === 'all' ? 98 : plat === 'TikTok' ? 99 : plat === 'Shopee' ? 97 : 96;
     const ratingBase = plat === 'all' ? 4.9 : plat === 'TikTok' ? 4.9 : plat === 'Shopee' ? 4.8 : 4.7;
 
