@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import DashboardRevenue from '../dashboard/DashboardRevenue';
+import DashboardInventory from '../dashboard/DashboardInventory';
 
 const TIKTOK_MESSAGES = [
   "AI-nya lagi latian joget pargoy nyari inspirasi hook maut. Biar dia nggak encok pinggang, stopin pakai cara login yuk! 🕺",
@@ -44,6 +46,48 @@ const DashboardPreview = () => {
   const [aiFormat, setAiFormat] = useState('TikTok Video');
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiResult, setAiResult] = useState('');
+
+  // Dummy functions for preview components
+  const t = (key) => {
+    const keys = {
+      revenue: "Data Omzet",
+      inventory: "Inventory",
+      addProduct: "Tambah Produk",
+      incomeToday: "Pendapatan Hari Ini",
+      activeOrders: "Pesanan Aktif",
+      convRate: "Tingkat Konversi",
+      orders: "Pesanan",
+      processing: "Proses",
+      orderId: "Order ID",
+      productSold: "Produk",
+      platform: "Platform",
+      amount: "Nominal",
+      status: "Status",
+      date: "Tanggal",
+      sku: "SKU",
+      stock: "Stok",
+      price: "Harga",
+      runningLow: "Running Low",
+      optimal: "Optimal",
+      allPlatforms: "Semua Platform",
+      omzetFilterAll: "Semua Waktu",
+      downloadReport: "Download Laporan",
+      revenueDesc: "Visualisasi performa penjualan real-time."
+    };
+    return keys[key] || key;
+  };
+
+  const dummyOrders = [
+    { id: '1', order_number: 'TK-12345', customer_name: 'Budi Santoso', platform: 'TikTok', total_amount: 250000, status: 'completed', order_date: new Date().toISOString() },
+    { id: '2', order_number: 'SP-99821', customer_name: 'Siti Aminah', platform: 'Shopee', total_amount: 120000, status: 'pending', order_date: new Date().toISOString() },
+    { id: '3', order_number: 'TP-77612', customer_name: 'Andi Wijaya', platform: 'Tokopedia', total_amount: 450000, status: 'completed', order_date: new Date().toISOString() },
+  ];
+
+  const dummyProducts = [
+    { id: '1', name: 'Kaos Polos Premium', sku: 'KPS-BLK-L', stock: 45, price: 85000, description: 'Bahan cotton combed 30s' },
+    { id: '2', name: 'Sepatu Sneakers A1', sku: 'SNR-WHT-42', stock: 8, price: 350000, description: 'Sneakers putih casual' },
+    { id: '3', name: 'Jaket Hoodie Urban', sku: 'HOD-GRY-XL', stock: 12, price: 220000, description: 'Bahan fleece tebal' },
+  ];
 
   const handleGenerateAI = (e) => {
     e.preventDefault();
@@ -128,6 +172,32 @@ const DashboardPreview = () => {
                </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'tab-omzet' && (
+          <DashboardRevenue 
+            t={t}
+            orders={dummyOrders}
+            platformFilter="all"
+            omzetTimeFilter="all"
+            setPlatformFilter={() => {}}
+            setOmzetTimeFilter={() => {}}
+            showPlatformDropdown={false}
+            setShowPlatformDropdown={() => {}}
+            showOmzetTimeDropdown={false}
+            setShowOmzetTimeDropdown={() => {}}
+            handleDownloadReport={() => alert("Silakan daftar untuk mengunduh laporan asli.")}
+            handleImportOrders={() => alert("Fitur Import hanya tersedia untuk pengguna terdaftar.")}
+          />
+        )}
+
+        {activeTab === 'tab-inventory' && (
+          <DashboardInventory 
+            t={t}
+            products={dummyProducts}
+            setShowProductModal={() => alert("Silakan daftar untuk menambah produk baru.")}
+            handleImportProducts={() => alert("Fitur Import hanya tersedia untuk pengguna terdaftar.")}
+          />
         )}
 
         {activeTab === 'tab-ai' && (
