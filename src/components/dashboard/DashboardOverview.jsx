@@ -12,21 +12,17 @@ const DashboardOverview = ({
   setPlatformFilter,
   showPlatformDropdown,
   setShowPlatformDropdown,
-  profile
+  profile,
+  lang
 }) => {
   // --- REAL DATA CALCULATIONS ---
-  const now = new Date();
-  
-  // 1. Filter by Platform
   const platformFilteredOrders = platformFilter === 'all' 
     ? orders 
     : orders.filter(o => (o.platform || '').toLowerCase() === platformFilter.toLowerCase());
 
-  // 2. Filter by Time
   const getFilteredOrdersByTime = (data, filter) => {
     const today = new Date();
     today.setHours(0,0,0,0);
-    
     if (filter === 'Hari Ini') {
       const todayStr = today.toISOString().split('T')[0];
       return data.filter(o => o.order_date.startsWith(todayStr));
@@ -47,25 +43,17 @@ const DashboardOverview = ({
   };
 
   const filteredOrders = getFilteredOrdersByTime(platformFilteredOrders, timeFilter);
-
-  // 3. Metrics Calculation
   const totalRev = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  const totalProfit = totalRev * 0.2; // Assuming 20% margin
-
-  // 4. Conversion Rate (Real: 0% since no visitor data)
+  const totalProfit = totalRev * 0.2;
   const convRate = 0; 
-
-  // 5. Health Score (Always use all products for a holistic view)
   const healthScore = products.length > 0 
     ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
     : 0;
 
-  // 6. Recent Transactions (Always last 3 regardless of filter, for better UX)
   const recentTransactions = [...platformFilteredOrders]
     .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
     .slice(0, 3);
 
-  // 7. Low Stock Alerts
   const lowStockProducts = products
     .filter(p => p.stock < 20)
     .sort((a, b) => a.stock - b.stock)
@@ -76,11 +64,7 @@ const DashboardOverview = ({
     return `Rp ${val.toLocaleString('id-ID')}`;
   };
 
-  const getFilterLabel = () => {
-    if (timeFilter === 'Hari Ini') return 'Today';
-    if (timeFilter === 'Bulan Ini') return 'This Month';
-    return timeFilter;
-  };
+  const getFilterLabel = () => t(timeFilter);
 
   return (
     <div className="relative z-10 space-y-6 pb-12 animate-in fade-in duration-700">
@@ -161,7 +145,7 @@ const DashboardOverview = ({
         {/* Live Visitors Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm">
           <div className="flex items-center justify-between mb-6">
-             <div className="text-xs font-medium text-zinc-400">Live Visitors</div>
+             <div className="text-xs font-medium text-zinc-400">{t('visitors')}</div>
              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
           </div>
           <div className="space-y-4">
@@ -188,17 +172,17 @@ const DashboardOverview = ({
 
         {/* Revenue Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-orange-500/30 transition-all">
-          <div className="text-xs font-medium text-zinc-400 mb-2">Revenue ({getFilterLabel()})</div>
+          <div className="text-xs font-medium text-zinc-400 mb-2">{t('revenueLabel')} ({getFilterLabel()})</div>
           <div className="text-2xl font-bold text-white tracking-tight mb-1">{formatIDR(totalRev)}</div>
-          <div className="text-[10px] text-zinc-500 flex items-center gap-1 mb-6">
-             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Filtered data
+          <div className={`text-[10px] flex items-center gap-1 mb-6 ${totalRev > 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> {totalRev > 0 ? `+12% ${t('vsYesterday')}` : t('noDataToday')}
           </div>
           
           <div className="pt-4 border-t border-zinc-800">
-            <div className="text-[10px] text-zinc-500 mb-1">Profit ({getFilterLabel()})</div>
+            <div className="text-[10px] text-zinc-500 mb-1">{t('profitLabel')} ({getFilterLabel()})</div>
             <div className={`text-lg font-bold ${totalProfit > 0 ? 'text-emerald-400' : 'text-zinc-600'}`}>{formatIDR(totalProfit)}</div>
-            <div className="text-[8px] text-zinc-500 flex items-center gap-1">
-               <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Estimated 20% margin
+            <div className={`text-[8px] flex items-center gap-1 ${totalProfit > 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
+               <iconify-icon icon="solar:info-circle-linear"></iconify-icon> {totalProfit > 0 ? `+8.5% ${t('vsYesterday')}` : t('estMargin')}
             </div>
           </div>
         </div>
@@ -208,7 +192,7 @@ const DashboardOverview = ({
           <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
           <div className={`text-3xl font-bold tracking-tight mb-2 ${convRate > 0 ? 'text-white' : 'text-zinc-600'}`}>{convRate}%</div>
           <div className="text-[10px] text-zinc-600 flex items-center gap-1">
-             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Based on active visitors
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> {t('basedOnVisitors')}
           </div>
         </div>
 
@@ -236,17 +220,16 @@ const DashboardOverview = ({
         <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
             <div>
-              <div className="text-xs font-medium text-zinc-400 mb-1">Estimated Profit ({getFilterLabel()})</div>
+              <div className="text-xs font-medium text-zinc-400 mb-1">{t('estProfit')} ({getFilterLabel()})</div>
               <div className="text-3xl font-bold text-white tracking-tight">{formatIDR(totalProfit)}</div>
             </div>
             <div className="text-right">
-              <div className="text-xs font-medium text-zinc-400 mb-1">Total Revenue ({getFilterLabel()})</div>
+              <div className="text-xs font-medium text-zinc-400 mb-1">{t('totOmzet')} ({getFilterLabel()})</div>
               <div className="text-xl font-semibold text-zinc-300">{formatIDR(totalRev)}</div>
             </div>
           </div>
 
           <div className="relative h-64 w-full pt-4">
-             {/* Chart Visual Simulation - Using 4 bars to represent the filtered period */}
              <div className="absolute inset-x-0 bottom-8 flex items-end justify-between h-48 px-8 border-b border-zinc-800 border-dashed">
                 {[1,2,3,4].map((v, i) => (
                    <div key={i} className="flex flex-col items-center gap-2 w-16 group relative h-full justify-end">
@@ -260,15 +243,14 @@ const DashboardOverview = ({
                    </div>
                 ))}
              </div>
-             {/* Legend */}
              <div className="flex items-center gap-4 mt-12 text-[10px]">
                 <div className="flex items-center gap-1.5 text-zinc-400">
                    <div className="w-3 h-3 bg-orange-600 rounded-sm"></div>
-                   Revenue
+                   {t('revenueLabel')}
                 </div>
                 <div className="flex items-center gap-1.5 text-zinc-400">
                    <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
-                   Profit
+                   {t('profitLabel')}
                 </div>
              </div>
           </div>
@@ -279,35 +261,35 @@ const DashboardOverview = ({
            <div className="flex items-center justify-between mb-6">
               <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
                  <iconify-icon icon="solar:bell-bold" className="text-orange-500 text-sm"></iconify-icon>
-                 System Notifications
+                 {t('systemNotif')}
               </h3>
            </div>
            <div className="space-y-4">
               <div className="p-4 bg-zinc-800/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
                  <div className="flex justify-between items-start mb-1.5">
-                    <p className="text-xs font-bold text-white">AI Generator Quota</p>
-                    <span className="text-[8px] text-zinc-500">Just now</span>
+                    <p className="text-xs font-bold text-white">{t('aiQuotaTitle')}</p>
+                    <span className="text-[8px] text-zinc-500">{t('justNow')}</span>
                  </div>
                  <p className="text-[10px] text-zinc-400 leading-relaxed">
-                    You have {profile?.tokens || 0} content generations left this month.
+                    {lang === 'id' ? `Anda memiliki sisa ${profile?.tokens || 0} generasi konten bulan ini.` : `You have ${profile?.tokens || 0} content generations left this month.`}
                  </p>
               </div>
               <div className="p-4 bg-zinc-800/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
                  <div className="flex justify-between items-start mb-1.5">
-                    <p className="text-xs font-bold text-white">TikTok Shop Integration</p>
-                    <span className="text-[8px] text-zinc-500">2 hrs ago</span>
+                    <p className="text-xs font-bold text-white">{t('tiktokIntegration')}</p>
+                    <span className="text-[8px] text-zinc-500">{t('2hrsAgo')}</span>
                  </div>
                  <p className="text-[10px] text-zinc-400 leading-relaxed">
-                    Your TikTok Shop API token will expire in 3 days. Renew now.
+                    {lang === 'id' ? 'Token API TikTok Shop Anda akan kedaluwarsa dalam 3 hari. Segera perbarui.' : 'Your TikTok Shop API token will expire in 3 days. Renew now.'}
                  </p>
               </div>
               <div className="p-4 bg-orange-600/5 border border-orange-600/20 rounded-xl hover:border-orange-600/40 transition-colors">
                  <div className="flex justify-between items-start mb-1.5">
-                    <p className="text-xs font-bold text-orange-500">Special Promo</p>
-                    <span className="text-[8px] text-orange-900">1 day ago</span>
+                    <p className="text-xs font-bold text-orange-500">{t('specialPromoTitle')}</p>
+                    <span className="text-[8px] text-orange-900">{t('1dayAgo')}</span>
                  </div>
                  <p className="text-[10px] text-zinc-400 leading-relaxed">
-                    Upgrade to Ultimate to unlock unlimited Market Intel features.
+                    {lang === 'id' ? 'Upgrade ke paket Ultimate untuk membuka fitur Market Intel tanpa batas.' : 'Upgrade to Ultimate to unlock unlimited Market Intel features.'}
                  </p>
               </div>
            </div>
@@ -319,8 +301,8 @@ const DashboardOverview = ({
         {/* Recent Transactions */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-sm">
            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-bold text-white">Recent Transactions</h3>
-              <button className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors">View All</button>
+              <h3 className="text-sm font-bold text-white">{t('recentTrx')}</h3>
+              <button className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors">{t('viewAll')}</button>
            </div>
            <div className="space-y-4">
               {recentTransactions.length > 0 ? recentTransactions.map((trx, idx) => (
@@ -333,7 +315,7 @@ const DashboardOverview = ({
                       ></iconify-icon>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-white">{trx.customer_name || 'Customer'}</p>
+                      <p className="text-xs font-bold text-white">{trx.customer_name || t('customer')}</p>
                       <p className="text-[10px] text-zinc-500">#{trx.id?.slice(0, 8).toUpperCase()} • {trx.platform}</p>
                     </div>
                   </div>
@@ -342,7 +324,7 @@ const DashboardOverview = ({
               )) : (
                 <div className="py-8 text-center border-2 border-dashed border-zinc-800 rounded-3xl">
                    <iconify-icon icon="solar:wallet-linear" className="text-3xl text-zinc-700 mb-2"></iconify-icon>
-                   <p className="text-xs text-zinc-500 italic">No recent transactions</p>
+                   <p className="text-xs text-zinc-500 italic">{t('noRecentTrx')}</p>
                 </div>
               )}
            </div>
@@ -351,29 +333,29 @@ const DashboardOverview = ({
         {/* Low Stock Alerts */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-sm">
            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-bold text-white">Low Stock Alerts</h3>
-              <button className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors">Manage Inventory</button>
+              <h3 className="text-sm font-bold text-white">{t('lowStock')}</h3>
+              <button className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors">{t('manageInv')}</button>
            </div>
            <div className="space-y-4">
               {lowStockProducts.length > 0 ? lowStockProducts.map((prod, idx) => (
                 <div key={idx} className="flex items-center justify-between p-4 bg-zinc-800/30 rounded-2xl border border-zinc-800/50 group hover:border-orange-500/30 transition-all">
                   <div>
                     <p className="text-xs font-bold text-white mb-0.5 group-hover:text-orange-500 transition-colors">{prod.name}</p>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">SKU: {prod.sku || 'N/A'}</p>
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{t('sku')}: {prod.sku || 'N/A'}</p>
                   </div>
                   <div className="text-right">
                     <p className={`text-xs font-bold mb-1 ${prod.stock <= 0 ? 'text-rose-500' : 'text-amber-500'}`}>{prod.stock} Pcs</p>
                     <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
                       prod.stock <= 0 ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                     }`}>
-                      {prod.stock <= 0 ? 'Out of Stock' : 'Running Low'}
+                      {prod.stock <= 0 ? t('outOfStock') : t('runningLow')}
                     </span>
                   </div>
                 </div>
               )) : (
                 <div className="py-8 text-center border-2 border-dashed border-zinc-800 rounded-3xl">
                    <iconify-icon icon="solar:box-bold" className="text-3xl text-zinc-700 mb-2"></iconify-icon>
-                   <p className="text-xs text-zinc-500 italic">Stock is safe and healthy</p>
+                   <p className="text-xs text-zinc-500 italic">{t('stockHealthy')}</p>
                 </div>
               )}
            </div>

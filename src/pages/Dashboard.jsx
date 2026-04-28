@@ -148,6 +148,24 @@ const Dashboard = () => {
       amount: "Nominal",
       status: "Status",
       done: "Selesai",
+      vsYesterday: "vs kemarin",
+      noDataToday: "Belum ada data",
+      noProfitData: "Data profit belum ada",
+      basedOnVisitors: "Berdasarkan pengunjung aktif",
+      filteredData: "Data terfilter",
+      estMargin: "Estimasi margin 20%",
+      systemNotif: "Notifikasi Sistem",
+      aiQuotaTitle: "Kuota AI Generator",
+      tiktokIntegration: "Integrasi TikTok Shop",
+      specialPromoTitle: "Promo Spesial",
+      justNow: "Baru saja",
+      "2hrsAgo": "2 jam yang lalu",
+      "1dayAgo": "1 hari yang lalu",
+      customer: "Pelanggan",
+      runningLow: "Stok Menipis",
+      outOfStock: "Stok Habis",
+      stockHealthy: "Stok aman dan sehat",
+      noRecentTrx: "Belum ada transaksi terbaru",
       downloadReport: "Unduh Laporan",
       processing: "Sedang diproses",
       sku: "SKU",
@@ -456,6 +474,24 @@ const Dashboard = () => {
       supportDesc: "We are ready to help you 24/7.",
       revenueLabel: "Revenue",
       profitLabel: "Profit",
+      vsYesterday: "vs yesterday",
+      noDataToday: "No data today",
+      noProfitData: "No profit data",
+      basedOnVisitors: "Based on active visitors",
+      filteredData: "Filtered data",
+      estMargin: "Estimated 20% margin",
+      systemNotif: "System Notifications",
+      aiQuotaTitle: "AI Generator Quota",
+      tiktokIntegration: "TikTok Shop Integration",
+      specialPromoTitle: "Special Promo",
+      justNow: "Just now",
+      "2hrsAgo": "2 hrs ago",
+      "1dayAgo": "1 day ago",
+      customer: "Customer",
+      runningLow: "Running Low",
+      outOfStock: "Out of Stock",
+      stockHealthy: "Stock is safe and healthy",
+      noRecentTrx: "No recent transactions",
     }
   };
 
@@ -939,6 +975,8 @@ const Dashboard = () => {
             setPlatformFilter={setPlatformFilter}
             showPlatformDropdown={showPlatformDropdown}
             setShowPlatformDropdown={setShowPlatformDropdown}
+            profile={profile}
+            lang={lang}
           />
         );
       case 'tab-omzet':
