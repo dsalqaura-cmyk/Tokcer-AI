@@ -166,6 +166,13 @@ const Dashboard = () => {
       outOfStock: "Stok Habis",
       stockHealthy: "Stok aman dan sehat",
       noRecentTrx: "Belum ada transaksi terbaru",
+      completed: "Selesai",
+      pending: "Sedang diproses",
+      processing: "Sedang diproses",
+      cancelled: "Dibatalkan",
+      optimal: "OPTIMAL",
+      runningLow: "MENIPIS",
+      outOfStock: "HABIS",
       downloadReport: "Unduh Laporan",
       processing: "Sedang diproses",
       sku: "SKU",
@@ -492,6 +499,13 @@ const Dashboard = () => {
       outOfStock: "Out of Stock",
       stockHealthy: "Stock is safe and healthy",
       noRecentTrx: "No recent transactions",
+      completed: "Completed",
+      pending: "Pending",
+      processing: "Processing",
+      cancelled: "Cancelled",
+      optimal: "OPTIMAL",
+      runningLow: "LOW STOCK",
+      outOfStock: "OUT OF STOCK",
     }
   };
 
@@ -529,6 +543,7 @@ const Dashboard = () => {
       } else if (isAdmin) {
         setUser({ email: 'admin@tokcer-ai.com', id: 'admin-bypass' });
         setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
+        fetchOperationalData('admin-bypass');
       }
     };
 
@@ -617,20 +632,19 @@ const Dashboard = () => {
     const fetchOperationalData = async (userId) => {
         setIsFetchingOperational(true);
         try {
-            // Fetch Products
-            const { data: prodData } = await supabase
-                .from('products')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
+            // Admin sees everything, users see only their data
+            let prodQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
+            let ordQuery = supabase.from('orders').select('*').order('order_date', { ascending: false });
+
+            if (userId !== 'admin-bypass') {
+                prodQuery = prodQuery.eq('user_id', userId);
+                ordQuery = ordQuery.eq('user_id', userId);
+            }
+
+            const { data: prodData } = await prodQuery;
             if (prodData) setProducts(prodData);
 
-            // Fetch Orders
-            const { data: ordData } = await supabase
-                .from('orders')
-                .select('*')
-                .eq('user_id', userId)
-                .order('order_date', { ascending: false });
+            const { data: ordData } = await ordQuery;
             if (ordData) setOrders(ordData);
         } catch (err) {
             console.error("Fetch Operational Error:", err);

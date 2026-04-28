@@ -223,9 +223,9 @@ const DashboardRevenue = ({
                   <td className="px-6 py-5 text-center">
                     <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest inline-block border ${
                       trx.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
-                      trx.status === 'pending' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                      (trx.status === 'pending' || trx.status === 'processing') ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                     }`}>
-                      {trx.status}
+                      {t(trx.status) || trx.status}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-xs text-zinc-500 text-right font-medium">

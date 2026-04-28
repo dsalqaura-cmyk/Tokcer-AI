@@ -99,7 +99,7 @@ const DashboardInventory = ({
                         p.stock > 10 ? 'bg-emerald-500' : 
                         p.stock > 0 ? 'bg-amber-500' : 'bg-rose-500 animate-pulse'
                       }`}></div> 
-                      {p.stock > 10 ? 'Optimal' : p.stock > 0 ? 'Low Stock' : 'Sold Out'}
+                      {p.stock > 10 ? t('optimal') : p.stock > 0 ? t('runningLow') : t('outOfStock')}
                     </span>
                   </div>
                 </div>
