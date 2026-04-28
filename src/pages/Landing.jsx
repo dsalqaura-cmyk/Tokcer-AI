@@ -11,10 +11,18 @@ import WaitlistCTA from '../components/landing/WaitlistCTA';
 import Footer from '../components/Footer';
 import RegisterModal from '../components/modals/RegisterModal';
 import PartnerModal from '../components/modals/PartnerModal';
+import PartnerAgreement from './PartnerAgreement';
 
 const Landing = () => {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isPartnerOpen, setIsPartnerOpen] = useState(false);
+
+  // Manual fallback for routing issues in some environments
+  const isAgreementPage = window.location.hash.includes('/partner-agreement');
+
+  if (isAgreementPage) {
+    return <PartnerAgreement />;
+  }
 
   return (
     <div className="bg-black min-h-screen text-white font-['Inter',sans-serif] selection:bg-orange-500/30 selection:text-orange-200">
