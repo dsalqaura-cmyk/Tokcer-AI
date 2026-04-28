@@ -95,6 +95,12 @@ const DashboardSidebar = ({
             >
               <iconify-icon icon="solar:shield-keyhole-linear" className="text-lg"></iconify-icon> {t('accountSecurity')}
             </button>
+            <button 
+              onClick={() => { setActiveMenu('tab-connections'); setIsSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-connections' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
+            >
+              <iconify-icon icon="solar:link-linear" className="text-lg"></iconify-icon> Marketplace Sync
+            </button>
           </nav>
         </div>
 

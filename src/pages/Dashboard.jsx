@@ -15,6 +15,7 @@ import DashboardHealth from '../components/dashboard/DashboardHealth';
 import DashboardAccount from '../components/dashboard/DashboardAccount';
 import DashboardSupport from '../components/dashboard/DashboardSupport';
 import MarketIntel from '../components/dashboard/MarketIntel';
+import MarketplaceSync from '../components/dashboard/MarketplaceSync';
 import DashboardAdmin from '../components/dashboard/DashboardAdmin';
 
 
@@ -1067,6 +1068,13 @@ const Dashboard = () => {
             setConfirmPassword={setConfirmPassword}
             isUpdatingPassword={isUpdatingPassword}
             handleUpdatePassword={handleUpdatePassword}
+          />
+        );
+      case 'tab-connections':
+        return (
+          <MarketplaceSync 
+            t={t}
+            lang={lang}
           />
         );
       default:
