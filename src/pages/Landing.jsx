@@ -35,6 +35,9 @@ const Landing = () => {
         onOpenPartner={() => setIsPartnerOpen(true)} 
         onOpenWaitlist={() => setIsRegisterOpen(true)} 
       />
+      <div className="fixed bottom-4 left-4 z-[9999] bg-orange-600 text-white text-[10px] px-2 py-1 rounded font-bold">
+        v2.1 - BUILD SUCCESSFUL
+      </div>
       
       {/* === SECTION 1: Hero / Above the Fold === */}
       <main>
