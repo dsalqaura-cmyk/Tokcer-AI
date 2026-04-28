@@ -641,11 +641,21 @@ const Dashboard = () => {
                 ordQuery = ordQuery.eq('user_id', userId);
             }
 
-            const { data: prodData } = await prodQuery;
-            if (prodData) setProducts(prodData);
+            const { data: prodData, error: prodError } = await prodQuery;
+            if (prodError) {
+                console.error("Products Table Error:", prodError.message);
+                setProducts([]);
+            } else if (prodData) {
+                setProducts(prodData);
+            }
 
-            const { data: ordData } = await ordQuery;
-            if (ordData) setOrders(ordData);
+            const { data: ordData, error: ordError } = await ordQuery;
+            if (ordError) {
+                console.error("Orders Table Error:", ordError.message);
+                setOrders([]);
+            } else if (ordData) {
+                setOrders(ordData);
+            }
         } catch (err) {
             console.error("Fetch Operational Error:", err);
         } finally {
