@@ -16,58 +16,70 @@ const DashboardOverview = ({
 }) => {
   // --- REAL DATA CALCULATIONS ---
   const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
-  const thisMonth = now.getMonth();
-  const thisYear = now.getFullYear();
-
-  // Filter orders by platform if needed
-  const filteredOrders = platformFilter === 'all' 
+  
+  // 1. Filter by Platform
+  const platformFilteredOrders = platformFilter === 'all' 
     ? orders 
     : orders.filter(o => (o.platform || '').toLowerCase() === platformFilter.toLowerCase());
 
-  // Today's Metrics
-  const todayOrders = filteredOrders.filter(o => o.order_date.startsWith(todayStr));
-  const todayRev = todayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  const todayProfit = todayRev * 0.2; // Assuming 20% margin for now
+  // 2. Filter by Time
+  const getFilteredOrdersByTime = (data, filter) => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    if (filter === 'Hari Ini') {
+      const todayStr = today.toISOString().split('T')[0];
+      return data.filter(o => o.order_date.startsWith(todayStr));
+    } else if (filter === 'Bulan Ini') {
+      const thisMonth = today.getMonth();
+      const thisYear = today.getFullYear();
+      return data.filter(o => {
+        const d = new Date(o.order_date);
+        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+      });
+    } else if (filter.includes('Bulan Terakhir')) {
+      const months = parseInt(filter);
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - months);
+      return data.filter(o => new Date(o.order_date) >= cutoff);
+    }
+    return data;
+  };
 
-  // This Month's Metrics
-  const monthOrders = filteredOrders.filter(o => {
-    const d = new Date(o.order_date);
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-  });
-  const monthRev = monthOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  const monthProfit = monthRev * 0.2;
+  const filteredOrders = getFilteredOrdersByTime(platformFilteredOrders, timeFilter);
 
-  // Conversion Rate (Real: 0% since no visitor data)
+  // 3. Metrics Calculation
+  const totalRev = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const totalProfit = totalRev * 0.2; // Assuming 20% margin
+
+  // 4. Conversion Rate (Real: 0% since no visitor data)
   const convRate = 0; 
 
-  // Health Score (Real: based on products in stock)
+  // 5. Health Score (Always use all products for a holistic view)
   const healthScore = products.length > 0 
     ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
     : 0;
 
-  // Recent Transactions (Last 3)
-  const recentTransactions = [...filteredOrders]
+  // 6. Recent Transactions (Always last 3 regardless of filter, for better UX)
+  const recentTransactions = [...platformFilteredOrders]
     .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
     .slice(0, 3);
 
-  // Low Stock Alerts (Stock < 10)
+  // 7. Low Stock Alerts
   const lowStockProducts = products
     .filter(p => p.stock < 20)
     .sort((a, b) => a.stock - b.stock)
     .slice(0, 3);
 
-  // Chart Data (Weekly aggregation for the month)
-  const weeklyData = [
-    { label: 'Wk 1', omzet: monthRev * 0.15, profit: monthProfit * 0.15 },
-    { label: 'Wk 2', omzet: monthRev * 0.25, profit: monthProfit * 0.25 },
-    { label: 'Wk 3', omzet: monthRev * 0.35, profit: monthProfit * 0.35 },
-    { label: 'Wk 4', omzet: monthRev * 0.25, profit: monthProfit * 0.25 },
-  ];
-
   const formatIDR = (val) => {
     if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(2)}M`;
     return `Rp ${val.toLocaleString('id-ID')}`;
+  };
+
+  const getFilterLabel = () => {
+    if (timeFilter === 'Hari Ini') return 'Today';
+    if (timeFilter === 'Bulan Ini') return 'This Month';
+    return timeFilter;
   };
 
   return (
@@ -176,17 +188,17 @@ const DashboardOverview = ({
 
         {/* Revenue Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-orange-500/30 transition-all">
-          <div className="text-xs font-medium text-zinc-400 mb-2">{t('omzetToday')}</div>
-          <div className="text-2xl font-bold text-white tracking-tight mb-1">{formatIDR(todayRev)}</div>
-          <div className={`text-[10px] flex items-center gap-1 mb-6 ${todayRev > 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
-             <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> {todayRev > 0 ? '+12% vs yesterday' : 'No data today'}
+          <div className="text-xs font-medium text-zinc-400 mb-2">Revenue ({getFilterLabel()})</div>
+          <div className="text-2xl font-bold text-white tracking-tight mb-1">{formatIDR(totalRev)}</div>
+          <div className="text-[10px] text-zinc-500 flex items-center gap-1 mb-6">
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Filtered data
           </div>
           
           <div className="pt-4 border-t border-zinc-800">
-            <div className="text-[10px] text-zinc-500 mb-1">Today's Profit</div>
-            <div className={`text-lg font-bold ${todayProfit > 0 ? 'text-emerald-400' : 'text-zinc-600'}`}>{formatIDR(todayProfit)}</div>
-            <div className={`text-[8px] flex items-center gap-1 ${todayProfit > 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
-               <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> {todayProfit > 0 ? '+8.5% vs yesterday' : 'No profit data'}
+            <div className="text-[10px] text-zinc-500 mb-1">Profit ({getFilterLabel()})</div>
+            <div className={`text-lg font-bold ${totalProfit > 0 ? 'text-emerald-400' : 'text-zinc-600'}`}>{formatIDR(totalProfit)}</div>
+            <div className="text-[8px] text-zinc-500 flex items-center gap-1">
+               <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Estimated 20% margin
             </div>
           </div>
         </div>
@@ -224,32 +236,27 @@ const DashboardOverview = ({
         <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
             <div>
-              <div className="text-xs font-medium text-zinc-400 mb-1">Estimated Profit (This Month)</div>
-              <div className="text-3xl font-bold text-white tracking-tight">{formatIDR(monthProfit)}</div>
+              <div className="text-xs font-medium text-zinc-400 mb-1">Estimated Profit ({getFilterLabel()})</div>
+              <div className="text-3xl font-bold text-white tracking-tight">{formatIDR(totalProfit)}</div>
             </div>
             <div className="text-right">
-              <div className="text-xs font-medium text-zinc-400 mb-1">Total Revenue (This Month)</div>
-              <div className="text-xl font-semibold text-zinc-300">{formatIDR(monthRev)}</div>
+              <div className="text-xs font-medium text-zinc-400 mb-1">Total Revenue ({getFilterLabel()})</div>
+              <div className="text-xl font-semibold text-zinc-300">{formatIDR(totalRev)}</div>
             </div>
           </div>
 
           <div className="relative h-64 w-full pt-4">
-             {/* Chart Visual Simulation based on data */}
+             {/* Chart Visual Simulation - Using 4 bars to represent the filtered period */}
              <div className="absolute inset-x-0 bottom-8 flex items-end justify-between h-48 px-8 border-b border-zinc-800 border-dashed">
-                {weeklyData.map((d, i) => (
+                {[1,2,3,4].map((v, i) => (
                    <div key={i} className="flex flex-col items-center gap-2 w-16 group relative h-full justify-end">
-                      {/* Revenue Bar */}
                       <div 
                         className="w-8 bg-orange-600/40 rounded-t-sm group-hover:bg-orange-500 transition-all duration-500 relative"
-                        style={{ height: monthRev > 0 ? `${(d.omzet / (monthRev * 0.4)) * 100}%` : '10%' }}
+                        style={{ height: totalRev > 0 ? `${(totalRev * (0.1 + i*0.1) / (totalRev * 0.5)) * 100}%` : '10%' }}
                       >
-                         {/* Profit Line Point */}
-                         <div 
-                           className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400 rounded-full border border-black shadow-lg shadow-emerald-400/20"
-                           style={{ marginTop: '-4px' }}
-                         ></div>
+                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400 rounded-full border border-black shadow-lg shadow-emerald-400/20" style={{ marginTop: '-4px' }}></div>
                       </div>
-                      <span className="text-[10px] text-zinc-500 font-medium">{d.label}</span>
+                      <span className="text-[10px] text-zinc-500 font-medium">Pt {v}</span>
                    </div>
                 ))}
              </div>
@@ -321,8 +328,8 @@ const DashboardOverview = ({
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800">
                       <iconify-icon 
-                        icon={trx.platform === 'TikTok' ? 'ri:tiktok-fill' : trx.platform === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'} 
-                        className={`text-xl ${trx.platform === 'Shopee' ? 'text-orange-500' : 'text-zinc-400'}`}
+                        icon={(trx.platform || '').toLowerCase() === 'tiktok' ? 'ri:tiktok-fill' : (trx.platform || '').toLowerCase() === 'shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'} 
+                        className={`text-xl ${(trx.platform || '').toLowerCase() === 'shopee' ? 'text-orange-500' : 'text-zinc-400'}`}
                       ></iconify-icon>
                     </div>
                     <div>

@@ -34,7 +34,7 @@ const Dashboard = () => {
   const [isTrendAnalyzing, setIsTrendAnalyzing] = useState(false);
   const [trendResult, setTrendResult] = useState('');
   const [showProductModal, setShowProductModal] = useState(false);
-  const [timeFilter, setTimeFilter] = useState('Bulan Ini');
+  const [timeFilter, setTimeFilter] = useState('Hari Ini');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [platformFilter, setPlatformFilter] = useState('all');
   const [showPlatformDropdown, setShowPlatformDropdown] = useState(false);
