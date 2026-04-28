@@ -743,7 +743,16 @@ const Dashboard = () => {
             rating: '4.9/5.0'
         });
     }
-  }, [activeMenu, products, orders]);
+  }, [activeMenu, products, orders, healthPlatform, timeFilter]);
+
+  // Reset insights when filters change to allow re-fetching
+  useEffect(() => {
+    setHealthInsight(null);
+  }, [healthPlatform, timeFilter]);
+
+  useEffect(() => {
+    setAnalyticsInsight(null);
+  }, [analyticsPlatform]);
 
   const [adminClients, setAdminClients] = useState([]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);

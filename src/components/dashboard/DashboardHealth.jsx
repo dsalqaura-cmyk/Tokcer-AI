@@ -44,21 +44,25 @@ const DashboardHealth = ({
 
     const filtered = getFilteredByTime(platformFiltered, timeFilter);
     
-    const total = filtered.length || 1;
+    const total = filtered.length || 0;
     const cancelled = filtered.filter(o => o.status === 'cancelled' || o.status === 'returned').length;
-    const retRate = ((cancelled / total) * 100).toFixed(1) + '%';
+    const retRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) + '%' : '0.0%';
     
-    // Simulations for non-existing DB fields (Chat & Rating)
-    const seed = plat.length + timeFilter.length; 
+    // Dynamic seed based on platform + order count for "fake" but dynamic realism
+    const seed = plat.length + timeFilter.length + (orders.length % 10); 
     const chatBase = plat === 'all' ? 98 : plat === 'TikTok' ? 99 : plat === 'Shopee' ? 97 : 96;
     const ratingBase = plat === 'all' ? 4.9 : plat === 'TikTok' ? 4.9 : plat === 'Shopee' ? 4.8 : 4.7;
 
+    const dynamicChat = (chatBase - (seed % 3)).toFixed(0) + '%';
+    const dynamicShip = (1.1 + (seed % 7) / 10).toFixed(1) + ' Days';
+    const dynamicRating = (ratingBase - (seed % 5) / 20).toFixed(1) + '/5.0';
+
     return {
-      chat: chatBase + '%',
-      ship: (1.0 + (seed % 5) / 10).toFixed(1) + ' Days',
+      chat: dynamicChat,
+      ship: dynamicShip,
       return: retRate,
-      rating: ratingBase.toFixed(1) + '/5.0',
-      score: Math.floor(95 - (cancelled/total * 50) - (seed % 10))
+      rating: dynamicRating,
+      score: total > 0 ? Math.floor(95 - (cancelled/total * 50) - (seed % 5)) : 0
     };
   };
 
