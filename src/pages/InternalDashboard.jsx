@@ -695,7 +695,7 @@ const InternalDashboard = ({ onLogout }) => {
                           </td>
                           <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800/50 text-right">
                             <div className="flex items-center justify-end gap-3">
-                              {item.status === 'pending' || !item.status ? (
+                              {item.status === 'pending' || !item.status || item.status === 'agreed' ? (
                                 <>
                                   {activeAppTab === 'new-partner' ? (
                                     <>
