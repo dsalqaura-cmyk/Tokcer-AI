@@ -1,22 +1,22 @@
-// Last Updated: 2026-04-27 12:20:00 (Trigger Re-deploy)
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import ProductModal from '../components/modals/ProductModal';
-// Build Timestamp: 2026-04-27 11:46:00
 import logo from '../assets/logo.png';
-import DashboardSidebar from '../components/dashboard/DashboardSidebar';
-import DashboardOverview from '../components/dashboard/DashboardOverview';
-import DashboardRevenue from '../components/dashboard/DashboardRevenue';
-import DashboardInventory from '../components/dashboard/DashboardInventory';
-import DashboardAnalytics from '../components/dashboard/DashboardAnalytics';
-import DashboardAI from '../components/dashboard/DashboardAI';
-import DashboardHealth from '../components/dashboard/DashboardHealth';
-import DashboardAccount from '../components/dashboard/DashboardAccount';
-import DashboardSupport from '../components/dashboard/DashboardSupport';
-import MarketIntel from '../components/dashboard/MarketIntel';
-import MarketplaceSync from '../components/dashboard/MarketplaceSync';
-import DashboardAdmin from '../components/dashboard/DashboardAdmin';
+import Sidebar from '../components/dashboard/Sidebar';
+import Header from '../components/dashboard/Header';
+import OverviewTab from '../components/dashboard/tabs/OverviewTab';
+import RevenueTab from '../components/dashboard/tabs/RevenueTab';
+import InventoryTab from '../components/dashboard/tabs/InventoryTab';
+import AnalyticsTab from '../components/dashboard/tabs/AnalyticsTab';
+import AiGeneratorTab from '../components/dashboard/tabs/AiGeneratorTab';
+import HealthScoreTab from '../components/dashboard/tabs/HealthScoreTab';
+import AccountTab from '../components/dashboard/tabs/AccountTab';
+import SupportTab from '../components/dashboard/tabs/SupportTab';
+import MarketIntelTab from '../components/dashboard/tabs/MarketIntelTab';
+import MarketplaceSyncTab from '../components/dashboard/tabs/MarketplaceSyncTab';
+import AdminTab from '../components/dashboard/tabs/AdminTab';
+import { dashboardTranslations } from '../locales/dashboardLocales';
 
 
 const Dashboard = () => {
@@ -81,443 +81,7 @@ const Dashboard = () => {
   const [healthInsight, setHealthInsight] = useState(null);
   const [isAnalyzingHealth, setIsAnalyzingHealth] = useState(false);
 
-  const translations = {
-    id: {
-      dashboard: "Dashboard",
-      revenue: "Data Omzet",
-      inventory: "Inventory",
-      analytics: "Analytics",
-      aiGenerator: "AI Generator",
-      healthScore: "Health Score",
-      marketIntel: "Market Intel",
-      accountSecurity: "Keamanan Akun",
-      logout: "Keluar",
-      overview: "Ringkasan",
-      monitorShop: "Pantau performa tokomu detik ini juga.",
-      today: "Hari Ini",
-      thisMonth: "Bulan Ini",
-      visitors: "Pengunjung Live",
-      omzetToday: "Omzet Hari Ini",
-      convRate: "Tingkat Konversi",
-      healthTitle: "Skor Kesehatan",
-      estProfit: "Estimasi Profit",
-      totOmzet: "Total Omzet",
-      notif: "Notifikasi Sistem",
-      recentTrx: "Transaksi Terbaru",
-      lowStock: "Informasi Stok Menipis",
-      viewAll: "Lihat Semua",
-      manageInv: "Kelola Inventory",
-      premium: "Fitur Premium",
-      loggedAs: "Masuk sebagai",
-      marketAnalytics: "Analisis Pasar",
-      strategicIntel: "Intelijen Strategis AI",
-      priceOpt: "Optimasi Harga AI",
-      platformComp: "Perbandingan Platform",
-      priceRec: "Rekomendasi Harga",
-      applyAll: "Terapkan Semua",
-      revenueDesc: "Rincian performa penjualan dari berbagai saluran.",
-      invDesc: "Kelola stok produk Anda di semua platform.",
-      addProduct: "Tambah Produk",
-      searchProd: "Cari produk...",
-      stock: "Stok",
-      price: "Harga",
-      action: "Aksi",
-      edit: "Edit",
-      delete: "Hapus",
-      aiDesc: "Buat konten promosi & riset pasar instan dengan kecerdasan buatan.",
-      contentGen: "Generator Konten",
-      trendRadar: "Radar Tren Pasar",
-      prodDesc: "Deskripsi Produk Anda",
-      formatOutput: "Pilih Format Output",
-      genMagic: "Buat Konten Magic",
-      genLoading: "Menghubungkan ke AI Engine...",
-      genResult: "Hasil Generate",
-      copy: "Salin",
-      marketInfo: "Masukkan niche atau kategori produk yang ingin Anda jual. AI akan menganalisis tren pasar Indonesia, target demografi, dan memberikan rekomendasi produk terlaris.",
-      nicheLabel: "Kategori / Niche Produk",
-      quickSuggest: "Contoh Cepat",
-      analyzeNow: "Analisis Tren Pasar Sekarang",
-      analyzing: "Menganalisis Pasar...",
-      analyzeResult: "Hasil Analisis Tren Pasar",
-      incomeToday: "Pendapatan Hari Ini",
-      activeOrders: "Pesanan Aktif",
-      shopHealth: "Detail Kesehatan Toko",
-      marketIntelTitle: "Intelijen Pasar",
-      peak: "Puncak",
-      quota: "Sisa Kuota AI Generator",
-      quotaDesc: "Anda memiliki sisa 42 generasi konten bulan ini.",
-      tiktokIntegrate: "Integrasi TikTok Shop",
-      tiktokIntegrateDesc: "Token API TikTok Shop Anda akan kedaluwarsa dalam 3 hari. Segera perbarui.",
-      specialPromo: "Promo Spesial",
-      specialPromoDesc: "Upgrade ke paket Ultimate untuk membuka fitur Market Intel tanpa batas.",
-      orderId: "Order ID",
-      productSold: "Produk Terjual",
-      platform: "Platform",
-      amount: "Nominal",
-      status: "Status",
-      done: "Selesai",
-      vsYesterday: "vs kemarin",
-      noDataToday: "Belum ada data",
-      noProfitData: "Data profit belum ada",
-      basedOnVisitors: "Berdasarkan pengunjung aktif",
-      filteredData: "Data terfilter",
-      estMargin: "Estimasi margin 20%",
-      systemNotif: "Notifikasi Sistem",
-      aiQuotaTitle: "Kuota AI Generator",
-      tiktokIntegration: "Integrasi TikTok Shop",
-      specialPromoTitle: "Promo Spesial",
-      justNow: "Baru saja",
-      "2hrsAgo": "2 jam yang lalu",
-      "1dayAgo": "1 hari yang lalu",
-      customer: "Pelanggan",
-      runningLow: "Stok Menipis",
-      outOfStock: "Stok Habis",
-      stockHealthy: "Stok aman dan sehat",
-      noRecentTrx: "Belum ada transaksi terbaru",
-      completed: "Selesai",
-      pending: "Sedang diproses",
-      processing: "Sedang diproses",
-      cancelled: "Dibatalkan",
-      optimal: "OPTIMAL",
-      runningLow: "MENIPIS",
-      outOfStock: "HABIS",
-      downloadReport: "Unduh Laporan",
-      processing: "Sedang diproses",
-      sku: "SKU",
-      outOfStock: "Habis",
-      runningLow: "Menipis",
-      orders: "Pesanan",
-      analyticsDesc: "Analisis performa, strategi taktis, dan optimasi profit berbasis AI.",
-      liveVisitorsDesc: "Pengunjung aktif saat ini",
-      vsYesterday: "vs kemarin",
-      industryAvg: "Di atas rata-rata industri",
-      adsTrafficOpt: "Optimasi Iklan & Trafik",
-      goldenHours: "Jam Emas",
-      goldenHoursDesc: "Traffic TikTok naik 40%. Rekomendasi: Naikkan bid ads 1.5x.",
-      campaignFlashSale: "Kampanye Flash Sale",
-      campaignFlashSaleDesc: "Efektivitas di Shopee meningkat saat akhir pekan. Fokus pada produk terlaris.",
-      bundlingPromoIdeas: "Ide Bundling & Promo",
-      bundleSneakersKaos: "Bundel: Sneakers + Kaos",
-      bundleSneakersKaosDesc: "Kombinasi ini memiliki tingkat konversi 25% lebih tinggi.",
-      buy2get1: "Beli 2 Gratis 1 (Aksesoris)",
-      buy2get1Desc: "Gunakan promo ini untuk menghabiskan sisa stok SKU CC-M-CRM.",
-      marketPulseIdeas: "Analisa AI",
-      hotIdea: "Saran AI",
-      hotIdeaDesc: "Tren 'Old Money Aesthetic' sedang naik di TikTok Shop Indonesia. Rekomendasi stok: Kemeja Linen & Celana Chino warna bumi.",
-      contentTip: "Tips Konten",
-      contentTipDesc: "Gunakan format video 'Before & After' untuk produk Sneakers A1. Musik viral: 'Lampu Kuning' (Trending).",
-      priceOptDesc: "Berdasarkan analisis pasar real-time di 3 platform besar, berikut adalah rekomendasi penyesuaian harga untuk memaksimalkan profit & volume penjualan.",
-      potentialProfit: "Potensi penambahan profit bersih jika semua rekomendasi diterapkan bulan ini.",
-      demandTikTok: "Permintaan tinggi di TikTok",
-      competitionShopee: "Persaingan ketat di Shopee",
-      optimalPrice: "Harga sudah optimal",
-      increase: "Naikkan",
-      decrease: "Turunkan",
-      maintain: "Pertahankan",
-      shopHealthDesc: "Analisis mendalam tentang keunggulan operasional toko Anda.",
-      chatResponse: "Respon Chat",
-      shippingSpeed: "Kecepatan Pengiriman",
-      returnRate: "Tingkat Pengembalian",
-      rating: "Penilaian",
-      aiHealthRec: "Rekomendasi Kesehatan AI",
-      healthRec1: "Tingkat respon chat Anda sangat baik! Terus gunakan Balasan Otomatis AI untuk menjaga skor ini selama jam sibuk.",
-      healthRec2: "Kecepatan pengiriman untuk pesanan Tokopedia sedikit menurun minggu lalu. Pertimbangkan untuk mengoptimalkan alur kerja pengemasan pada hari Senin.",
-      compPriceTracker: "Pelacak Harga Kompetitor",
-      me: "Saya",
-      market: "Pasar",
-      warning: "Peringatan",
-      optimal: "Optimal",
-      competitive: "Kompetitif",
-      globalTrendPred: "Prediksi Tren Global",
-      globalTrendDesc: "Model AI memprediksi lonjakan 30% dalam permintaan 'Eco-friendly Sportswear' di Asia Tenggara kuartal depan.",
-      exploreNiche: "Jelajahi Niche",
-      aiPromptPlaceholder: "Contoh: Sepatu running ringan bahan mesh breathable, cocok untuk lari dan jalan santai, tersedia warna hitam & putih...",
-      trendPromptPlaceholder: "Contoh: Skincare wajah pria, Sepatu olahraga wanita, Aksesoris HP gaming...",
-      tiktokVideo: "Video TikTok",
-      marketplace: "Marketplace",
-      instagramFeed: "Feed Instagram",
-      sneakersA1: "Sepatu Sneakers A1",
-      premiumTee: "Kaos Polos Premium",
-      hoodieUrban: "Jaket Hoodie Urban",
-      newProductDesc: "Tambahkan produk baru ke dalam katalog inventory Anda.",
-      productName: "Nama Produk",
-      productNamePlaceholder: "Cth: Sepatu Running",
-      skuPlaceholder: "Cth: SPR-001",
-      initialStock: "Stok Awal",
-      pricePlaceholder: "150000",
-      saveProduct: "Simpan Produk",
-      simulatedAlert: "Ini adalah simulasi. Fitur simpan ke database akan segera hadir!",
-      'Hari Ini': 'Hari Ini',
-      'Bulan Ini': 'Bulan Ini',
-      '1 Bulan Terakhir': '1 Bulan Terakhir',
-      '2 Bulan Terakhir': '2 Bulan Terakhir',
-      '3 Bulan Terakhir': '3 Bulan Terakhir',
-      profitHariIni: "Profit Hari Ini",
-      allPlatforms: "Semua Platform",
-      omzetFilterAll: "Semua",
-      omzetFilterToday: "Hari Ini",
-      omzetFilterYesterday: "Kemarin",
-      omzetFilterWeek: "7 Hari Terakhir",
-      omzetFilterMonth: "Bulan Lalu",
-      omzetFilter2Month: "2 Bulan Terakhir",
-      omzetFilter3Month: "3 Bulan Terakhir",
-      trendRadarAI: "Radar Trend AI",
-      trendSampleLabel: "Contoh Kategori",
-      trendAnalysisResult: "Hasil Analisis",
-      supportCenter: "Pusat Bantuan",
-      reportBug: "Laporkan Bug",
-      bugDesc: "Temukan kendala? Laporkan kepada tim kami agar segera kami perbaiki.",
-      suggestFeature: "Masukan Fitur",
-      featureDesc: "Punya ide fitur keren? Bagikan kepada kami untuk pengembangan Tokcer AI.",
-      bugTitleLabel: "Judul Masalah",
-      bugTitlePlaceholder: "Cth: Error saat generate konten",
-      bugDetailLabel: "Detail Masalah",
-      bugDetailPlaceholder: "Jelaskan langkah-langkah untuk mereproduksi bug...",
-      featureTitleLabel: "Judul Fitur",
-      featureTitlePlaceholder: "Cth: Integrasi dengan WhatsApp",
-      featureDetailLabel: "Deskripsi Fitur",
-      featureDetailPlaceholder: "Jelaskan bagaimana fitur ini akan membantu Anda...",
-      uploadScreenshot: "Unggah Screenshot",
-      sendReport: "Kirim Laporan",
-      sending: "Mengirim...",
-      supportSuccess: "Berhasil Terkirim!",
-      supportSuccessDesc: "Terima kasih atas masukannya! Tim kami akan segera meninjau laporan Anda.",
-      backToDashboard: "Kembali ke Dashboard",
-      videoContent: "Konten Video",
-      textContent: "Konten Teks",
-      weeklyViralTopics: "Topik Viral Minggu Ini",
-      liveDataSampling: "Sampling Data Live",
-      aiSummary: "Ringkasan AI",
-      marketConfidence: "Kepercayaan Pasar",
-      planActive: "Plan Aktif",
-      ultimatePlan: "Ultimate",
-      active: "Aktif",
-      aiQuota: "Kuota AI",
-      validUntil: "Berlaku hingga",
-      supportDesc: "Kami siap membantu Anda 24/7.",
-      revenueLabel: "Omzet",
-      profitLabel: "Profit",
-    },
-    en: {
-      dashboard: "Dashboard",
-      revenue: "Revenue Data",
-      inventory: "Inventory",
-      analytics: "Analytics",
-      aiGenerator: "AI Generator",
-      healthScore: "Health Score",
-      marketIntel: "Market Intel",
-      accountSecurity: "Account Security",
-      clientApproval: "Dashboard Internal Admin",
-      logout: "Sign Out",
-      overview: "Overview",
-      monitorShop: "Monitor your shop's performance in real-time.",
-      today: "Today",
-      thisMonth: "This Month",
-      visitors: "Live Visitors",
-      omzetToday: "Today's Revenue",
-      convRate: "Conversion Rate",
-      healthTitle: "Health Score",
-      estProfit: "Estimated Profit",
-      totOmzet: "Total Revenue",
-      notif: "System Notifications",
-      recentTrx: "Recent Transactions",
-      lowStock: "Low Stock Alerts",
-      viewAll: "View All",
-      manageInv: "Manage Inventory",
-      premium: "Premium Features",
-      loggedAs: "Logged in as",
-      marketAnalytics: "Market Analytics",
-      strategicIntel: "AI Strategic Intel",
-      priceOpt: "AI Price Optimization",
-      platformComp: "Platform Comparison",
-      priceRec: "Price Recommendations",
-      applyAll: "Apply All",
-      shopHealth: "Shop Health Details",
-      marketIntelTitle: "Market Intelligence",
-      peak: "Peak",
-      quota: "AI Generator Quota",
-      quotaDesc: "You have 42 content generations left this month.",
-      tiktokIntegrate: "TikTok Shop Integration",
-      tiktokIntegrateDesc: "Your TikTok Shop API token will expire in 3 days. Renew now.",
-      specialPromo: "Special Promo",
-      specialPromoDesc: "Upgrade to Ultimate to unlock unlimited Market Intel features.",
-      orderId: "Order ID",
-      productSold: "Product Sold",
-      platform: "Platform",
-      amount: "Amount",
-      status: "Status",
-      done: "Completed",
-      downloadReport: "Download Report",
-      activeOrders: "Active Orders",
-      processing: "Processing",
-      sku: "SKU",
-      outOfStock: "Out of Stock",
-      runningLow: "Running Low",
-      orders: "Orders",
-      revenueDesc: "Detailed sales performance across multiple channels.",
-      invDesc: "Manage your product stock across all platforms.",
-      addProduct: "Add Product",
-      searchProd: "Search products...",
-      stock: "Stock",
-      price: "Price",
-      action: "Action",
-      edit: "Edit",
-      delete: "Delete",
-      aiDesc: "Create promotional content & instant market research with AI.",
-      contentGen: "Content Generator",
-      trendRadar: "Market Trend Radar",
-      prodDesc: "Your Product Description",
-      formatOutput: "Choose Output Format",
-      genMagic: "Generate Magic Content",
-      genLoading: "Connecting to AI Engine...",
-      genResult: "Generated Result",
-      copy: "Copy",
-      marketInfo: "Enter the niche or product category you want to sell. AI will analyze the Indonesian market trend, target demographics, and provide best-selling product recommendations.",
-      nicheLabel: "Product Category / niche",
-      quickSuggest: "Quick Suggestions",
-      analyzeNow: "Analyze Market Trend Now",
-      analyzing: "Analyzing Market...",
-      analyzeResult: "Market Trend Analysis Result",
-      incomeToday: "Income Today",
-      analyticsDesc: "Performance analysis, tactical strategy, and profit optimization.",
-      liveVisitorsDesc: "Current active visitors",
-      vsYesterday: "vs yesterday",
-      industryAvg: "Above industry average",
-      adsTrafficOpt: "Ads & Traffic Optimization",
-      goldenHours: "Golden Hours",
-      goldenHoursDesc: "TikTok traffic increased by 40%. Recommendation: Increase ads bid by 1.5x.",
-      campaignFlashSale: "Campaign Flash Sale",
-      campaignFlashSaleDesc: "Effectiveness on Shopee increases during weekends. Focus on best-selling products.",
-      bundlingPromoIdeas: "Bundling & Promo Ideas",
-      bundleSneakersKaos: "Bundle: Sneakers + Kaos",
-      bundleSneakersKaosDesc: "This combination has a 25% higher conversion rate.",
-      buy2get1: "Buy 2 Get 1 (Accessories)",
-      buy2get1Desc: "Use this promo to clear remaining stock of SKU CC-M-CRM.",
-      marketPulseIdeas: "AI Analysis",
-      hotIdea: "AI Suggestion",
-      hotIdeaDesc: "The 'Old Money Aesthetic' trend is rising on TikTok Shop Indonesia. Stock recommendation: Linen Shirts & Earth-toned Chino Pants.",
-      contentTip: "Content Tip",
-      contentTipDesc: "Use 'Before & After' video format for Sneakers A1. Viral music: 'Lampu Kuning' (Trending).",
-      priceOptDesc: "Based on real-time market analysis across 3 major platforms, here are the price adjustment recommendations to maximize profit & sales volume.",
-      potentialProfit: "Potential net profit increase if all recommendations are applied this month.",
-      demandTikTok: "High demand on TikTok",
-      competitionShopee: "Stiff competition on Shopee",
-      optimalPrice: "Price is already optimal",
-      increase: "Increase",
-      decrease: "Decrease",
-      maintain: "Maintain",
-      shopHealthDesc: "Deep dive into your store's operational excellence.",
-      chatResponse: "Chat Response",
-      shippingSpeed: "Shipping Speed",
-      returnRate: "Return Rate",
-      rating: "Rating",
-      aiHealthRec: "AI Health Recommendations",
-      healthRec1: "Your chat response rate is excellent! Keep using AI Auto-Reply to maintain this score during peak hours.",
-      healthRec2: "Shipping speed for Tokopedia orders slightly decreased last week. Consider optimizing your packing workflow on Mondays.",
-      compPriceTracker: "Competitor Price Tracker",
-      me: "Me",
-      market: "Market",
-      warning: "Warning",
-      optimal: "Optimal",
-      competitive: "Competitive",
-      globalTrendPred: "Global Trend Prediction",
-      globalTrendDesc: "AI models predict a 30% surge in 'Eco-friendly Sportswear' demand in Southeast Asia next quarter.",
-      exploreNiche: "Explore Niche",
-      aiPromptPlaceholder: "Example: Lightweight mesh running shoes, breathable, suitable for running and walking, available in black & white...",
-      trendPromptPlaceholder: "Example: Men's face skincare, women's sportswear, gaming phone accessories...",
-      tiktokVideo: "TikTok Video",
-      marketplace: "Marketplace",
-      instagramFeed: "Instagram Feed",
-      sneakersA1: "Sneakers A1",
-      premiumTee: "Premium Tee",
-      hoodieUrban: "Hoodie Urban",
-      newProductDesc: "Add a new product to your inventory catalog.",
-      productName: "Product Name",
-      productNamePlaceholder: "Ex: Running Shoes",
-      skuPlaceholder: "Ex: SPR-001",
-      initialStock: "Initial Stock",
-      pricePlaceholder: "150000",
-      saveProduct: "Save Product",
-      simulatedAlert: "This is a simulation. Database save feature is coming soon!",
-      'Hari Ini': 'Today',
-      'Bulan Ini': 'This Month',
-      '1 Bulan Terakhir': 'Last 1 Month',
-      '2 Bulan Terakhir': 'Last 2 Months',
-      '3 Bulan Terakhir': 'Last 3 Months',
-      profitHariIni: "Today's Profit",
-      allPlatforms: "All Platforms",
-      omzetFilterAll: "All",
-      omzetFilterToday: "Today",
-      omzetFilterYesterday: "Yesterday",
-      omzetFilterWeek: "Last 7 Days",
-      omzetFilterMonth: "Last Month",
-      omzetFilter2Month: "Last 2 Months",
-      omzetFilter3Month: "Last 3 Months",
-      trendRadarAI: "AI Trend Radar",
-      trendSampleLabel: "Sample Categories",
-      trendAnalysisResult: "Analysis Result",
-      supportCenter: "Support Center",
-      reportBug: "Report a Bug",
-      bugDesc: "Found an issue? Report it to our team so we can fix it immediately.",
-      suggestFeature: "Feature Suggestion",
-      featureDesc: "Have a great idea? Share it with us to help Tokcer AI grow.",
-      bugTitleLabel: "Issue Title",
-      bugTitlePlaceholder: "Ex: Error while generating content",
-      bugDetailLabel: "Issue Details",
-      bugDetailPlaceholder: "Explain the steps to reproduce the bug...",
-      featureTitleLabel: "Feature Title",
-      featureTitlePlaceholder: "Ex: WhatsApp Integration",
-      featureDetailLabel: "Feature Description",
-      featureDetailPlaceholder: "Explain how this feature would help you...",
-      uploadScreenshot: "Upload Screenshot",
-      sendReport: "Send Report",
-      sending: "Sending...",
-      supportSuccess: "Successfully Sent!",
-      supportSuccessDesc: "Thank you for your feedback! Our team will review your report soon.",
-      backToDashboard: "Back to Dashboard",
-      videoContent: "Video Content",
-      textContent: "Text Content",
-      weeklyViralTopics: "Weekly Viral Topics",
-      liveDataSampling: "Live Data Sampling",
-      aiSummary: "AI Summary",
-      marketConfidence: "Market Confidence",
-      planActive: "Active Plan",
-      ultimatePlan: "Ultimate",
-      active: "Active",
-      aiQuota: "AI Quota",
-      validUntil: "Valid until",
-      supportDesc: "We are ready to help you 24/7.",
-      revenueLabel: "Revenue",
-      profitLabel: "Profit",
-      vsYesterday: "vs yesterday",
-      noDataToday: "No data today",
-      noProfitData: "No profit data",
-      basedOnVisitors: "Based on active visitors",
-      filteredData: "Filtered data",
-      estMargin: "Estimated 20% margin",
-      systemNotif: "System Notifications",
-      aiQuotaTitle: "AI Generator Quota",
-      tiktokIntegration: "TikTok Shop Integration",
-      specialPromoTitle: "Special Promo",
-      justNow: "Just now",
-      "2hrsAgo": "2 hrs ago",
-      "1dayAgo": "1 day ago",
-      customer: "Customer",
-      runningLow: "Running Low",
-      outOfStock: "Out of Stock",
-      stockHealthy: "Stock is safe and healthy",
-      noRecentTrx: "No recent transactions",
-      completed: "Completed",
-      pending: "Pending",
-      processing: "Processing",
-      cancelled: "Cancelled",
-      optimal: "OPTIMAL",
-      runningLow: "LOW STOCK",
-      outOfStock: "OUT OF STOCK",
-    }
-  };
-
-  const t = (key) => translations[lang][key] || key;
+  const t = (key) => dashboardTranslations[lang][key] || key;
   const navigate = useNavigate();
 
     const autoConnectStores = async (userId, platforms, links) => {
@@ -1094,7 +658,7 @@ const Dashboard = () => {
     switch (activeMenu) {
       case 'tab-admin':
         return (
-          <DashboardAdmin 
+          <AdminTab 
             adminClients={adminClients}
             isAdminLoading={isAdminLoading}
             handleApproveClient={handleApproveClient}
@@ -1102,7 +666,7 @@ const Dashboard = () => {
         );
       case 'tab-dash':
         return (
-          <DashboardOverview 
+          <OverviewTab 
             t={t} 
             orders={orders} 
             products={products} 
@@ -1120,7 +684,7 @@ const Dashboard = () => {
         );
       case 'tab-omzet':
         return (
-          <DashboardRevenue 
+          <RevenueTab 
             t={t}
             orders={orders}
             platformFilter={platformFilter}
@@ -1137,7 +701,7 @@ const Dashboard = () => {
         );
       case 'tab-inventory':
         return (
-          <DashboardInventory 
+          <InventoryTab 
             t={t}
             products={products}
             setShowProductModal={setShowProductModal}
@@ -1146,7 +710,7 @@ const Dashboard = () => {
         );
       case 'tab-analytics':
         return (
-          <DashboardAnalytics 
+          <AnalyticsTab 
             t={t}
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
@@ -1165,7 +729,7 @@ const Dashboard = () => {
         );
       case 'tab-health':
         return (
-          <DashboardHealth 
+          <HealthScoreTab 
             t={t}
             lang={lang}
             healthPlatform={healthPlatform}
@@ -1181,7 +745,7 @@ const Dashboard = () => {
         );
       case 'tab-ai':
         return (
-          <DashboardAI 
+          <AiGeneratorTab 
             t={t}
             aiSubTab={aiSubTab}
             setAiSubTab={setAiSubTab}
@@ -1197,7 +761,7 @@ const Dashboard = () => {
         );
       case 'tab-market':
         return (
-          <MarketIntel 
+          <MarketIntelTab 
             t={t}
             lang={lang}
             platformFilter={platformFilter}
@@ -1221,7 +785,7 @@ const Dashboard = () => {
         );
       case 'tab-support':
         return (
-          <DashboardSupport 
+          <SupportTab 
             t={t}
             lang={lang}
             supportSubmitted={supportSubmitted}
@@ -1244,7 +808,7 @@ const Dashboard = () => {
         );
       case 'tab-account':
         return (
-          <DashboardAccount 
+          <AccountTab 
             t={t}
             lang={lang}
             securityMessage={securityMessage}
@@ -1258,7 +822,7 @@ const Dashboard = () => {
         );
       case 'tab-connections':
         return (
-          <MarketplaceSync 
+          <MarketplaceSyncTab 
             t={t}
             lang={lang}
           />
@@ -1270,7 +834,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-screen bg-black text-white font-['Inter',sans-serif] overflow-hidden">
-      <DashboardSidebar 
+      <Sidebar 
         t={t}
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
@@ -1287,19 +851,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="flex-1 min-w-0 bg-zinc-900 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
         {/* Mobile Dashboard Header */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] flex items-center justify-between p-4 bg-zinc-950 border-b border-zinc-800 shadow-xl">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="Tokcer AI" className="h-7 w-auto" />
-          </div>
-          <button 
-            onClick={() => setIsSidebarOpen(true)} 
-            className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white transition-all active:scale-95"
-            aria-label="Open Sidebar"
-          >
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Menu</span>
-            <iconify-icon icon="solar:hamburger-menu-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
-          </button>
-        </div>
+        <Header setIsSidebarOpen={setIsSidebarOpen} />
 
         {/* Content Spacer for Fixed Header on Mobile */}
         <div className="h-16 lg:hidden"></div>

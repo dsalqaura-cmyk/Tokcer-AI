@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const DashboardSupport = ({ 
+const SupportTab = ({ 
   t, 
   lang,
   supportSubmitted, 
@@ -232,4 +232,4 @@ const DashboardSupport = ({
   );
 };
 
-export default DashboardSupport;
+export default SupportTab;

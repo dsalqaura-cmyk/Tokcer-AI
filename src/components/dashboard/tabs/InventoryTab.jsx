@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardInventory = ({ 
+const InventoryTab = ({ 
   t, 
   products, 
   setShowProductModal,
@@ -119,4 +119,4 @@ const DashboardInventory = ({
   );
 };
 
-export default DashboardInventory;
+export default InventoryTab;

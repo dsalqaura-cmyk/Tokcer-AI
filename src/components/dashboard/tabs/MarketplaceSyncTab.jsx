@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MarketplaceSync = ({ t, lang }) => {
+const MarketplaceSyncTab = ({ t, lang }) => {
   const platforms = [
     { 
       id: 'tiktok', 
@@ -110,4 +110,4 @@ const MarketplaceSync = ({ t, lang }) => {
   );
 };
 
-export default MarketplaceSync;
+export default MarketplaceSyncTab;

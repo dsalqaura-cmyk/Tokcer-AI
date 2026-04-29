@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardOverview = ({ 
+const OverviewTab = ({ 
   t, 
   orders, 
   products, 
@@ -367,4 +367,4 @@ const DashboardOverview = ({
   );
 };
 
-export default DashboardOverview;
+export default OverviewTab;

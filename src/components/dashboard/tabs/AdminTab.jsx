@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardAdmin = ({ adminClients, isAdminLoading, handleApproveClient }) => {
+const AdminTab = ({ adminClients, isAdminLoading, handleApproveClient }) => {
   return (
     <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header>
@@ -72,4 +72,4 @@ const DashboardAdmin = ({ adminClients, isAdminLoading, handleApproveClient }) =
   );
 };
 
-export default DashboardAdmin;
+export default AdminTab;

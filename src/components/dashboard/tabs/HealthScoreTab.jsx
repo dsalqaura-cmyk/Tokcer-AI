@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardHealth = ({ 
+const HealthScoreTab = ({ 
   t, 
   lang, 
   healthPlatform, 
@@ -194,4 +194,4 @@ const DashboardHealth = ({
   );
 };
 
-export default DashboardHealth;
+export default HealthScoreTab;

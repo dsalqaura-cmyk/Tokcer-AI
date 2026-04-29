@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardAnalytics = ({ 
+const AnalyticsTab = ({ 
   t, 
   lang, 
   analyticsPlatform, 
@@ -260,4 +260,4 @@ const DashboardAnalytics = ({
   );
 };
 
-export default DashboardAnalytics;
+export default AnalyticsTab;

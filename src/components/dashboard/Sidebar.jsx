@@ -1,7 +1,7 @@
 import React from 'react';
 import logo from '../../assets/logo.png';
 
-const DashboardSidebar = ({ 
+const Sidebar = ({ 
   t, 
   activeMenu, 
   setActiveMenu, 
@@ -170,4 +170,4 @@ const DashboardSidebar = ({
   );
 };
 
-export default DashboardSidebar;
+export default Sidebar;

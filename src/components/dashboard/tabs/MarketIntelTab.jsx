@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MarketIntel = ({ 
+const MarketIntelTab = ({ 
   t, 
   lang, 
   platformFilter, 
@@ -293,4 +293,4 @@ const MarketIntel = ({
   );
 };
 
-export default MarketIntel;
+export default MarketIntelTab;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardAI = ({ 
+const AiGeneratorTab = ({ 
   t, 
   aiSubTab, 
   setAiSubTab, 
@@ -133,4 +133,4 @@ const DashboardAI = ({
   );
 };
 
-export default DashboardAI;
+export default AiGeneratorTab;

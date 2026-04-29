@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardRevenue = ({ 
+const RevenueTab = ({ 
   t, 
   orders, 
   platformFilter, 
@@ -253,4 +253,4 @@ const DashboardRevenue = ({
   );
 };
 
-export default DashboardRevenue;
+export default RevenueTab;

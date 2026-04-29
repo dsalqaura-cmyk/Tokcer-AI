@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardAccount = ({ 
+const AccountTab = ({ 
   t, 
   lang, 
   securityMessage, 
@@ -76,4 +76,4 @@ const DashboardAccount = ({
   );
 };
 
-export default DashboardAccount;
+export default AccountTab;

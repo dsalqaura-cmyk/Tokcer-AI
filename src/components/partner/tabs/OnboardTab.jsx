@@ -1,0 +1,128 @@
+import React from 'react';
+
+const OnboardTab = ({ 
+  t, 
+  onboardForm, 
+  setOnboardForm, 
+  handleOnboardSubmit 
+}) => {
+  return (
+    <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <div className="text-center space-y-3 mb-10">
+        <h2 className="text-2xl font-black text-white uppercase tracking-[0.4em]">{t('onboardTitle')}</h2>
+        <p className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em] max-w-lg mx-auto">{t('onboardDesc')}</p>
+      </div>
+
+      <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-right from-orange-600 to-amber-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+        
+        <form onSubmit={handleOnboardSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('shopName')}</label>
+              <input 
+                type="text" 
+                required
+                value={onboardForm.shopName}
+                onChange={(e) => setOnboardForm({...onboardForm, shopName: e.target.value})}
+                className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-700 transition-all focus:ring-4 focus:ring-orange-500/10 outline-none"
+                placeholder="e.g. Toko Makmur Jaya"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">Email</label>
+              <input 
+                type="email" 
+                required
+                value={onboardForm.email}
+                onChange={(e) => setOnboardForm({...onboardForm, email: e.target.value})}
+                className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-700 transition-all focus:ring-4 focus:ring-orange-500/10 outline-none"
+                placeholder="email@example.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('whatsapp')}</label>
+              <input 
+                type="tel" 
+                required
+                value={onboardForm.whatsapp}
+                onChange={(e) => setOnboardForm({...onboardForm, whatsapp: e.target.value})}
+                className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-700 transition-all focus:ring-4 focus:ring-orange-500/10 outline-none"
+                placeholder="08123456789"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('plan')}</label>
+              <div className="relative">
+                <select 
+                  value={onboardForm.plan}
+                  onChange={(e) => setOnboardForm({...onboardForm, plan: e.target.value})}
+                  className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white transition-all outline-none"
+                >
+                  <option value="pro">{t('planPro')}</option>
+                  <option value="elite">{t('planElite')}</option>
+                  <option value="ultimate">{t('planUltimate')}</option>
+                </select>
+                <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></iconify-icon>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('paymentMethod')}</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {['Transfer', 'QRIS', 'VA', 'CC', 'E-Wallet'].map((method) => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => setOnboardForm({...onboardForm, paymentMethod: method.toLowerCase()})}
+                  className={`py-4 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                    onboardForm.paymentMethod === method.toLowerCase()
+                      ? "bg-orange-600/10 border-orange-600 text-orange-400"
+                      : "bg-black/20 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                  }`}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('paymentProof')}</label>
+            <div className="relative group/upload">
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={(e) => setOnboardForm({...onboardForm, paymentProof: e.target.files[0]})}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div className="border-2 border-dashed border-zinc-800 group-hover/upload:border-orange-500/30 rounded-3xl p-10 flex flex-col items-center justify-center transition-all bg-white/[0.01] group-hover/upload:bg-orange-500/[0.02]">
+                <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-4 group-hover/upload:scale-110 transition-transform">
+                  <iconify-icon icon="solar:upload-bold-duotone" className="text-3xl text-orange-500"></iconify-icon>
+                </div>
+                <div className="text-xs font-bold text-zinc-300 mb-1">
+                  {onboardForm.paymentProof ? (
+                    <span className="text-orange-400">{t('uploadSuccess')} {onboardForm.paymentProof.name}</span>
+                  ) : (
+                    <span>{t('uploadPrompt')}</span>
+                  )}
+                </div>
+                <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{t('uploadTypes')}</div>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            type="submit"
+            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/10 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0"
+          >
+            {t('submitOnboard')}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default OnboardTab;

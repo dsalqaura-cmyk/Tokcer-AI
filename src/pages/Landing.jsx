@@ -16,6 +16,15 @@ const Landing = () => {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isPartnerOpen, setIsPartnerOpen] = useState(false);
 
+  React.useEffect(() => {
+    // Fallback routing untuk link non-hash (misal dari email lama)
+    const path = window.location.pathname;
+    if (path === '/partner-agreement') {
+      const search = window.location.search;
+      window.location.replace(`/#/partner-agreement${search}`);
+    }
+  }, []);
+
   return (
     <div className="bg-black min-h-screen text-white font-['Inter',sans-serif] selection:bg-orange-500/30 selection:text-orange-200">
       {/* Background Elements */}
