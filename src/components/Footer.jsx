@@ -1,6 +1,6 @@
 import React from 'react';
 import logo from '../assets/logo.png';
-import { useLandingTranslation } from '../hooks/useLandingTranslation';
+import { useLandingTranslation } from '../hooks/useLandingTranslation.js';
 
 const Footer = () => {
   const { t } = useLandingTranslation();

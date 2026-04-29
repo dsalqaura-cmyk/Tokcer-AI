@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase';
-import { useLandingTranslation } from '../../hooks/useLandingTranslation';
+import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
 const RegisterModal = ({ isOpen, onClose }) => {
   const { t } = useLandingTranslation();

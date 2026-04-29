@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
-import { supabase } from '../supabase';
+import { supabase } from '../supabase.js';
 
 // Components
 import InternalSidebar from '../components/internal/InternalSidebar.jsx';
@@ -20,7 +20,7 @@ import PaymentVerificationModal from '../components/internal/modals/PaymentVerif
 import PartnerReviewModal from '../components/internal/modals/PartnerReviewModal.jsx';
 import AccountSetupModal from '../components/internal/modals/AccountSetupModal.jsx';
 
-import { internalTranslations } from '../locales/internalLocales';
+import { internalTranslations } from '../locales/internalLocales.js';
 
 // MOCK DATA
 const MOCK_USERS = [

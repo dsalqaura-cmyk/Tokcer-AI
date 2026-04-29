@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
-import { useLandingTranslation } from '../hooks/useLandingTranslation';
+import { useLandingTranslation } from '../hooks/useLandingTranslation.js';
 
 const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLandingTranslation } from '../../hooks/useLandingTranslation';
+import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
 const Pricing = ({ onOpenWaitlist }) => {
   const { t } = useLandingTranslation();

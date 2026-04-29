@@ -1,6 +1,6 @@
 import React from 'react';
 import DashboardPreview from './DashboardPreview';
-import { useLandingTranslation } from '../../hooks/useLandingTranslation';
+import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
 const Hero = () => {
   const { t } = useLandingTranslation();

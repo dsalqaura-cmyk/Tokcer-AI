@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
+import { supabase } from '../supabase.js';
 import PartnerSidebar from '../components/partner/PartnerSidebar.jsx';
 import PartnerHeader from '../components/partner/PartnerHeader.jsx';
 import OnboardTab from '../components/partner/tabs/OnboardTab.jsx';

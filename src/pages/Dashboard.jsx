@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
-import ProductModal from '../components/modals/ProductModal';
+import { supabase } from '../supabase.js';
+import ProductModal from '../components/modals/ProductModal.jsx';
 import logo from '../assets/logo.png';
 import Sidebar from '../components/dashboard/Sidebar.jsx';
 import Header from '../components/dashboard/Header.jsx';
@@ -16,7 +16,7 @@ import SupportTab from '../components/dashboard/tabs/SupportTab.jsx';
 import MarketIntelTab from '../components/dashboard/tabs/MarketIntelTab.jsx';
 import MarketplaceSyncTab from '../components/dashboard/tabs/MarketplaceSyncTab.jsx';
 import AdminTab from '../components/dashboard/tabs/AdminTab.jsx';
-import { dashboardTranslations } from '../locales/dashboardLocales';
+import { dashboardTranslations } from '../locales/dashboardLocales.js';
 
 
 const Dashboard = () => {
