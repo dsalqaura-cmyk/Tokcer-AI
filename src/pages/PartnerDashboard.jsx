@@ -124,9 +124,11 @@ const PartnerDashboard = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) throw new Error("Sesi tidak valid, silakan login ulang.");
-
+      // Get fresh session but don't crash if getUser is slow
+      const { data: { session } } = await supabase.auth.getSession();
+      const authUser = session?.user || user;
+      
+      if (!authUser) throw new Error("Sesi berakhir, silakan login ulang.");
       if (!onboardForm.paymentProof) throw new Error("Harap upload bukti pembayaran.");
 
       const file = onboardForm.paymentProof;
@@ -163,7 +165,8 @@ const PartnerDashboard = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const authUser = session?.user || user;
       if (!authUser) throw new Error("Sesi tidak valid.");
       const { error } = await supabase.from('partners').update({
         full_name: profileForm.fullName,
@@ -185,7 +188,8 @@ const PartnerDashboard = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const authUser = session?.user || user;
       if (!authUser) throw new Error("Sesi tidak valid.");
       const { error } = await supabase.from('support_tickets').insert([{
         user_id: authUser.id,
