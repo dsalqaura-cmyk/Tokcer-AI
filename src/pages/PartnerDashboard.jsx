@@ -90,11 +90,32 @@ const PartnerDashboard = () => {
   const fetchData = async (currentUser) => {
     if (!currentUser) return;
     try {
+      const isBypass = currentUser.id === 'admin-bypass';
+      
       // 1. Fetch Partner Profile
-      const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
+      let query = supabase.from('partners').select('*');
+      if (isBypass) {
+        query = query.ilike('email', currentUser.email);
+      } else {
+        query = query.eq('id', currentUser.id);
+      }
+      const { data: partner } = await query.maybeSingle();
       
       // 2. Fetch Clients (Subscribers)
-      const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
+      let subsQuery = supabase.from('clients').select('*');
+      if (isBypass) {
+        // If bypass, we try to find by the real partner id if found, else by email link
+        if (partner?.id) {
+          subsQuery = subsQuery.eq('partner_id', partner.id);
+        } else {
+          // Fallback or empty
+          subsQuery = subsQuery.eq('partner_id', 'none');
+        }
+      } else {
+        subsQuery = subsQuery.eq('partner_id', currentUser.id);
+      }
+      
+      const { data: subs } = await subsQuery.order('created_at', { ascending: false });
       const safeSubs = subs || [];
       setSubscribers(safeSubs);
 
@@ -102,6 +123,7 @@ const PartnerDashboard = () => {
       const activeCount = safeSubs.filter(s => s.status === 'active').length;
 
       if (partner) {
+
         setPartnerData({
           ...partner,
           activeUsers: activeCount,
@@ -134,9 +156,15 @@ const PartnerDashboard = () => {
       setLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+        
         if (session) {
           setUser(session.user);
           await fetchData(session.user);
+        } else if (isAdmin) {
+          const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
+          setUser(adminUser);
+          await fetchData(adminUser);
         } else {
           navigate('/login');
         }
@@ -151,6 +179,7 @@ const PartnerDashboard = () => {
     const timer = setInterval(updateCountdown, 1000);
     return () => clearInterval(timer);
   }, []);
+
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();

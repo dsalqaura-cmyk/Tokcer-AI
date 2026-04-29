@@ -339,9 +339,18 @@ const Dashboard = () => {
       } else if (isAdmin) {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);
-        setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
+        setProfile({ 
+            full_name: 'Administrator', 
+            tokens: 9999, 
+            role: 'admin',
+            subscription_plan: 'ultimate',
+            planName: 'Ultimate',
+            totalQuota: 3000,
+            isUnlimited: true
+        });
         fetchOperationalData('admin-bypass', adminUser);
       }
+
     };
     getUser();
   }, []);

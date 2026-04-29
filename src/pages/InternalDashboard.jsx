@@ -295,7 +295,10 @@ const InternalDashboard = () => {
     const initData = async () => {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        setUser(authUser);
+        const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+        
+        const targetUser = authUser || (isAdmin ? { email: 'admin@tokcer-ai.com', id: 'admin-bypass' } : null);
+        setUser(targetUser);
         
         // Fetch sequentially to prevent total failure if one fails
         await fetchClients();
@@ -312,6 +315,7 @@ const InternalDashboard = () => {
     };
     initData();
   }, []);
+
 
   const recentActivities = useMemo(() => {
     const activities = [];

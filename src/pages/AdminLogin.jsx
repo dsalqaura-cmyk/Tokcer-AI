@@ -20,12 +20,16 @@ const AdminLogin = () => {
     // TOTAL BYPASS for Admin
     if (cleanEmail === 'admin@tokcer-ai.com' && cleanPassword === 'Dind@1983') {
       console.log("Admin Access Granted");
+      // Silently attempt supabase login to satisfy RLS if user exists
+      supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword }).catch(() => {});
+      
       setTimeout(() => {
         localStorage.setItem('tokcer_admin_auth', 'true');
         setLoading(false);
         navigate('/admin');
       }, 1200);
     } else {
+
       setTimeout(() => {
         setError('Access Denied: Invalid Administrative Credentials');
         setLoading(false);
