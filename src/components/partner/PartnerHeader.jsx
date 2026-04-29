@@ -36,7 +36,10 @@ const PartnerHeader = ({
             <button 
               onClick={() => {
                 if(window.confirm(t('confirmLogout') || 'Logout?')) {
-                  supabase.auth.signOut().then(() => window.location.href = '/login');
+                  supabase.auth.signOut().finally(() => {
+                    localStorage.clear();
+                    window.location.href = '/login';
+                  });
                 }
               }}
               className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full border border-rose-500/30 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/10 transition-all"
