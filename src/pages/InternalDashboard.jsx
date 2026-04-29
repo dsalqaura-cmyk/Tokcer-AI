@@ -66,13 +66,11 @@ const InternalDashboard = () => {
   }, []);
 
   const fetchClients = async () => {
-    setIsLoading(true);
     const { data, error } = await supabase
       .from('clients')
       .select('id, shop_name, email, status, plan, tier, pic, ref, payment_method, payment_proof_url, created_at, partners(full_name)')
       .order('created_at', { ascending: false });
     if (!error) setAdminClients(data || []);
-    setIsLoading(false);
   };
 
   const fetchPartners = async () => {
@@ -290,7 +288,6 @@ const InternalDashboard = () => {
 
   useEffect(() => {
     const initData = async () => {
-      setIsLoading(true);
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         setUser(authUser);
@@ -306,8 +303,6 @@ const InternalDashboard = () => {
         await fetchGlobalStats();
       } catch (err) {
         console.error("Dashboard Init Error:", err);
-      } finally {
-        setIsLoading(false);
       }
     };
     initData();

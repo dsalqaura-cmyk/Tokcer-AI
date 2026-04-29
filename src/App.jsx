@@ -11,14 +11,12 @@ import PartnerAgreement from './pages/PartnerAgreement.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Set to false by default
 
   useEffect(() => {
-    // Ambil sesi secara instan
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-      setLoading(false);
     };
     checkSession();
 
