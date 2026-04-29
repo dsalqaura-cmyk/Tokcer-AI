@@ -25,57 +25,31 @@ const PartnerDashboard = () => {
   const [supportTab, setSupportTab] = useState('report'); 
   const navigate = useNavigate();
 
-  const [onboardForm, setOnboardForm] = useState({
-    shopName: '',
-    email: '',
-    whatsapp: '',
-    plan: 'pro',
-    paymentMethod: 'transfer',
-    paymentProof: null
-  });
-
-  const [supportForm, setSupportForm] = useState({
-    category: 'data',
-    description: '',
-    screenshot: null
-  });
-
-  const [profileForm, setProfileForm] = useState({
-    fullName: '',
-    whatsapp: '',
-    email: '',
-    bankName: '',
-    bankAccount: '',
-  });
+  // Form States
+  const [onboardForm, setOnboardForm] = useState({ shopName: '', email: '', whatsapp: '', plan: 'pro', paymentMethod: 'transfer', paymentProof: null });
+  const [supportForm, setSupportForm] = useState({ category: 'data', description: '', screenshot: null });
+  const [profileForm, setProfileForm] = useState({ fullName: '', whatsapp: '', email: '', bankName: '', bankAccount: '' });
 
   const [partnerData, setPartnerData] = useState({
-    id: "-",
-    name: "Partner",
-    tier: "Bronze",
-    activeUsers: 0,
-    cancelledUsers: 0,
-    mtdPace: 0,
-    projectedEndMonth: 0,
-    subscribers: [],
-    leaderboard: [],
-    paymentHistory: []
+    id: "-", name: "Partner", tier: "Bronze", activeUsers: 0, mtdPace: 0, projectedEndMonth: 0,
+    subscribers: [], leaderboard: [], paymentHistory: []
   });
 
-  // 1. Fetch Core Data
+  const t = (key) => partnerTranslations[lang][key] || key;
+  const formatCurrency = (v) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v || 0);
+  const getPlanBadge = (p) => p?.toLowerCase() === 'ultimate' ? 'bg-orange-600 text-white border-orange-400' : 'bg-zinc-800 text-zinc-400 border-zinc-700';
+  const getRelativeTime = (d) => d ? "Baru saja" : "-";
+  const getTierColor = (t) => t?.toLowerCase() === 'diamond' ? 'text-cyan-400' : 'text-orange-500';
+  const getWeekInfo = () => ({ label: "Week 18 · 29 Apr - 3 May 2026", endOfFriday: new Date() });
+
   const fetchData = async (currentUser) => {
     if (!currentUser) return;
     try {
-      const { data: profile } = await supabase
-        .from('partners')
-        .select('*')
-        .or(`id.eq.${currentUser.id},email.eq.${currentUser.email}`)
-        .maybeSingle();
-
-      const { data: clients } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('partner_id', currentUser.id)
-        .order('created_at', { ascending: false });
+      // 1. Get Partner Profile
+      const { data: profile } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
+      
+      // 2. Get Clients
+      const { data: clients } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
 
       if (profile) {
         setProfileForm({
@@ -87,19 +61,15 @@ const PartnerDashboard = () => {
         });
       }
 
-      // Performance Logic
-      const active = (clients || []).filter(c => c.status === 'active').length;
-      const totalCommission = (clients || []).filter(c => c.status === 'active').reduce((acc, curr) => acc + (curr.commission_amount || 0), 0);
+      const activeCount = (clients || []).filter(c => c.status === 'active').length;
+      const totalComm = (clients || []).filter(c => c.status === 'active').reduce((acc, curr) => acc + (curr.commission_amount || 0), 0);
 
-      // Leaderboard Simulation / Fetch
-      const { data: allPartners } = await supabase.from('partners').select('*');
-      const leaderboardData = (allPartners || []).map(p => ({
-          id: p.id,
-          name: p.full_name || 'Partner',
-          omzet: Math.floor(Math.random() * 50000000), // Real logic would be a join
-          closing: Math.floor(Math.random() * 20),
-          tier: p.tier || 'Bronze'
-      })).sort((a, b) => b.omzet - a.omzet);
+      // Leaderboard Simulation
+      const leaderboardData = [
+        { id: '1', name: 'Elite Partner A', omzet: 45000000, closing: 12, tier: 'Diamond' },
+        { id: '2', name: 'Partner B', omzet: 32000000, closing: 8, tier: 'Gold' },
+        { id: currentUser.id, name: profile?.full_name || currentUser.email, omzet: totalComm, closing: activeCount, tier: profile?.tier || 'Bronze' }
+      ].sort((a, b) => b.omzet - a.omzet);
 
       setPartnerData(prev => ({
         ...prev,
@@ -107,29 +77,37 @@ const PartnerDashboard = () => {
         name: profile?.full_name || currentUser.email,
         tier: profile?.tier || "Bronze",
         subscribers: clients || [],
-        activeUsers: active,
-        mtdPace: totalCommission,
-        leaderboard: leaderboardData.slice(0, 10)
+        activeUsers: activeCount,
+        mtdPace: totalComm,
+        leaderboard: leaderboardData
       }));
     } catch (err) {
       console.error("Fetch Error:", err);
     }
   };
 
-  // 2. Countdown Timer
   useEffect(() => {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+        await fetchData(session.user);
+      }
+      setLoading(false);
+    };
+    init();
+
     const timer = setInterval(() => {
       const now = new Date();
-      const friday = new Date();
-      friday.setDate(now.getDate() + (5 - now.getDay()));
-      friday.setHours(23, 59, 59, 0);
-      
-      const diff = friday - now;
+      const target = new Date();
+      target.setDate(now.getDate() + (5 - now.getDay()));
+      target.setHours(23, 59, 59);
+      const diff = target - now;
       if (diff > 0) {
         setCountdown({
-          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((diff / 1000 / 60) % 60),
+          days: Math.floor(diff / 86400000),
+          hours: Math.floor((diff / 3600000) % 24),
+          minutes: Math.floor((diff / 60000) % 60),
           seconds: Math.floor((diff / 1000) % 60)
         });
       }
@@ -137,66 +115,28 @@ const PartnerDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // 3. Auth Check
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setUser(session.user);
-          await fetchData(session.user);
-        }
-      } catch (err) {
-        console.error("Auth Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, []);
-
-  // Helper Functions
-  const t = (key) => partnerTranslations[lang][key] || key;
-  const formatCurrency = (v) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v || 0);
-  const getPlanBadge = (p) => p?.toLowerCase() === 'ultimate' ? 'bg-orange-600 text-white border-orange-400' : 'bg-zinc-800 text-zinc-400 border-zinc-700';
-  const getRelativeTime = (d) => d ? "Baru saja" : "-";
-  const getTierColor = (t) => t?.toLowerCase() === 'diamond' ? 'text-cyan-400' : 'text-orange-500';
-  const getWeekInfo = () => ({ label: "Week 18 · 29 Apr - 3 May 2026", endOfFriday: new Date() });
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
   };
 
-  const toggleLang = (l) => {
-    setLang(l);
-    localStorage.setItem('tokcer_lang', l);
-  };
-
-  // Handlers
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-    const { data: { session } } = await supabase.auth.getSession();
-    const currentUser = session?.user || user;
-    
-    if (!currentUser) {
-      alert("Sesi berakhir, silakan login ulang.");
-      return;
-    }
-
-    if (!onboardForm.paymentProof) {
-      alert("Upload bukti pembayaran!");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error("Sesi tidak valid, silakan login ulang.");
+
+      if (!onboardForm.paymentProof) throw new Error("Harap upload bukti pembayaran.");
+
       const file = onboardForm.paymentProof;
-      const fileName = `${Date.now()}-${file.name}`;
-      const { error: upErr } = await supabase.storage.from('payment-proofs').upload(`${currentUser.id}/${fileName}`, file);
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const filePath = `${authUser.id}/${fileName}`;
+
+      const { error: upErr } = await supabase.storage.from('payment-proofs').upload(filePath, file);
       if (upErr) throw upErr;
 
-      const { data: { publicUrl } } = supabase.storage.from('payment-proofs').getPublicUrl(`${currentUser.id}/${fileName}`);
+      const { data: { publicUrl } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
 
       const { error: insErr } = await supabase.from('clients').insert([{
         shop_name: onboardForm.shopName,
@@ -204,35 +144,14 @@ const PartnerDashboard = () => {
         whatsapp: onboardForm.whatsapp,
         plan: onboardForm.plan,
         payment_proof_url: publicUrl,
-        partner_id: currentUser.id,
+        partner_id: authUser.id,
         status: 'pending'
       }]);
       if (insErr) throw insErr;
 
-      alert("Data berhasil dikirim!");
-      fetchData(currentUser);
+      alert("Berhasil! Tim kami akan segera melakukan verifikasi.");
+      fetchData(authUser);
       setOnboardForm({ shopName: '', email: '', whatsapp: '', plan: 'pro', paymentMethod: 'transfer', paymentProof: null });
-    } catch (err) {
-      alert("Error: " + err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    if (!user) return;
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.from('partners').update({
-        full_name: profileForm.fullName,
-        whatsapp: profileForm.whatsapp,
-        bank_name: profileForm.bankName,
-        bank_account: profileForm.bankAccount
-      }).eq('id', user.id);
-      if (error) throw error;
-      alert("Profil diperbarui!");
-      fetchData(user);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -240,13 +159,55 @@ const PartnerDashboard = () => {
     }
   };
 
-  if (loading) {
-    return <div className="min-h-screen bg-black flex items-center justify-center text-orange-500 font-black">TOKCER PARTNER...</div>;
-  }
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error("Sesi tidak valid.");
+      const { error } = await supabase.from('partners').update({
+        full_name: profileForm.fullName,
+        whatsapp: profileForm.whatsapp,
+        bank_name: profileForm.bankName,
+        bank_account: profileForm.bankAccount
+      }).eq('id', authUser.id);
+      if (error) throw error;
+      alert("Profil diperbarui!");
+      fetchData(authUser);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSupportSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error("Sesi tidak valid.");
+      const { error } = await supabase.from('support_tickets').insert([{
+        user_id: authUser.id,
+        type: 'bug',
+        description: supportForm.description,
+        status: 'open'
+      }]);
+      if (error) throw error;
+      alert("Laporan terkirim!");
+      setSupportForm({ category: 'data', description: '', screenshot: null });
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-orange-500 font-black tracking-widest">TOKCER PARTNER...</div>;
 
   return (
     <div className="min-h-screen bg-black text-white font-['Inter',sans-serif]">
-      <PartnerSidebar t={t} activeTab={activeTab} setActiveTab={setActiveTab} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} lang={lang} toggleLang={toggleLang} handleLogout={handleLogout} />
+      <PartnerSidebar t={t} activeTab={activeTab} setActiveTab={setActiveTab} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} lang={lang} toggleLang={(l) => { setLang(l); localStorage.setItem('tokcer_lang', l); }} handleLogout={handleLogout} />
       <PartnerHeader t={t} partnerData={partnerData} activeTab={activeTab} setActiveTab={setActiveTab} setIsMobileMenuOpen={setIsMobileMenuOpen} />
       
       <main className="max-w-7xl mx-auto p-6 md:p-10">
@@ -254,25 +215,10 @@ const PartnerDashboard = () => {
         {activeTab === 'subscribers' && <SubscribersTab t={t} lang={lang} partnerData={partnerData} getPlanBadge={getPlanBadge} getRelativeTime={getRelativeTime} formatCurrency={formatCurrency} />}
         {activeTab === 'leaderboard' && <LeaderboardTab t={t} lang={lang} partnerData={partnerData} leaderboardPeriod={leaderboardPeriod} setLeaderboardPeriod={setLeaderboardPeriod} countdown={countdown} getWeekInfo={getWeekInfo} getTierColor={getTierColor} formatCurrency={formatCurrency} />}
         {activeTab === 'payment' && <PaymentTab t={t} partnerData={partnerData} formatCurrency={formatCurrency} />}
-        {activeTab === 'support' && (
-          <SupportTab 
-            t={t} 
-            supportTab={supportTab} 
-            setSupportTab={setSupportTab} 
-            supportForm={supportForm} 
-            setSupportForm={setSupportForm} 
-            handleSupportSubmit={handleSupportSubmit} 
-            handleIdeaSubmit={handleIdeaSubmit} 
-            isSubmitting={isSubmitting} 
-          />
-        )}
+        {activeTab === 'support' && <SupportTab t={t} supportTab={supportTab} setSupportTab={setSupportTab} supportForm={supportForm} setSupportForm={setSupportForm} handleSupportSubmit={handleSupportSubmit} handleIdeaSubmit={() => {}} isSubmitting={isSubmitting} />}
         {activeTab === 'academy' && <AcademyTab t={t} />}
         {activeTab === 'profile' && <ProfileTab lang={lang} partnerData={partnerData} profileForm={profileForm} setProfileForm={setProfileForm} user={user} getTierColor={getTierColor} handleUpdateProfile={handleUpdateProfile} isSubmitting={isSubmitting} />}
       </main>
-
-      <footer className="max-w-7xl mx-auto px-6 py-10 text-center border-t border-zinc-900/50 text-[10px] text-zinc-600 font-black uppercase tracking-[0.5em]">
-        Tokcer AI © 2026
-      </footer>
     </div>
   );
 };
