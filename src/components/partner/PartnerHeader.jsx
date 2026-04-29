@@ -1,4 +1,5 @@
 import React from 'react';
+import { supabase } from '../../supabase.js';
 import logo from '../../assets/logo.png';
 
 const PartnerHeader = ({ 

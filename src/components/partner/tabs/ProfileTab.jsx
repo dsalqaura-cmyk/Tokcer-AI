@@ -8,7 +8,9 @@ const ProfileTab = ({
   profileForm, 
   setProfileForm, 
   user, 
-  getTierColor 
+  getTierColor,
+  handleUpdateProfile,
+  isSubmitting
 }) => {
   const [passwordForm, setPasswordForm] = useState({
     newPassword: '',
