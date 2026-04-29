@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Hero from '../components/landing/Hero';
-import Problem from '../components/landing/Problem';
-import Solution from '../components/landing/Solution';
-import Ecosystem from '../components/landing/Ecosystem';
-import Pricing from '../components/landing/Pricing';
-import Testimonial from '../components/landing/Testimonial';
-import AboutUs from '../components/landing/AboutUs';
-import WaitlistCTA from '../components/landing/WaitlistCTA';
-import Footer from '../components/Footer';
-import RegisterModal from '../components/modals/RegisterModal';
-import PartnerModal from '../components/modals/PartnerModal';
+import Navbar from '../components/Navbar.jsx';
+import Hero from '../components/landing/Hero.jsx';
+import Problem from '../components/landing/Problem.jsx';
+import Solution from '../components/landing/Solution.jsx';
+import Ecosystem from '../components/landing/Ecosystem.jsx';
+import Pricing from '../components/landing/Pricing.jsx';
+import Testimonial from '../components/landing/Testimonial.jsx';
+import AboutUs from '../components/landing/AboutUs.jsx';
+import WaitlistCTA from '../components/landing/WaitlistCTA.jsx';
+import Footer from '../components/Footer.jsx';
+import RegisterModal from '../components/modals/RegisterModal.jsx';
+import PartnerModal from '../components/modals/PartnerModal.jsx';
 
 const Landing = () => {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);

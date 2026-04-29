@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase';
-import Landing from './pages/Landing';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import PartnerDashboard from './pages/PartnerDashboard';
-import InternalDashboard from './pages/InternalDashboard';
-import AdminLogin from './pages/AdminLogin';
-import PartnerAgreement from './pages/PartnerAgreement';
+import Landing from './pages/Landing.jsx';
+import Login from './pages/Login.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import PartnerDashboard from './pages/PartnerDashboard.jsx';
+import InternalDashboard from './pages/InternalDashboard.jsx';
+import AdminLogin from './pages/AdminLogin.jsx';
+import PartnerAgreement from './pages/PartnerAgreement.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);

@@ -4,21 +4,21 @@ import Chart from 'chart.js/auto';
 import { supabase } from '../supabase';
 
 // Components
-import InternalSidebar from '../components/internal/InternalSidebar';
-import InternalHeader from '../components/internal/InternalHeader';
-import OverviewSection from '../components/internal/sections/OverviewSection';
-import ApprovalSection from '../components/internal/sections/ApprovalSection';
-import UserSection from '../components/internal/sections/UserSection';
-import PartnerSection from '../components/internal/sections/PartnerSection';
-import TicketSection from '../components/internal/sections/TicketSection';
-import AiStrategySection from '../components/internal/sections/AiStrategySection';
-import SupabaseSection from '../components/internal/sections/SupabaseSection';
+import InternalSidebar from '../components/internal/InternalSidebar.jsx';
+import InternalHeader from '../components/internal/InternalHeader.jsx';
+import OverviewSection from '../components/internal/sections/OverviewSection.jsx';
+import ApprovalSection from '../components/internal/sections/ApprovalSection.jsx';
+import UserSection from '../components/internal/sections/UserSection.jsx';
+import PartnerSection from '../components/internal/sections/PartnerSection.jsx';
+import TicketSection from '../components/internal/sections/TicketSection.jsx';
+import AiStrategySection from '../components/internal/sections/AiStrategySection.jsx';
+import SupabaseSection from '../components/internal/sections/SupabaseSection.jsx';
 
 // Modals
-import UserQuickViewModal from '../components/internal/modals/UserQuickViewModal';
-import PaymentVerificationModal from '../components/internal/modals/PaymentVerificationModal';
-import PartnerReviewModal from '../components/internal/modals/PartnerReviewModal';
-import AccountSetupModal from '../components/internal/modals/AccountSetupModal';
+import UserQuickViewModal from '../components/internal/modals/UserQuickViewModal.jsx';
+import PaymentVerificationModal from '../components/internal/modals/PaymentVerificationModal.jsx';
+import PartnerReviewModal from '../components/internal/modals/PartnerReviewModal.jsx';
+import AccountSetupModal from '../components/internal/modals/AccountSetupModal.jsx';
 
 import { internalTranslations } from '../locales/internalLocales';
 

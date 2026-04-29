@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
-import PartnerSidebar from '../components/partner/PartnerSidebar';
-import PartnerHeader from '../components/partner/PartnerHeader';
-import OnboardTab from '../components/partner/tabs/OnboardTab';
-import SubscribersTab from '../components/partner/tabs/SubscribersTab';
-import LeaderboardTab from '../components/partner/tabs/LeaderboardTab';
-import PaymentTab from '../components/partner/tabs/PaymentTab';
-import SupportTab from '../components/partner/tabs/SupportTab';
-import AcademyTab from '../components/partner/tabs/AcademyTab';
-import ProfileTab from '../components/partner/tabs/ProfileTab';
+import PartnerSidebar from '../components/partner/PartnerSidebar.jsx';
+import PartnerHeader from '../components/partner/PartnerHeader.jsx';
+import OnboardTab from '../components/partner/tabs/OnboardTab.jsx';
+import SubscribersTab from '../components/partner/tabs/SubscribersTab.jsx';
+import LeaderboardTab from '../components/partner/tabs/LeaderboardTab.jsx';
+import PaymentTab from '../components/partner/tabs/PaymentTab.jsx';
+import SupportTab from '../components/partner/tabs/SupportTab.jsx';
+import AcademyTab from '../components/partner/tabs/AcademyTab.jsx';
+import ProfileTab from '../components/partner/tabs/ProfileTab.jsx';
 import { partnerTranslations } from '../locales/partnerLocales';
 
 const PartnerDashboard = () => {
