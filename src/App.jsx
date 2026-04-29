@@ -47,10 +47,12 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  const isStagingSubdomain = window.location.hostname.includes('dashboardstaging');
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={isStagingSubdomain ? <Navigate to="/admin" replace /> : <Landing />} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />

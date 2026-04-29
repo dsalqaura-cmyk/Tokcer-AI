@@ -7,7 +7,7 @@ const OverviewSection = ({
   chartRef, 
   RECENT_ACTIVITY,
   adminClients = [],
-  adminPartners = []
+  globalStats = { totalRevenue: 0, totalOrders: 0, activeUsers: 0, activePartners: 0 }
 }) => {
   // Calculate Tier Counts for Legend
   const tierCounts = {
@@ -31,8 +31,8 @@ const OverviewSection = ({
     return `${diffDays}d ago`;
   };
 
-  // Estimate Revenue (Mock logic for now based on active plans)
-  const estimatedRevenue = adminClients
+  // Subscription Revenue
+  const subscriptionRevenue = adminClients
     .filter(c => c.status === 'active')
     .reduce((acc, c) => {
       const price = c.plan === 'ultimate' ? 2000000 : c.plan === 'elite' ? 350000 : c.plan === 'pro' ? 150000 : 0;
@@ -46,7 +46,7 @@ const OverviewSection = ({
         <div className="flex justify-between items-center mb-8 relative z-10">
           <div>
             <h3 className="font-black text-xl text-white uppercase tracking-tight">{t('financialHub')}</h3>
-            <p className="text-sm text-zinc-500 font-medium">Live income analytics from {adminClients.length} subscribers</p>
+            <p className="text-sm text-zinc-500 font-medium">Live income analytics from {globalStats.activeUsers} subscribers</p>
           </div>
           <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800">
             {['daily', 'weekly', 'monthly'].map(p => (
@@ -57,9 +57,16 @@ const OverviewSection = ({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
           <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('grossIncome')}</p>
-            <h2 className="text-2xl font-black text-white tracking-tighter">Rp {(estimatedRevenue / 1000000).toFixed(1)}M</h2>
+            <h2 className="text-2xl font-black text-white tracking-tighter">Rp {new Intl.NumberFormat('id-ID').format(subscriptionRevenue)}</h2>
             <div className="mt-4 flex items-center gap-2">
-                <span className="text-[9px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded tracking-widest">LIVE</span>
+                <span className="text-[9px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded tracking-widest">SUBSCRIPTION</span>
+            </div>
+          </div>
+          <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
+            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Active Subscribers</p>
+            <h2 className="text-2xl font-black text-white tracking-tighter">{globalStats.activeUsers}</h2>
+            <div className="mt-4 flex items-center gap-2">
+                <span className="text-[9px] font-black bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded tracking-widest">USERS</span>
             </div>
           </div>
           <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
@@ -67,26 +74,19 @@ const OverviewSection = ({
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[8px] font-black text-zinc-500 uppercase mb-1">{t('paid')}</p>
-                <h2 className="text-xl font-black text-white tracking-tighter">Rp 0</h2>
+                <h2 className="text-lg font-black text-white tracking-tighter">Rp {new Intl.NumberFormat('id-ID').format(globalStats.totalPaid)}</h2>
               </div>
               <div className="text-right">
                 <p className="text-[8px] font-black text-amber-500 uppercase mb-1">{t('pending')}</p>
-                <h2 className="text-xl font-black text-amber-500 tracking-tighter">Rp 0</h2>
+                <h2 className="text-lg font-black text-amber-500 tracking-tighter">Rp {new Intl.NumberFormat('id-ID').format(globalStats.totalPending)}</h2>
               </div>
             </div>
           </div>
-          <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
-            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('activePartners')}</p>
-            <h2 className="text-2xl font-black text-white tracking-tighter">{adminPartners.length}</h2>
-            <div className="mt-4 flex items-center gap-2">
-                <span className="text-[9px] font-black bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded tracking-widest">TOTAL</span>
-            </div>
-          </div>
           <div className="p-6 bg-blue-600 rounded-2xl shadow-xl shadow-blue-600/20 text-white">
-            <p className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('netProfit')}</p>
-            <h2 className="text-2xl font-black tracking-tighter">Rp {(estimatedRevenue * 0.7 / 1000000).toFixed(1)}M</h2>
+            <p className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('activePartners')}</p>
+            <h2 className="text-2xl font-black tracking-tighter">{globalStats.activePartners}</h2>
             <div className="mt-4 flex items-center gap-2">
-                <span className="text-[9px] font-black bg-white/20 text-white px-2 py-0.5 rounded tracking-widest">EST. 70%</span>
+                <span className="text-[9px] font-black bg-white/20 text-white px-2 py-0.5 rounded tracking-widest">TOTAL</span>
             </div>
           </div>
         </div>

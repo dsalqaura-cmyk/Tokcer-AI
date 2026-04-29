@@ -323,9 +323,49 @@ const Dashboard = () => {
     getUser();
   }, []);
 
+  const chargeDailyCredit = async (feature) => {
+    if (!user || localStorage.getItem('tokcer_admin_auth') === 'true') return true;
+
+    const today = new Date().toISOString().split('T')[0];
+    const storageKey = `tokcer_pay_${feature}_${today}`;
+    
+    if (localStorage.getItem(storageKey)) return true;
+
+    const currentTokens = profile?.tokens !== undefined ? profile.tokens : (profile?.ai_credits_remaining || 0);
+    if (currentTokens < 1) {
+        alert("⚠️ Kredit AI Anda tidak cukup untuk membuka fitur ini. Silakan upgrade paket Anda.");
+        setActiveMenu('tab-dash');
+        return false;
+    }
+
+    try {
+        const newTokens = currentTokens - 1;
+        const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
+        await supabase.from('profiles').update(updateData).eq('id', user.id);
+        setProfile({ ...profile, tokens: newTokens });
+        localStorage.setItem(storageKey, 'paid');
+        
+        await supabase.from('ai_usage_logs').insert([{
+            user_id: user.id,
+            feature: `daily_access_${feature}`,
+            tokens_used: 1
+        }]);
+        return true;
+    } catch (err) {
+        console.error("Charge Daily Error:", err);
+        return false;
+    }
+  };
+
   useEffect(() => {
     if (activeMenu === 'tab-analytics') {
-      fetchAnalyticsInsight();
+      chargeDailyCredit('analytics').then(allowed => {
+        if (allowed) fetchAnalyticsInsight();
+      });
+    } else if (activeMenu === 'tab-market') {
+        chargeDailyCredit('market').then(allowed => {
+            if (allowed) fetchGlobalMarketTrends();
+        });
     } else if (activeMenu === 'tab-health') {
         // Calculate basic metrics for AI prompt
         const safeOrders = Array.isArray(orders) ? orders : [];
@@ -483,32 +523,32 @@ const Dashboard = () => {
             .replace("Fokus pada 'USP' produk secara cepat, buat kesan urgensi/kelangkaan, dan arahkan ke keranjang kuning.", "Focus on the product's USP quickly, create a sense of urgency/scarcity, and direct to the yellow basket.");
       }
 
-      const systemPrompt = config?.system_prompt || `Kamu adalah Copywriter Senior spesialis e-commerce. Gunakan ${targetLang} yang natural.`;
-      const ragKnowledge = config?.rag_knowledge_base ? `\n\nGunakan referensi pengetahuan berikut ini untuk menjawab (Strict Knowledge):\n${config.rag_knowledge_base}` : '';
-      
-      const fullSystemPrompt = `${systemPrompt}${ragKnowledge}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
+      const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
       // 3. Call DeepSeek
       const result = await callDeepSeek(fullSystemPrompt, userMessage);
       setAiResult(result);
 
-      // 4. Update Tokens & Log Usage (Only for non-admin)
+      // 4. Update Tokens & Log Usage (Logic Update: 1 Credit per unique topic)
       if (!isAdmin) {
-        const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
-        const newTokens = currentTokens - 1;
-        
-        // Update either tokens or ai_credits_remaining based on what's available
-        const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
-        await supabase.from('profiles').update(updateData).eq('id', user.id);
-        
-        setProfile({ ...profile, tokens: newTokens });
+        const lastPrompt = localStorage.getItem('tokcer_last_prompt');
+        const isNewTopic = !lastPrompt || lastPrompt.trim().toLowerCase() !== aiPrompt.trim().toLowerCase();
+
+        if (isNewTopic) {
+            const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
+            const newTokens = currentTokens - 1;
+            const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
+            await supabase.from('profiles').update(updateData).eq('id', user.id);
+            setProfile({ ...profile, tokens: newTokens });
+            localStorage.setItem('tokcer_last_prompt', aiPrompt);
+        }
 
         await supabase.from('ai_usage_logs').insert([{
           user_id: user.id,
           prompt: userMessage,
           response: result,
-          tokens_used: 1,
+          tokens_used: isNewTopic ? 1 : 0,
           feature: 'content_generator'
         }]);
       }

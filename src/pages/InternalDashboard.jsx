@@ -116,6 +116,39 @@ const InternalDashboard = () => {
     if (!error) setAllUsers(data || []);
   };
 
+  const [globalStats, setGlobalStats] = useState({ 
+    totalRevenue: 0, 
+    totalOrders: 0, 
+    activeUsers: 0, 
+    activePartners: 0,
+    totalPaid: 0,
+    totalPending: 0
+  });
+
+  const fetchGlobalStats = async () => {
+    try {
+      const { data: ords } = await supabase.from('orders').select('total_amount');
+      const { count: uCount } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
+      const { count: pCount } = await supabase.from('partners').select('*', { count: 'exact', head: true }).eq('status', 'active');
+      const { data: pays } = await supabase.from('payouts').select('amount, status');
+      
+      const revenue = (ords || []).reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0);
+      const paid = (pays || []).filter(p => p.status === 'paid').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+      const pending = (pays || []).filter(p => p.status === 'pending').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+
+      setGlobalStats({
+        totalRevenue: revenue,
+        totalOrders: ords?.length || 0,
+        activeUsers: uCount || 0,
+        activePartners: pCount || 0,
+        totalPaid: paid,
+        totalPending: pending
+      });
+    } catch (err) {
+      console.error("Error fetching global stats:", err);
+    }
+  };
+
   const fetchTickets = async () => {
     const { data, error } = await supabase
       .from('support_tickets')
@@ -254,6 +287,34 @@ const InternalDashboard = () => {
     }
   };
 
+  const handleRemindPartner = async (client) => {
+    if (!client || !client.partners?.email) {
+      alert("Partner email not found!");
+      return;
+    }
+
+    const confirm = window.confirm(`Send follow-up reminder to ${client.partners?.full_name} for user ${client.shop_name}?`);
+    if (!confirm) return;
+
+    setIsLoading(true);
+    try {
+      // In a real scenario, this would call a Supabase Edge Function to send a real email
+      // For now, we simulate the action and log it.
+      alert(`Reminder sent to ${client.partners?.full_name} (${client.partners?.email})`);
+      
+      await supabase.from('ai_usage_logs').insert([{
+          user_id: user.id,
+          feature: 'admin_remind_partner',
+          prompt: `Remind ${client.partners?.full_name} to follow up ${client.shop_name}`,
+          response: 'SUCCESS'
+      }]);
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchClients();
     fetchPartners();
@@ -349,9 +410,9 @@ const InternalDashboard = () => {
   const renderSection = () => {
     switch (activeSection) {
       case 'overview':
-        return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivities} adminClients={adminClients} adminPartners={adminPartners} />;
+        return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivities} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
       case 'approvals':
-        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={MOCK_USERS} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} />;
+        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={MOCK_USERS} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleRemindPartner={handleRemindPartner} />;
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':

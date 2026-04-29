@@ -100,12 +100,36 @@ const PartnerDashboard = () => {
           bonus = totalCommission * 0.05;
         }
 
+        // Fetch All Partners for Leaderboard
+        const { data: allPartners } = await supabase.from('partners').select('*');
+        const { data: allClients } = await supabase.from('clients').select('partner_id, commission_amount').eq('status', 'active');
+
+        const leaderboardData = (allPartners || []).map(p => {
+            const partnerClients = (allClients || []).filter(c => c.partner_id === p.id);
+            const totalOmzet = partnerClients.reduce((acc, curr) => acc + (curr.commission_amount || 0), 0);
+            return {
+                id: p.id,
+                name: p.full_name || 'Anonymous Partner',
+                omzet: totalOmzet,
+                closing: partnerClients.length,
+                tier: p.tier || 'Bronze'
+            };
+        }).sort((a, b) => b.omzet - a.omzet);
+
+        // Calculate Real Projection
+        const now = new Date();
+        const currentDay = now.getDate();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const projected = (totalCommission / (currentDay || 1)) * daysInMonth;
+
         setPartnerData(prev => ({
           ...prev,
           activeUsers: active,
           cancelledUsers: cancelled,
           mtdPace: totalCommission,
-          performanceBonus: bonus
+          projectedEndMonth: projected,
+          performanceBonus: bonus,
+          leaderboard: leaderboardData.slice(0, 10)
         }));
       }
     } catch (err) {

@@ -10,7 +10,8 @@ const ApprovalSection = ({
   getTierBadgeClass, 
   setSelectedPartnerApp, 
   setShowApproveModal, 
-  handleApprove 
+  handleApprove,
+  handleRemindPartner
 }) => {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -37,6 +38,7 @@ const ApprovalSection = ({
             <thead className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">
               <tr>
                 <th className="px-4 pb-2">{t('identification')}</th>
+                <th className="px-4 pb-2">Kontak</th>
                 <th className="px-4 pb-2">{activeAppTab === 'new-partner' ? t('tier') : t('statusPlan')}</th>
                 <th className="px-4 pb-2 text-center">{t('picPartner')}</th>
                 <th className="px-4 pb-2 text-center">Bukti</th>
@@ -46,16 +48,20 @@ const ApprovalSection = ({
             </thead>
             <tbody>
               {(activeAppTab === 'app-subs' 
-                ? adminClients.filter(c => !c.status || c.status.toLowerCase() === 'pending') 
+                ? adminClients.filter(c => c.status?.toLowerCase() === 'pending') 
                 : activeAppTab === 'new-partner' ? partnerApps 
-                : MOCK_USERS.filter(u => !u.status || u.status.toLowerCase() === 'pending' || u.status.toLowerCase() === 'warning')
+                : adminClients.filter(c => c.status?.toLowerCase() === 'warning' || c.status?.toLowerCase() === 'pending')
               ).map((item, i) => (
                 <tr key={i} className="bg-zinc-900/30 hover:bg-zinc-800/50 transition-all group">
                   <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800/50">
                     <div className="font-black text-white text-sm tracking-tight group-hover:text-blue-400 transition-colors">
                       {item.nama || item.name || item.shop_name}
                     </div>
-                    <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">{item.email}</div>
+                    <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">ID: {item.id?.substring(0,6)}</div>
+                  </td>
+                  <td className="p-4 border-y border-zinc-800/50">
+                    <div className="text-[10px] font-bold text-white tracking-tight">{item.email}</div>
+                    <div className="text-[9px] text-emerald-500 font-black mt-0.5">{item.whatsapp || '-'}</div>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50">
                     <span className={`${getTierBadgeClass(activeAppTab === 'new-partner' ? 'bronze' : (item.tier || item.plan))} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>
@@ -63,7 +69,18 @@ const ApprovalSection = ({
                     </span>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50 text-center">
-                    <span className="text-[10px] font-bold text-zinc-400">{item.pic || item.partners?.full_name || 'Direct Access'}</span>
+                    <div className="flex flex-col items-center">
+                        <span className="text-[10px] font-bold text-zinc-400">{item.pic || item.partners?.full_name || 'Direct Access'}</span>
+                        {item.partners?.email && (
+                            <button 
+                                onClick={() => handleRemindPartner(item)}
+                                className="mt-1 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase rounded border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-all"
+                            >
+                                <iconify-icon icon="solar:bell-bing-bold" className="mr-1"></iconify-icon>
+                                Remind
+                            </button>
+                        )}
+                    </div>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50 text-center">
                     {item.payment_proof_url ? (
@@ -80,7 +97,7 @@ const ApprovalSection = ({
                   </td>
                   <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800/50 text-right">
                     <div className="flex items-center justify-end gap-3">
-                      {item.status === 'pending' || !item.status || item.status === 'agreed' ? (
+                      {item.status === 'pending' || item.status === 'warning' || !item.status || item.status === 'agreed' ? (
                         <>
                           {activeAppTab === 'new-partner' ? (
                             <>
