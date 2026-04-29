@@ -51,6 +51,22 @@ const AiStrategySection = ({
           </div>
         </div>
 
+        {/* Resend API Key Integration */}
+        <div className="mt-8 pt-8 border-t border-zinc-800/50">
+          <div className="flex items-center gap-3 mb-4 px-2">
+            <iconify-icon icon="solar:letter-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Resend API Key Integration</label>
+          </div>
+          <input 
+            type="password"
+            className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+            placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
+            value={aiConfig.resend_api_key || ''}
+            onChange={(e) => setAiConfig({...aiConfig, resend_api_key: e.target.value})}
+          />
+          <p className="text-[9px] text-zinc-600 mt-2 px-2 uppercase font-bold tracking-wider">Used for automatic welcome emails upon approval</p>
+        </div>
+
         <div className="mt-8 flex justify-end">
           <button 
             onClick={handleSaveAiConfig}

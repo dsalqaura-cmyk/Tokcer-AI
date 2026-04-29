@@ -178,10 +178,12 @@ const InternalDashboard = () => {
     try {
       const updates = [
         { key: 'system_prompt', value: aiConfig.system_prompt },
-        { key: 'rag_knowledge_base', value: aiConfig.rag_knowledge_base }
+        { key: 'rag_knowledge_base', value: aiConfig.rag_knowledge_base },
+        { key: 'resend_api_key', value: aiConfig.resend_api_key }
       ];
 
       for (const item of updates) {
+        if (!item.value) continue;
         await supabase.from('ai_configs').upsert(item, { onConflict: 'key' });
       }
       alert(t('configUpdated'));
@@ -193,8 +195,10 @@ const InternalDashboard = () => {
   };
 
   const sendWelcomeEmail = async (email, name, plan) => {
-    const apiKey = import.meta.env.VITE_RESEND_API_KEY;
-    if (!apiKey || apiKey === 'your_resend_api_key_here') {
+    // Gunakan dari Database jika ada, kalau tidak ada pakai .env
+    const apiKey = aiConfig.resend_api_key || import.meta.env.VITE_RESEND_API_KEY;
+    
+    if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey === '') {
       console.warn("⚠️ Resend API Key belum diisi. Email tidak terkirim.");
       return;
     }
