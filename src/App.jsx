@@ -40,12 +40,10 @@ const ProtectedRoute = ({ children }) => {
   const isStagingSubdomain = window.location.hostname.includes('dashboardstaging');
   const isPathAdmin = window.location.pathname.startsWith('/admin');
 
-  // If on admin subdomain or /admin path, but not logged in as admin
   if (!session && !isAdminAuth && (isStagingSubdomain || isPathAdmin)) {
     return <Navigate to="/admin-login" replace />;
   }
 
-  // General login redirect
   if (!session && !isAdminAuth) {
     return <Navigate to="/login" replace />;
   }
@@ -60,6 +58,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={isStagingSubdomain ? <Navigate to="/admin" replace /> : <Landing />} />
+        <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
@@ -76,14 +75,6 @@ function App() {
           element={
             <ProtectedRoute>
               <PartnerDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute>
-              <InternalDashboard />
             </ProtectedRoute>
           } 
         />
