@@ -35,7 +35,17 @@ jobs:
         VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         VITE_DEEPSEEK_API_KEY: ${{ secrets.VITE_DEEPSEEK_API_KEY }}
 
-    - name: 📂 Sync to Staging
+    - name: 📂 Sync to Staging (Public)
+      if: github.ref == 'refs/heads/staging'
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./dist/
+        server-dir: staging.tokcer-ai.com/
+
+    - name: 📂 Sync to Staging (Internal Admin)
       if: github.ref == 'refs/heads/staging'
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
