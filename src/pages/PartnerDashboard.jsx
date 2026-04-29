@@ -53,7 +53,9 @@ const PartnerDashboard = () => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
   };
 
+
   const getWeekInfo = () => {
+
     const now = new Date();
     const day = now.getDay();
     const diff = now.getDate() - day + (day === 0 ? -6 : 1);
@@ -196,10 +198,10 @@ const PartnerDashboard = () => {
       const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
       const filePath = `payment-proofs/${targetUser.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage.from('payments').upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from('payment-proofs').upload(filePath, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('payments').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
 
       const { error: insertError } = await supabase.from('clients').insert([{
         partner_id: targetUser.id,

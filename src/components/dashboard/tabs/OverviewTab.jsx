@@ -25,20 +25,27 @@ const OverviewTab = ({
     today.setHours(0,0,0,0);
     if (filter === 'Hari Ini') {
       const todayStr = today.toISOString().split('T')[0];
-      return data.filter(o => (o.created_at || '').startsWith(todayStr));
+      return data.filter(o => {
+        const dateStr = o.order_date || o.created_at || '';
+        return dateStr.startsWith(todayStr);
+      });
     } else if (filter === 'Bulan Ini') {
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
       return data.filter(o => {
-        if (!o.created_at) return false;
-        const d = new Date(o.created_at);
+        const dateStr = o.order_date || o.created_at;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
       });
     } else if (filter.includes('Bulan Terakhir')) {
       const months = parseInt(filter);
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - months);
-      return data.filter(o => o.created_at && new Date(o.created_at) >= cutoff);
+      return data.filter(o => {
+        const dateStr = o.order_date || o.created_at;
+        return dateStr && new Date(dateStr) >= cutoff;
+      });
     }
     return data;
   };

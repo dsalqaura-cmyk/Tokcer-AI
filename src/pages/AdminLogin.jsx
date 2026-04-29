@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../supabase.js';
 import logo from '../assets/logo.png';
 
 const AdminLogin = () => {
@@ -20,16 +21,22 @@ const AdminLogin = () => {
     // TOTAL BYPASS for Admin
     if (cleanEmail === 'admin@tokcer-ai.com' && cleanPassword === 'Dind@1983') {
       console.log("Admin Access Granted");
-      // Silently attempt supabase login to satisfy RLS if user exists
-      supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword }).catch(() => {});
       
-      setTimeout(() => {
-        localStorage.setItem('tokcer_admin_auth', 'true');
+      try {
+        // Silently attempt supabase login to satisfy RLS if user exists
+        supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword }).catch(() => {});
+        
+        setTimeout(() => {
+          localStorage.setItem('tokcer_admin_auth', 'true');
+          setLoading(false);
+          navigate('/admin');
+        }, 1200);
+      } catch (err) {
+        console.error("Auth error:", err);
         setLoading(false);
-        navigate('/admin');
-      }, 1200);
+        setError("System error during authentication.");
+      }
     } else {
-
       setTimeout(() => {
         setError('Access Denied: Invalid Administrative Credentials');
         setLoading(false);
