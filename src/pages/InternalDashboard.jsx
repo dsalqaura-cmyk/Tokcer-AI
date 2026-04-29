@@ -143,10 +143,15 @@ const InternalDashboard = () => {
     if (!error) setPartnerApps(data || []);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('tokcer_admin_auth');
-    navigate('/admin-login');
+  const handleLogout = async () => {
+    if(window.confirm(t('confirmLogout') || 'Logout?')) {
+      await supabase.auth.signOut().finally(() => {
+        localStorage.clear();
+        window.location.href = '/admin-login';
+      });
+    }
   };
+
 
   const fetchAiConfig = async () => {
     const { data, error } = await supabase.from('ai_configs').select('*');

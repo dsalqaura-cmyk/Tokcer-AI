@@ -2,9 +2,9 @@ import React from 'react';
 
 const OnboardTab = ({ 
   t, 
-  onboardForm, 
-  setOnboardForm, 
-  handleOnboardSubmit,
+  form, 
+  setForm, 
+  onSubmit,
   isSubmitting
 }) => {
   return (
@@ -17,15 +17,15 @@ const OnboardTab = ({
       <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-right from-orange-600 to-amber-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
         
-        <form onSubmit={handleOnboardSubmit} className="space-y-8">
+        <form onSubmit={onSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('shopName')}</label>
               <input 
                 type="text" 
                 required
-                value={onboardForm.shopName}
-                onChange={(e) => setOnboardForm({...onboardForm, shopName: e.target.value})}
+                value={form.shopName}
+                onChange={(e) => setForm({...form, shopName: e.target.value})}
                 className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-700 transition-all focus:ring-4 focus:ring-orange-500/10 outline-none"
                 placeholder="e.g. Toko Makmur Jaya"
               />
@@ -35,8 +35,8 @@ const OnboardTab = ({
               <input 
                 type="email" 
                 required
-                value={onboardForm.email}
-                onChange={(e) => setOnboardForm({...onboardForm, email: e.target.value})}
+                value={form.email}
+                onChange={(e) => setForm({...form, email: e.target.value})}
                 className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-700 transition-all focus:ring-4 focus:ring-orange-500/10 outline-none"
                 placeholder="email@example.com"
               />
@@ -46,8 +46,8 @@ const OnboardTab = ({
               <input 
                 type="tel" 
                 required
-                value={onboardForm.whatsapp}
-                onChange={(e) => setOnboardForm({...onboardForm, whatsapp: e.target.value})}
+                value={form.whatsapp}
+                onChange={(e) => setForm({...form, whatsapp: e.target.value})}
                 className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white placeholder-zinc-700 transition-all focus:ring-4 focus:ring-orange-500/10 outline-none"
                 placeholder="08123456789"
               />
@@ -56,8 +56,8 @@ const OnboardTab = ({
               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('plan')}</label>
               <div className="relative">
                 <select 
-                  value={onboardForm.plan}
-                  onChange={(e) => setOnboardForm({...onboardForm, plan: e.target.value})}
+                  value={form.package}
+                  onChange={(e) => setForm({...form, package: e.target.value})}
                   className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white transition-all outline-none"
                 >
                   <option value="starter">{t('planStarter')}</option>
@@ -77,9 +77,9 @@ const OnboardTab = ({
                 <button
                   key={method}
                   type="button"
-                  onClick={() => setOnboardForm({...onboardForm, paymentMethod: method.toLowerCase()})}
+                  onClick={() => setForm({...form, paymentMethod: method.toLowerCase()})}
                   className={`py-4 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${
-                    onboardForm.paymentMethod === method.toLowerCase()
+                    form.paymentMethod === method.toLowerCase()
                       ? "bg-orange-600/10 border-orange-600 text-orange-400"
                       : "bg-black/20 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                   }`}
@@ -96,7 +96,7 @@ const OnboardTab = ({
               <input 
                 type="file" 
                 accept="image/*"
-                onChange={(e) => setOnboardForm({...onboardForm, paymentProof: e.target.files[0]})}
+                onChange={(e) => setForm({...form, paymentProof: e.target.files[0]})}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               <div className="border-2 border-dashed border-zinc-800 group-hover/upload:border-orange-500/30 rounded-3xl p-10 flex flex-col items-center justify-center transition-all bg-white/[0.01] group-hover/upload:bg-orange-500/[0.02]">
@@ -104,8 +104,8 @@ const OnboardTab = ({
                   <iconify-icon icon="solar:upload-bold-duotone" className="text-3xl text-orange-500"></iconify-icon>
                 </div>
                 <div className="text-xs font-bold text-zinc-300 mb-1">
-                  {onboardForm.paymentProof ? (
-                    <span className="text-orange-400">{t('uploadSuccess')} {onboardForm.paymentProof.name}</span>
+                  {form.paymentProof ? (
+                    <span className="text-orange-400">{t('uploadSuccess')} {form.paymentProof.name}</span>
                   ) : (
                     <span>{t('uploadPrompt')}</span>
                   )}
@@ -127,6 +127,7 @@ const OnboardTab = ({
             )}
           </button>
         </form>
+
       </div>
     </div>
   );

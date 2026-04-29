@@ -465,10 +465,14 @@ const Dashboard = () => {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('tokcer_admin_auth');
-    await supabase.auth.signOut();
-    navigate('/login');
+    if(window.confirm(t('confirmLogout') || 'Logout?')) {
+      await supabase.auth.signOut().finally(() => {
+        localStorage.clear();
+        window.location.href = '/login';
+      });
+    }
   };
+
 
   const callDeepSeek = async (systemPrompt, userMessage) => {
     const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;

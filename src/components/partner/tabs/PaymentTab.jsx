@@ -25,7 +25,7 @@ const PaymentTab = ({
                 </tr>
               </thead>
               <tbody className="text-zinc-200">
-                {partnerData.paymentHistory.map((p, idx) => (
+                {(partnerData?.paymentHistory || []).map((p, idx) => (
                   <tr key={idx} className="border-b border-zinc-900/30 group-hover:bg-white/[0.01]">
                     <td className="py-5">{p.period}</td>
                     <td className="py-5">
@@ -42,6 +42,7 @@ const PaymentTab = ({
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </div>

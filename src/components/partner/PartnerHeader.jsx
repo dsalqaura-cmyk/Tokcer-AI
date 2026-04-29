@@ -21,7 +21,7 @@ const PartnerHeader = ({
               <div className="h-6 w-px bg-zinc-800 hidden sm:block"></div>
               <div className="hidden sm:block">
                 <div className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em]">{t('partnerDashboard')}</div>
-                <div className="text-xs font-bold text-zinc-400">{partnerData.name}</div>
+                <div className="text-xs font-bold text-zinc-400">{partnerData?.full_name || 'Partner'}</div>
               </div>
             </div>
           </div>
@@ -29,7 +29,7 @@ const PartnerHeader = ({
           <div className="flex items-center gap-4">
             <div className="hidden lg:flex items-center bg-zinc-900/50 border border-zinc-800 rounded-full px-4 py-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
-              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('activeUser')}: {partnerData.activeUsers}</span>
+              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('activeUser')}: {partnerData?.activeUsers || 0}</span>
             </div>
             
             {/* Desktop Logout */}
@@ -84,7 +84,7 @@ const PartnerHeader = ({
                 {t(tab)}
               </div>
               {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-right from-orange-600 to-amber-400 rounded-full shadow-[0_-2px_10px_rgba(234,88,12,0.5)]"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-400 rounded-full shadow-[0_-2px_10px_rgba(234,88,12,0.5)]"></div>
               )}
             </button>
           ))}
@@ -93,5 +93,6 @@ const PartnerHeader = ({
     </>
   );
 };
+
 
 export default PartnerHeader;

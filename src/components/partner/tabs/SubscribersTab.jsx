@@ -3,29 +3,53 @@ import React from 'react';
 const SubscribersTab = ({ 
   t, 
   lang, 
-  partnerData, 
-  getPlanBadge, 
-  getRelativeTime, 
+  subscribers,
   formatCurrency 
 }) => {
+  const safeSubs = subscribers || [];
+  const activeCount = safeSubs.filter(s => s.status === 'active' || s.status === 'paid').length;
+  const cancelledCount = safeSubs.filter(s => s.status === 'cancelled' || s.status === 'returned').length;
+  const totalCommission = safeSubs.reduce((acc, curr) => acc + (Number(curr.commission_amount) || 0), 0);
+
+  const getPlanBadge = (plan) => {
+    switch(plan?.toLowerCase()) {
+      case 'ultimate': return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
+      case 'elite': return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+      case 'pro': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+      default: return 'text-zinc-400 bg-zinc-500/10 border-zinc-500/20';
+    }
+  };
+
+  const getRelativeTime = (dateStr) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return lang === 'id' ? 'baru saja' : 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + (lang === 'id' ? ' mnt lalu' : 'm ago');
+    if (diff < 86400) return Math.floor(diff / 3600) + (lang === 'id' ? ' jam lalu' : 'h ago');
+    return Math.floor(diff / 86400) + (lang === 'id' ? ' hari lalu' : 'd ago');
+  };
+
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl">
           <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('totalSubs')}</div>
-          <div className="text-3xl font-black text-white font-mono tracking-tighter">{partnerData.subscribers.length}</div>
+          <div className="text-3xl font-black text-white font-mono tracking-tighter">{safeSubs.length}</div>
         </div>
         <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl">
           <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('activeUser')}</div>
-          <div className="text-3xl font-black text-white font-mono tracking-tighter">{partnerData.activeUsers}</div>
+          <div className="text-3xl font-black text-white font-mono tracking-tighter">{activeCount}</div>
         </div>
         <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl border-l-rose-500/50">
           <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('cancelled')}</div>
-          <div className="text-3xl font-black text-rose-500 font-mono tracking-tighter">{partnerData.cancelledUsers}</div>
+          <div className="text-3xl font-black text-rose-500 font-mono tracking-tighter">{cancelledCount}</div>
         </div>
         <div className="relative group overflow-hidden bg-emerald-600/10 backdrop-blur-md border border-emerald-500/20 p-5 rounded-2xl">
           <div className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-3">{t('performanceBonus')}</div>
-          <div className="text-3xl font-black text-white font-mono tracking-tighter">{formatCurrency(partnerData.performanceBonus || 0)}</div>
+          <div className="text-3xl font-black text-white font-mono tracking-tighter">{formatCurrency(totalCommission)}</div>
         </div>
       </div>
 
@@ -48,13 +72,13 @@ const SubscribersTab = ({
                   <th className="px-8 py-6">{t('shopName')}</th>
                   <th className="px-8 py-6">{t('plan')}</th>
                   <th className="px-8 py-6">{t('status')}</th>
-                  <th className="px-8 py-6">{lang === 'id' ? 'Last Closing' : 'Last Closing'}</th>
+                  <th className="px-8 py-6">{lang === 'id' ? 'Terdaftar' : 'Registered'}</th>
                   <th className="px-8 py-6 text-right">{t('commission')}</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {partnerData.subscribers.map((s, idx) => (
-                  <tr key={s.id} className={`group border-b border-zinc-900/50 hover:bg-white/[0.01] transition-all duration-300 ${idx === partnerData.subscribers.length - 1 ? 'border-none' : ''}`}>
+                {safeSubs.map((s, idx) => (
+                  <tr key={s.id} className={`group border-b border-zinc-900/50 hover:bg-white/[0.01] transition-all duration-300 ${idx === safeSubs.length - 1 ? 'border-none' : ''}`}>
                     <td className="px-4 sm:px-8 py-4 sm:py-6">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-100 font-black text-[10px] sm:text-xs border border-zinc-700 group-hover:border-orange-500/50 transition-colors">
