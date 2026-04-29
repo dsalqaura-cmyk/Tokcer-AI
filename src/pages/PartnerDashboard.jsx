@@ -78,7 +78,7 @@ const PartnerDashboard = () => {
   const fetchData = async (currentUser) => {
     if (!currentUser) return;
     try {
-      const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).single();
+      const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
       if (partner) {
         setPartnerData(partner);
         setProfileForm({
@@ -92,21 +92,33 @@ const PartnerDashboard = () => {
       const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
       setSubscribers(subs || []);
 
-      const { data: leaders } = await supabase.from('partners').select('full_name, total_omzet').order('total_omzet', { ascending: false }).limit(10);
+      const { data: leaders } = await supabase.from('partners')
+        .select('full_name, total_omzet')
+        .not('full_name', 'is', null)
+        .order('total_omzet', { ascending: false })
+        .limit(10);
       setLeaderboardData(leaders || []);
     } catch (err) {
       console.error("Fetch Data Error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUser(session.user);
-        await fetchData(session.user);
+      setLoading(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setUser(session.user);
+          await fetchData(session.user);
+        }
+      } catch (err) {
+        console.error("Init Error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     init();
 

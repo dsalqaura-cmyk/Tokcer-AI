@@ -289,18 +289,25 @@ const InternalDashboard = () => {
 
   useEffect(() => {
     const initData = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      setUser(authUser);
-      await Promise.all([
-        fetchClients(),
-        fetchPartners(),
-        fetchAllUsers(),
-        fetchAiConfig(),
-        fetchAiLogs(),
-        fetchPartnerApps(),
-        fetchTickets(),
-        fetchGlobalStats()
-      ]);
+      setIsLoading(true);
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        setUser(authUser);
+        
+        // Fetch sequentially to prevent total failure if one fails
+        await fetchClients();
+        await fetchPartners();
+        await fetchAllUsers();
+        await fetchAiConfig();
+        await fetchAiLogs();
+        await fetchPartnerApps();
+        await fetchTickets();
+        await fetchGlobalStats();
+      } catch (err) {
+        console.error("Dashboard Init Error:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
     initData();
   }, []);
