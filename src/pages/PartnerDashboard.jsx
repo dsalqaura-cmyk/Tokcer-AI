@@ -123,12 +123,14 @@ const PartnerDashboard = () => {
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    console.log("🚀 Attempting Onboard Submit...");
     try {
-      // Get fresh session but don't crash if getUser is slow
-      const { data: { session } } = await supabase.auth.getSession();
-      const authUser = session?.user || user;
+      // 1. Get user directly from Supabase (Don't use state)
+      const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
+      console.log("👤 Auth User Check:", authUser, authErr);
       
-      if (!authUser) throw new Error("Sesi berakhir, silakan login ulang.");
+      const targetUser = authUser || user; // Fallback to state user
+
       if (!onboardForm.paymentProof) throw new Error("Harap upload bukti pembayaran.");
 
       const file = onboardForm.paymentProof;
@@ -165,18 +167,18 @@ const PartnerDashboard = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authUser = session?.user || user;
-      if (!authUser) throw new Error("Sesi tidak valid.");
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const targetUser = authUser || user;
+      
       const { error } = await supabase.from('partners').update({
         full_name: profileForm.fullName,
         whatsapp: profileForm.whatsapp,
         bank_name: profileForm.bankName,
         bank_account: profileForm.bankAccount
-      }).eq('id', authUser.id);
+      }).eq('id', targetUser?.id);
       if (error) throw error;
       alert("Profil diperbarui!");
-      fetchData(authUser);
+      fetchData(targetUser);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -188,11 +190,11 @@ const PartnerDashboard = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authUser = session?.user || user;
-      if (!authUser) throw new Error("Sesi tidak valid.");
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const targetUser = authUser || user;
+      
       const { error } = await supabase.from('support_tickets').insert([{
-        user_id: authUser.id,
+        user_id: targetUser?.id,
         type: 'bug',
         description: supportForm.description,
         status: 'open'
