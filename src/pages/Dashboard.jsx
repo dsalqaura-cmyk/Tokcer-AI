@@ -147,14 +147,24 @@ const Dashboard = () => {
         if (!user || data.length === 0) return;
         setIsFetchingOperational(true);
         try {
+            // Helper to find value regardless of header case/spaces
+            const getValue = (obj, possibleKeys) => {
+                const keys = Object.keys(obj);
+                for (const pk of possibleKeys) {
+                    const foundKey = keys.find(k => k.toLowerCase().replace(/[\s_]/g, '') === pk.toLowerCase().replace(/[\s_]/g, ''));
+                    if (foundKey) return obj[foundKey];
+                }
+                return null;
+            };
+
             const formattedData = data.map(item => ({
                 user_id: user.id === 'admin-bypass' ? null : user.id,
-                order_number: item.order_number,
-                customer_name: item.customer_name,
-                platform: item.platform,
-                total_amount: Number(item.total_amount || 0),
-                status: item.status || 'completed',
-                order_date: item.order_date || new Date().toISOString()
+                order_number: getValue(item, ['order_number', 'orderno', 'idpesanan', 'no_pesanan']),
+                customer_name: getValue(item, ['customer_name', 'customer', 'namapelanggan']),
+                platform: getValue(item, ['platform', 'marketplace', 'sumber']),
+                total_amount: Number(getValue(item, ['total_amount', 'total', 'nominal', 'harga']) || 0),
+                status: getValue(item, ['status', 'order_status']) || 'completed',
+                order_date: getValue(item, ['order_date', 'tanggal', 'date']) || new Date().toISOString()
             }));
 
             const { error } = await supabase.from('orders').insert(formattedData);
@@ -164,7 +174,7 @@ const Dashboard = () => {
             fetchOperationalData(user.id);
         } catch (err) {
             console.error("Import Error:", err);
-            alert("❌ Gagal mengimpor data. Pastikan format CSV benar.");
+            alert(`❌ Gagal impor: ${err.message || "Pastikan format CSV sesuai template"}`);
         } finally {
             setIsFetchingOperational(false);
         }
@@ -174,13 +184,23 @@ const Dashboard = () => {
         if (!user || data.length === 0) return;
         setIsFetchingOperational(true);
         try {
+            const getValue = (obj, possibleKeys) => {
+                const keys = Object.keys(obj);
+                for (const pk of possibleKeys) {
+                    const foundKey = keys.find(k => k.toLowerCase().replace(/[\s_]/g, '') === pk.toLowerCase().replace(/[\s_]/g, ''));
+                    if (foundKey) return obj[foundKey];
+                }
+                return null;
+            };
+
             const formattedData = data.map(item => ({
                 user_id: user.id === 'admin-bypass' ? null : user.id,
-                name: item.name,
-                sku: item.sku,
-                stock: Number(item.stock || 0),
-                price: Number(item.price || 0),
-                description: item.description || ''
+                name: getValue(item, ['name', 'product_name', 'namaproduk']),
+                sku: getValue(item, ['sku', 'kodeproduk']),
+                stock: Number(getValue(item, ['stock', 'stok', 'jumlah']) || 0),
+                price: Number(getValue(item, ['price', 'harga', 'hargajual']) || 0),
+                cost: Number(getValue(item, ['cost', 'modal', 'hargabeli']) || 0),
+                description: getValue(item, ['description', 'deskripsi']) || ''
             }));
 
             const { error } = await supabase.from('products').insert(formattedData);
@@ -190,7 +210,7 @@ const Dashboard = () => {
             fetchOperationalData(user.id);
         } catch (err) {
             console.error("Import Error:", err);
-            alert("❌ Gagal mengimpor produk. Pastikan format CSV benar.");
+            alert(`❌ Gagal impor produk: ${err.message}`);
         } finally {
             setIsFetchingOperational(false);
         }
@@ -632,17 +652,45 @@ const Dashboard = () => {
 
   const handleSupportSubmit = async (e) => {
     e.preventDefault();
+    if (!user) return;
     setIsSubmittingSupport(true);
     
-    // Simulate API call to send email
-    setTimeout(() => {
-      console.log('Support Report Submitted:', {
-        type: supportType,
-        title: supportTitle,
-        description: supportDesc,
-        file: supportFile?.name
-      });
-      setIsSubmittingSupport(false);
+    try {
+      let attachmentUrl = null;
+
+      // 1. Upload File if exists
+      if (supportFile) {
+        const fileExt = supportFile.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `support-attachments/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('support-files')
+          .upload(filePath, supportFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('support-files')
+          .getPublicUrl(filePath);
+        
+        attachmentUrl = publicUrl;
+      }
+
+      // 2. Insert Ticket to DB
+      const { error: insertError } = await supabase
+        .from('support_tickets')
+        .insert([{
+          user_id: user.id === 'admin-bypass' ? null : user.id,
+          type: supportType,
+          title: supportTitle,
+          description: supportDesc,
+          attachment_url: attachmentUrl,
+          status: 'open'
+        }]);
+
+      if (insertError) throw insertError;
+
       setSupportSubmitted(true);
       
       // Reset form
@@ -650,7 +698,12 @@ const Dashboard = () => {
       setSupportDesc('');
       setSupportFile(null);
       setSupportFilePreview(null);
-    }, 2000);
+    } catch (err) {
+      console.error("Support Submission Error:", err);
+      alert("❌ Gagal mengirim laporan: " + err.message);
+    } finally {
+      setIsSubmittingSupport(false);
+    }
   };
 
 

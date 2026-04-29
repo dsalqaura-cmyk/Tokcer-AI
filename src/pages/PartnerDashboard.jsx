@@ -249,14 +249,40 @@ const PartnerDashboard = () => {
 
   const handleSupportSubmit = async (e) => {
     e.preventDefault();
+    if (!user) return;
     setIsSubmitting(true);
     try {
+      let screenshotUrl = null;
+
+      // 1. Upload Screenshot if exists
+      if (supportForm.screenshot) {
+        const file = supportForm.screenshot;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `partner-${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `support-attachments/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('support-files')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('support-files')
+          .getPublicUrl(filePath);
+        
+        screenshotUrl = publicUrl;
+      }
+
+      // 2. Insert Ticket
       const { error } = await supabase
         .from('support_tickets')
         .insert([{
-          partner_id: user.id,
-          category: supportForm.category,
+          user_id: user.id, // Using user_id column for consistency
+          type: 'bug',
+          title: `Support: ${supportForm.category}`,
           description: supportForm.description,
+          attachment_url: screenshotUrl,
           status: 'open',
           priority: 'medium'
         }]);

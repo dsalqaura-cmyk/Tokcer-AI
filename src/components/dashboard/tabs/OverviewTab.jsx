@@ -25,20 +25,20 @@ const OverviewTab = ({
     today.setHours(0,0,0,0);
     if (filter === 'Hari Ini') {
       const todayStr = today.toISOString().split('T')[0];
-      return data.filter(o => (o.order_date || '').startsWith(todayStr));
+      return data.filter(o => (o.created_at || '').startsWith(todayStr));
     } else if (filter === 'Bulan Ini') {
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
       return data.filter(o => {
-        if (!o.order_date) return false;
-        const d = new Date(o.order_date);
+        if (!o.created_at) return false;
+        const d = new Date(o.created_at);
         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
       });
     } else if (filter.includes('Bulan Terakhir')) {
       const months = parseInt(filter);
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - months);
-      return data.filter(o => o.order_date && new Date(o.order_date) >= cutoff);
+      return data.filter(o => o.created_at && new Date(o.created_at) >= cutoff);
     }
     return data;
   };
@@ -50,10 +50,10 @@ const OverviewTab = ({
   const healthScore = products.length > 0 
     ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
     : 0;
-
+ 
   const recentTransactions = [...platformFilteredOrders]
-    .filter(o => o.order_date)
-    .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+    .filter(o => o.created_at)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 3);
 
   const lowStockProducts = products

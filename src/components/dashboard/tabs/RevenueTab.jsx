@@ -28,13 +28,13 @@ const RevenueTab = ({
     today.setHours(0,0,0,0);
     if (filter === 'Today') {
       const todayStr = today.toISOString().split('T')[0];
-      return data.filter(o => (o.order_date || '').startsWith(todayStr));
+      return data.filter(o => (o.created_at || '').startsWith(todayStr));
     } else if (filter === 'Month') {
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
       return data.filter(o => {
-        if (!o.order_date) return false;
-        const d = new Date(o.order_date);
+        if (!o.created_at) return false;
+        const d = new Date(o.created_at);
         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
       });
     }

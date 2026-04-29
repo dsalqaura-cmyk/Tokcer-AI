@@ -17,13 +17,38 @@ const AnalyticsTab = ({
   isAnalyzingAnalytics
 }) => {
   // --- REAL DATA CALCULATIONS ---
+  const getFilteredOrdersByTime = (data, filter) => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    if (filter === 'Hari Ini') {
+      const todayStr = today.toISOString().split('T')[0];
+      return data.filter(o => (o.created_at || '').startsWith(todayStr));
+    } else if (filter === 'Bulan Ini') {
+      const thisMonth = today.getMonth();
+      const thisYear = today.getFullYear();
+      return data.filter(o => {
+        if (!o.created_at) return false;
+        const d = new Date(o.created_at);
+        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+      });
+    } else if (filter.includes('Bulan Terakhir')) {
+      const months = parseInt(filter);
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - months);
+      return data.filter(o => o.created_at && new Date(o.created_at) >= cutoff);
+    }
+    return data;
+  };
+
+  const filteredOrders = getFilteredOrdersByTime(orders, timeFilter);
+
   const platformStats = {
     tiktok: { name: 'TikTok Shop', revenue: 0, orders: 0, trend: '+12.5%', color: 'border-zinc-800' },
     shopee: { name: 'Shopee', revenue: 0, orders: 0, trend: '+8.2%', color: 'border-orange-500/30' },
     tokopedia: { name: 'Tokopedia', revenue: 0, orders: 0, trend: '+4.1%', color: 'border-teal-500/30' },
   };
 
-  orders.forEach(o => {
+  filteredOrders.forEach(o => {
     const plat = (o.platform || '').toLowerCase();
     if (platformStats[plat]) {
       platformStats[plat].revenue += Number(o.total_amount || 0);

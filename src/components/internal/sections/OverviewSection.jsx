@@ -5,8 +5,40 @@ const OverviewSection = ({
   revenuePeriod, 
   setRevenuePeriod, 
   chartRef, 
-  RECENT_ACTIVITY 
+  RECENT_ACTIVITY,
+  adminClients = [],
+  adminPartners = []
 }) => {
+  // Calculate Tier Counts for Legend
+  const tierCounts = {
+    Platinum: adminPartners.filter(p => p.tier?.toLowerCase() === 'platinum').length,
+    Gold: adminPartners.filter(p => p.tier?.toLowerCase() === 'gold').length,
+    Silver: adminPartners.filter(p => p.tier?.toLowerCase() === 'silver').length,
+    Bronze: adminPartners.filter(p => p.tier?.toLowerCase() === 'bronze' || !p.tier).length,
+  };
+
+  const getRelativeTime = (date) => {
+    if (!date) return '-';
+    const now = new Date();
+    const then = new Date(date);
+    const diffMs = now - then;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+
+  // Estimate Revenue (Mock logic for now based on active plans)
+  const estimatedRevenue = adminClients
+    .filter(c => c.status === 'active')
+    .reduce((acc, c) => {
+      const price = c.plan === 'ultimate' ? 2000000 : c.plan === 'elite' ? 350000 : c.plan === 'pro' ? 150000 : 0;
+      return acc + price;
+    }, 0);
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-zinc-800 mb-8 overflow-hidden relative group">
@@ -14,7 +46,7 @@ const OverviewSection = ({
         <div className="flex justify-between items-center mb-8 relative z-10">
           <div>
             <h3 className="font-black text-xl text-white uppercase tracking-tight">{t('financialHub')}</h3>
-            <p className="text-sm text-zinc-500 font-medium">Daily income, payouts, and net profit analytics</p>
+            <p className="text-sm text-zinc-500 font-medium">Live income analytics from {adminClients.length} subscribers</p>
           </div>
           <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800">
             {['daily', 'weekly', 'monthly'].map(p => (
@@ -25,9 +57,9 @@ const OverviewSection = ({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
           <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('grossIncome')}</p>
-            <h2 className="text-2xl font-black text-white tracking-tighter">Rp 82.5M</h2>
+            <h2 className="text-2xl font-black text-white tracking-tighter">Rp {(estimatedRevenue / 1000000).toFixed(1)}M</h2>
             <div className="mt-4 flex items-center gap-2">
-                <span className="text-[9px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded tracking-widest">+15.2%</span>
+                <span className="text-[9px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded tracking-widest">LIVE</span>
             </div>
           </div>
           <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
@@ -35,26 +67,26 @@ const OverviewSection = ({
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[8px] font-black text-zinc-500 uppercase mb-1">{t('paid')}</p>
-                <h2 className="text-xl font-black text-white tracking-tighter">Rp 15.2M</h2>
+                <h2 className="text-xl font-black text-white tracking-tighter">Rp 0</h2>
               </div>
               <div className="text-right">
                 <p className="text-[8px] font-black text-amber-500 uppercase mb-1">{t('pending')}</p>
-                <h2 className="text-xl font-black text-amber-500 tracking-tighter">Rp 6.2M</h2>
+                <h2 className="text-xl font-black text-amber-500 tracking-tighter">Rp 0</h2>
               </div>
             </div>
           </div>
           <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('activePartners')}</p>
-            <h2 className="text-2xl font-black text-white tracking-tighter">124</h2>
+            <h2 className="text-2xl font-black text-white tracking-tighter">{adminPartners.length}</h2>
             <div className="mt-4 flex items-center gap-2">
-                <span className="text-[9px] font-black bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded tracking-widest">+4 New</span>
+                <span className="text-[9px] font-black bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded tracking-widest">TOTAL</span>
             </div>
           </div>
           <div className="p-6 bg-blue-600 rounded-2xl shadow-xl shadow-blue-600/20 text-white">
             <p className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('netProfit')}</p>
-            <h2 className="text-2xl font-black tracking-tighter">Rp 56.9M</h2>
+            <h2 className="text-2xl font-black tracking-tighter">Rp {(estimatedRevenue * 0.7 / 1000000).toFixed(1)}M</h2>
             <div className="mt-4 flex items-center gap-2">
-                <span className="text-[9px] font-black bg-white/20 text-white px-2 py-0.5 rounded tracking-widest">68.9%</span>
+                <span className="text-[9px] font-black bg-white/20 text-white px-2 py-0.5 rounded tracking-widest">EST. 70%</span>
             </div>
           </div>
         </div>
@@ -66,16 +98,16 @@ const OverviewSection = ({
             <h3 className="font-black text-white uppercase tracking-tight">{t('tierDist')}</h3>
             <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-tighter">{t('liveMonitor')}</span>
           </div>
-          <div className="flex items-center gap-8 h-40">
-            <div className="w-1/3 h-full relative">
+          <div className="flex flex-col md:flex-row items-center gap-8 md:h-40">
+            <div className="w-40 h-40 relative shrink-0">
               <canvas ref={chartRef}></canvas>
             </div>
-            <div className="w-2/3 grid grid-cols-2 gap-x-6 gap-y-4">
+            <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-4 w-full">
               {[
-                { label: 'Platinum', color: 'bg-blue-600', count: 18 },
-                { label: 'Gold', color: 'bg-amber-400', count: 31 },
-                { label: 'Silver', color: 'bg-zinc-400', count: 43 },
-                { label: 'Bronze', color: 'bg-orange-600', count: 32 }
+                { label: 'Platinum', color: 'bg-blue-600', count: tierCounts.Platinum },
+                { label: 'Gold', color: 'bg-amber-400', count: tierCounts.Gold },
+                { label: 'Silver', color: 'bg-zinc-400', count: tierCounts.Silver },
+                { label: 'Bronze', color: 'bg-orange-600', count: tierCounts.Bronze }
               ].map((t_item) => (
                 <div key={t_item.label} className="flex items-center justify-between bg-zinc-950/50 p-3 rounded-xl border border-zinc-800">
                   <div className="flex items-center gap-2">
@@ -91,21 +123,23 @@ const OverviewSection = ({
 
         <div className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-zinc-800">
             <h3 className="font-black text-white uppercase tracking-tight mb-6">{t('recentActivity')}</h3>
-            <div className="space-y-6">
-                {RECENT_ACTIVITY.map((act, i) => (
-                    <div key={i} className="flex gap-4 relative">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${act.type === 'payment' ? 'bg-green-500' : act.type === 'user' ? 'bg-blue-500' : act.type === 'partner' ? 'bg-amber-500' : 'bg-red-500'}`}>
-                            <iconify-icon icon={act.type === 'payment' ? 'solar:dollar-bold' : act.type === 'user' ? 'solar:user-bold' : act.type === 'partner' ? 'solar:handshake-bold' : 'solar:bug-bold'} className="text-[10px] text-white"></iconify-icon>
+            <div className="space-y-6 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                {RECENT_ACTIVITY.length > 0 ? RECENT_ACTIVITY.map((act, i) => (
+                    <div key={i} className="flex gap-4 relative animate-in fade-in slide-in-from-right-2 duration-300">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${act.type === 'user' ? 'bg-blue-500' : act.type === 'ticket' ? 'bg-rose-500' : 'bg-amber-500'}`}>
+                            <iconify-icon icon={act.type === 'user' ? 'solar:user-bold' : act.type === 'ticket' ? 'solar:bug-bold' : 'solar:handshake-bold'} className="text-[10px] text-white"></iconify-icon>
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between items-start">
-                                <p className="text-[11px] font-black text-white tracking-tight leading-none uppercase">{act.user}</p>
-                                <span className="text-[8px] font-bold text-zinc-600 uppercase">{act.time}</span>
+                                <p className="text-[11px] font-black text-white tracking-tight leading-none uppercase truncate max-w-[120px]">{act.user}</p>
+                                <span className="text-[8px] font-bold text-zinc-600 uppercase whitespace-nowrap">{getRelativeTime(act.time)}</span>
                             </div>
-                            <p className="text-[10px] text-zinc-500 font-medium mt-1 uppercase tracking-tight">{act.action}</p>
+                            <p className="text-[10px] text-zinc-500 font-medium mt-1 uppercase tracking-tight line-clamp-1">{act.action}</p>
                         </div>
                     </div>
-                ))}
+                )) : (
+                  <div className="py-10 text-center text-zinc-600 text-[10px] font-bold uppercase tracking-widest italic">No recent activity</div>
+                )}
             </div>
         </div>
       </div>

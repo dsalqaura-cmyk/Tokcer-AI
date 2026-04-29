@@ -61,6 +61,8 @@ const InternalDashboard = () => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const [adminClients, setAdminClients] = useState([]);
+  const [adminPartners, setAdminPartners] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [aiConfig, setAiConfig] = useState({ system_prompt: '', rag_knowledge_base: '' });
@@ -93,14 +95,31 @@ const InternalDashboard = () => {
       .from('clients')
       .select('id, shop_name, email, status, plan, tier, pic, ref, payment_method, payment_proof_url, created_at, partners(full_name)')
       .order('created_at', { ascending: false });
-    if (!error) setAdminClients(data);
+    if (!error) setAdminClients(data || []);
     setIsLoading(false);
+  };
+
+  const fetchPartners = async () => {
+    const { data, error } = await supabase
+      .from('partners')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error) setAdminPartners(data || []);
+  };
+
+  const fetchAllUsers = async () => {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*, partners(full_name)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+    if (!error) setAllUsers(data || []);
   };
 
   const fetchTickets = async () => {
     const { data, error } = await supabase
       .from('support_tickets')
-      .select('*, partners(full_name)')
+      .select('*, partners(full_name), clients:user_id(shop_name)')
       .order('created_at', { ascending: false });
 
     if (!error) setTickets(data || []);
@@ -113,7 +132,7 @@ const InternalDashboard = () => {
       .eq('status', 'agreed')
       .order('agreed_at', { ascending: false });
     
-    if (!error) setPartnerApps(data);
+    if (!error) setPartnerApps(data || []);
   };
 
   const handleLogout = () => {
@@ -237,18 +256,26 @@ const InternalDashboard = () => {
 
   useEffect(() => {
     fetchClients();
+    fetchPartners();
+    fetchAllUsers();
     fetchAiConfig();
     fetchAiLogs();
     fetchPartnerApps();
     fetchTickets();
   }, []);
 
-  // Chart Initialization
+  // Chart Initialization based on real data
   useEffect(() => {
-    if (activeSection === 'overview' && chartRef.current) {
+    if (activeSection === 'overview' && chartRef.current && adminPartners.length > 0) {
       if (chartInstance.current) {
         chartInstance.current.destroy();
       }
+
+      const tiers = { platinum: 0, gold: 0, silver: 0, bronze: 0 };
+      adminPartners.forEach(p => {
+        const t_key = (p.tier || 'bronze').toLowerCase();
+        if (tiers[t_key] !== undefined) tiers[t_key]++;
+      });
 
       const ctx = chartRef.current.getContext('2d');
       chartInstance.current = new Chart(ctx, {
@@ -256,7 +283,7 @@ const InternalDashboard = () => {
         data: {
           labels: ['Platinum', 'Gold', 'Silver', 'Bronze'],
           datasets: [{
-            data: [15, 25, 35, 25], 
+            data: [tiers.platinum, tiers.gold, tiers.silver, tiers.bronze], 
             backgroundColor: ['#1e40af', '#fbbf24', '#94a3b8', '#b45309'],
             borderWidth: 0,
             cutout: '75%'
@@ -274,7 +301,36 @@ const InternalDashboard = () => {
     return () => {
       if (chartInstance.current) chartInstance.current.destroy();
     };
-  }, [activeSection]);
+  }, [activeSection, adminPartners]);
+
+  // Dynamic Recent Activity
+  const recentActivities = useMemo(() => {
+    const activities = [];
+    
+    // Add new clients
+    adminClients.slice(0, 5).forEach(c => {
+      activities.push({
+        type: 'user',
+        user: c.shop_name,
+        action: 'New Registration',
+        time: c.created_at,
+        status: c.plan
+      });
+    });
+
+    // Add tickets
+    tickets.slice(0, 5).forEach(t_item => {
+      activities.push({
+        type: 'ticket',
+        user: t_item.partners?.full_name || t_item.clients?.shop_name || 'User',
+        action: t_item.title || 'Submitted Ticket',
+        time: t_item.created_at,
+        priority: t_item.priority || 'Medium'
+      });
+    });
+
+    return activities.sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 10);
+  }, [adminClients, tickets]);
 
   const getTierBadgeClass = (tier) => {
     switch(tier?.toLowerCase()) {
@@ -293,15 +349,15 @@ const InternalDashboard = () => {
   const renderSection = () => {
     switch (activeSection) {
       case 'overview':
-        return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={RECENT_ACTIVITY} />;
+        return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivities} adminClients={adminClients} adminPartners={adminPartners} />;
       case 'approvals':
         return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={MOCK_USERS} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} />;
       case 'users':
-        return <UserSection t={t} MOCK_USERS={MOCK_USERS} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
+        return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':
-        return <PartnerSection t={t} MOCK_PARTNERS={MOCK_PARTNERS} getTierBadgeClass={getTierBadgeClass} />;
+        return <PartnerSection t={t} adminPartners={adminPartners} getTierBadgeClass={getTierBadgeClass} />;
       case 'tickets':
-        return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} />;
+        return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} fetchTickets={fetchTickets} />;
       case 'ai-gen':
         return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} isLoading={isLoading} aiLogs={aiLogs} />;
       case 'supabase':

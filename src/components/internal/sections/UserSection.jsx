@@ -2,7 +2,7 @@ import React from 'react';
 
 const UserSection = ({ 
   t, 
-  MOCK_USERS, 
+  adminClients = [], 
   getTierBadgeClass, 
   setShowUserStats 
 }) => {
@@ -23,23 +23,27 @@ const UserSection = ({
               </tr>
             </thead>
             <tbody>
-              {MOCK_USERS.map((u) => (
+              {adminClients.length > 0 ? adminClients.map((u) => (
                 <tr key={u.id} className="bg-zinc-950/50 hover:bg-zinc-800/50 transition-all group">
                   <td className="p-4 rounded-l-2xl border-l border-y border-zinc-800">
-                    <div className="font-black text-white text-sm tracking-tight">{u.name}</div>
-                    <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">{u.id} • {u.email}</div>
+                    <div className="font-black text-white text-sm tracking-tight">{u.shop_name}</div>
+                    <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">ID: {u.id?.substring(0,8)} • {u.email}</div>
                   </td>
                   <td className="p-4 border-y border-zinc-800">
-                     <span className={`${getTierBadgeClass(u.tier)} text-[9px] font-black px-3 py-1 rounded-lg uppercase`}>{u.tier}</span>
+                     <span className={`${getTierBadgeClass(u.tier)} text-[9px] font-black px-3 py-1 rounded-lg uppercase`}>{u.tier || u.plan}</span>
                   </td>
                   <td className="p-4 border-y border-zinc-800">
-                     <span className={`text-[10px] font-black ${u.stats.health > 80 ? 'text-green-500' : 'text-amber-500'}`}>{u.stats.health}%</span>
+                     <span className={`text-[10px] font-black ${u.status === 'active' ? 'text-green-500' : 'text-amber-500'}`}>{u.status?.toUpperCase()}</span>
                   </td>
                   <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
                      <button onClick={() => setShowUserStats(u)} className="px-4 py-2 bg-blue-600/10 text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-xl border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">{t('viewDetails')}</button>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan="4" className="py-20 text-center text-zinc-600 italic text-sm">No users found in database.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
