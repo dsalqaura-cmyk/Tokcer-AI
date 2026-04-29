@@ -348,6 +348,8 @@ const Dashboard = () => {
             totalQuota: 3000,
             isUnlimited: true
         });
+        // Pastikan filter waktu default adalah 'Semua' agar data lama muncul
+        setTimeFilter('Semua');
         fetchOperationalData('admin-bypass', adminUser);
       }
 

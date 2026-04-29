@@ -50,7 +50,12 @@ const OverviewTab = ({
     return data;
   };
 
-  const filteredOrders = getFilteredOrdersByTime(platformFilteredOrders, timeFilter);
+  // Jika admin dan filter 'Hari Ini' kosong, coba tampilkan semua data agar tidak terlihat blank
+  let filteredOrders = getFilteredOrdersByTime(platformFilteredOrders, timeFilter);
+  if (filteredOrders.length === 0 && timeFilter === 'Hari Ini' && (profile?.role === 'admin' || profile?.email === 'admin@tokcer-ai.com')) {
+      filteredOrders = platformFilteredOrders; // Fallback ke semua data untuk admin jika hari ini kosong
+  }
+
   const totalRev = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const totalProfit = totalRev * 0.2;
   const convRate = 0; 

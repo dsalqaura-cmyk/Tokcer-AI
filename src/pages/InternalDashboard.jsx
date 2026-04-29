@@ -197,23 +197,21 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      // Mengirimkan plan sesuai pilihan user (starter/pro/elite/ultimate)
-      const targetPlan = selectedPartnerApp.package || selectedPartnerApp.plan || 'starter';
-
-      const { data, error: rpcError } = await supabase.rpc('rpc_activate_partner', {
+      // KHUSUS PARTNER: Selalu Ultimate
+      const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
         p_email: selectedPartnerApp.email,
         p_application_id: selectedPartnerApp.id,
         p_full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
-        p_plan: targetPlan
+        p_plan: 'ultimate'
       });
 
       if (rpcError) throw rpcError;
 
-      alert(data.message || "Berhasil mengaktifkan akun!");
+      alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif sebagai ULTIMATE.`);
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       await fetchPartnerApps();
-      await fetchClients(); // Refresh data clients juga
+      await fetchClients();
     } catch (err) {
       console.error("Activation Error:", err);
       alert("Gagal Aktivasi: " + err.message);
@@ -222,71 +220,40 @@ const InternalDashboard = () => {
     }
   };
 
-  const handleManualApprovePartner = async () => {
-    if (!selectedPartnerApp) return;
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from('partner_applications')
-        .update({ status: 'active' })
-        .eq('id', selectedPartnerApp.id);
-        
-      if (error) throw error;
-      
-      alert("Status Partner diperbarui secara manual ke AKTIF.");
-      setShowApproveModal(false);
-      setSelectedPartnerApp(null);
-      await fetchPartnerApps();
-    } catch (err) {
-      alert("Manual Update Error: " + err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleApprove = async (client) => {
     if (!client) return;
-    const isDirect = client.ref === 'Direct Web';
+    
     const needsProof = client.plan !== 'starter';
-
-    if (isDirect && needsProof && !client.payment_proof_url) {
+    if (needsProof && !client.payment_proof_url && client.ref === 'Direct Web') {
       alert("Peringatan: User ini belum melampirkan bukti bayar!");
       return;
     }
 
-    const confirm = window.confirm(`Approve ${client.shop_name}?`);
-    if (!confirm) return;
+    if (!window.confirm(`Setujui pendaftaran ${client.shop_name} dengan paket ${client.plan?.toUpperCase()}?`)) return;
 
     setIsLoading(true);
     try {
-      if (isDirect) {
-        const { error: functionError } = await supabase.functions.invoke('activate-client', {
-          body: { 
-            email: client.email, 
-            password: 'Tokcer@User2026', 
-            clientId: client.id,
-            shopName: client.shop_name,
-            plan: client.plan
-          }
-        });
-        if (functionError) throw functionError;
-      } else {
-        const { error } = await supabase
-          .from('clients')
-          .update({ status: 'active', commission_amount: 100000 })
-          .eq('id', client.id);
-        if (error) throw error;
-      }
-      
-      alert(`Berhasil! ${client.shop_name} telah aktif.`);
+      // KHUSUS USER/CLIENT: Sesuai tier yang dipilih
+      const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
+        p_email: client.email,
+        p_application_id: client.id,
+        p_full_name: client.shop_name,
+        p_plan: client.plan || 'starter'
+      });
+
+      if (rpcError) throw rpcError;
+
+      alert(data.message || "User berhasil diaktifkan!");
       await fetchClients();
       setShowModal(false);
     } catch (err) {
-      alert("Error: " + err.message);
+      console.error("Client Activation Error:", err);
+      alert("Gagal mengaktifkan client: " + err.message);
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleRemindPartner = async (client) => {
     if (!client || !client.partners?.email) {
