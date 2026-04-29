@@ -192,6 +192,47 @@ const InternalDashboard = () => {
     }
   };
 
+  const sendWelcomeEmail = async (email, name, plan) => {
+    const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+    if (!apiKey || apiKey === 'your_resend_api_key_here') {
+      console.warn("⚠️ Resend API Key belum diisi. Email tidak terkirim.");
+      return;
+    }
+
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          from: 'Tokcer AI <onboarding@resend.dev>',
+          to: [email],
+          subject: '🚀 Akun Tokcer AI Anda Telah Aktif!',
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+              <h2 style="color: #f97316;">Selamat, ${name}!</h2>
+              <p>Pendaftaran Anda untuk paket <b>${plan.toUpperCase()}</b> telah disetujui.</p>
+              <p>Sekarang Anda sudah bisa mengakses seluruh fitur Tokcer AI untuk melejitkan performa toko Anda.</p>
+              <div style="background: #fdf2f7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 0;"><b>Link Dashboard:</b> <a href="https://tokcer-ai.com/login">tokcer-ai.com/login</a></p>
+                <p style="margin: 10px 0 0 0;"><b>Username:</b> ${email}</p>
+                <p style="margin: 5px 0 0 0;"><b>Password:</b> (Gunakan password saat registrasi)</p>
+              </div>
+              <p style="font-size: 12px; color: #666;">Jika Anda lupa password, silakan gunakan fitur "Lupa Password" di halaman login.</p>
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+              <p style="text-align: center; color: #999; font-size: 11px;">&copy; 2026 Tokcer AI - Solusi Cerdas E-Commerce</p>
+            </div>
+          `
+        })
+      });
+      console.log("📧 Welcome email sent to:", email);
+    } catch (err) {
+      console.error("❌ Failed to send email:", err);
+    }
+  };
+
   const handleApproveWithAccount = async () => {
     if (!selectedPartnerApp) return;
 
@@ -206,6 +247,9 @@ const InternalDashboard = () => {
       });
 
       if (rpcError) throw rpcError;
+
+      // KIRIM EMAIL OTOMATIS
+      await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate');
 
       alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif sebagai ULTIMATE.`);
       setShowApproveModal(false);
@@ -242,6 +286,9 @@ const InternalDashboard = () => {
       });
 
       if (rpcError) throw rpcError;
+
+      // KIRIM EMAIL OTOMATIS
+      await sendWelcomeEmail(client.email, client.shop_name, client.plan || 'starter');
 
       alert(data.message || "User berhasil diaktifkan!");
       await fetchClients();
