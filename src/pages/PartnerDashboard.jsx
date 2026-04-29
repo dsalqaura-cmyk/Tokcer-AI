@@ -69,7 +69,7 @@ const PartnerDashboard = () => {
       const { data: profile } = await supabase
         .from('partners')
         .select('*')
-        .or(`id.eq.${session.user.id},email.eq.${session.user.email}`)
+        .or(`id.eq."${session.user.id}",email.eq."${session.user.email}"`)
         .maybeSingle();
 
       if (!profile) {
@@ -146,7 +146,7 @@ const PartnerDashboard = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate('/login');
+        // Handled by ProtectedRoute
       } else {
         setUser(session.user);
         setLoading(false);
