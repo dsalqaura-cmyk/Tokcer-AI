@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase.js';
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
@@ -36,11 +36,18 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+  const isAdminAuth = localStorage.getItem('tokcer_admin_auth') === 'true';
+  const isStagingSubdomain = window.location.hostname.includes('dashboardstaging');
   const isPathAdmin = window.location.pathname.startsWith('/admin');
 
-  if (!session && !isAdmin) {
-    return <Navigate to={isPathAdmin ? "/admin-login" : "/login"} replace />;
+  // If on admin subdomain or /admin path, but not logged in as admin
+  if (!session && !isAdminAuth && (isStagingSubdomain || isPathAdmin)) {
+    return <Navigate to="/admin-login" replace />;
+  }
+
+  // General login redirect
+  if (!session && !isAdminAuth) {
+    return <Navigate to="/login" replace />;
   }
 
   return children;
