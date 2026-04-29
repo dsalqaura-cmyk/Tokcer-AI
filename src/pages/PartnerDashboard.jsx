@@ -131,6 +131,29 @@ const PartnerDashboard = () => {
 
   const t = (key) => partnerTranslations[lang][key] || key;
 
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
+  };
+
+  const getPlanBadge = (plan) => {
+    switch(plan?.toLowerCase()) {
+      case 'ultimate': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+      case 'elite': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      case 'pro': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      default: return 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30';
+    }
+  };
+
+  const getRelativeTime = (date) => {
+    if (!date) return '-';
+    const now = new Date();
+    const past = new Date(date);
+    const diff = Math.floor((now - past) / 1000);
+    if (diff < 60) return lang === 'id' ? 'baru saja' : 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + (lang === 'id' ? ' menit lalu' : ' mins ago');
+    return past.toLocaleDateString();
+  };
+
   return (
     <div className="flex h-screen bg-black text-white font-['Inter',sans-serif] overflow-hidden">
       <PartnerSidebar 
@@ -154,9 +177,18 @@ const PartnerDashboard = () => {
         
         <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
           {activeTab === 'onboard' && <OnboardTab t={t} onboardForm={onboardForm} setOnboardForm={setOnboardForm} isSubmitting={isSubmitting} />}
-          {activeTab === 'subscribers' && <SubscribersTab t={t} partnerData={partnerData} />}
-          {activeTab === 'leaderboard' && <LeaderboardTab t={t} partnerData={partnerData} />}
-          {activeTab === 'payment' && <PaymentTab t={t} partnerData={partnerData} />}
+          {activeTab === 'subscribers' && (
+            <SubscribersTab 
+              t={t} 
+              lang={lang} 
+              partnerData={partnerData} 
+              getPlanBadge={getPlanBadge} 
+              getRelativeTime={getRelativeTime} 
+              formatCurrency={formatCurrency} 
+            />
+          )}
+          {activeTab === 'leaderboard' && <LeaderboardTab t={t} partnerData={partnerData} formatCurrency={formatCurrency} />}
+          {activeTab === 'payment' && <PaymentTab t={t} partnerData={partnerData} formatCurrency={formatCurrency} />}
           {activeTab === 'support' && <SupportTab t={t} supportTab={supportTab} setSupportTab={setSupportTab} />}
           {activeTab === 'academy' && <AcademyTab t={t} />}
           {activeTab === 'profile' && <ProfileTab t={t} user={user} partnerData={partnerData} />}
