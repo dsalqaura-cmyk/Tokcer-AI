@@ -42,6 +42,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     const affiliate_id = formData.get('affiliate_id');
     const business_type = formData.get('business_type');
     const planValue = selectedPlan || formData.get('plan') || 'starter';
+    console.log("📝 Registering with plan:", planValue); // Log untuk debug
     
     // Validations
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
