@@ -42,7 +42,7 @@ const PartnerHeader = ({
 
       {/* Tab Navigation - Desktop */}
       <div className="hidden lg:block bg-black/40 backdrop-blur-md border-b border-zinc-800/50 sticky top-[73px] z-40">
-        <div className="max-w-7xl mx-auto px-6 flex gap-8 overflow-x-auto no-scrollbar">
+        <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab}
