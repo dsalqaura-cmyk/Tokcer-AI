@@ -39,6 +39,7 @@ const ApprovalSection = ({
                 <th className="px-4 pb-2">{t('identification')}</th>
                 <th className="px-4 pb-2">{t('statusPlan')}</th>
                 <th className="px-4 pb-2 text-center">{t('picPartner')}</th>
+                <th className="px-4 pb-2 text-center">Bukti</th>
                 <th className="px-4 pb-2 text-center">{t('refSource')}</th>
                 <th className="px-4 pb-2 text-right">{t('actions')}</th>
               </tr>
@@ -61,6 +62,16 @@ const ApprovalSection = ({
                   </td>
                   <td className="p-4 border-y border-zinc-800/50 text-center">
                     <span className="text-[10px] font-bold text-zinc-400">{item.pic || item.partners?.full_name || 'Direct Access'}</span>
+                  </td>
+                  <td className="p-4 border-y border-zinc-800/50 text-center">
+                    {item.payment_proof_url ? (
+                      <a href={item.payment_proof_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline flex flex-col items-center gap-1 text-[8px] font-black uppercase">
+                        <iconify-icon icon="solar:camera-bold" className="text-sm"></iconify-icon>
+                        Lihat
+                      </a>
+                    ) : (
+                      <span className="text-zinc-700">-</span>
+                    )}
                   </td>
                   <td className="p-4 border-y border-zinc-800/50 text-center">
                     <span className="text-[10px] font-black text-blue-500 tracking-tighter uppercase bg-blue-500/5 px-2 py-1 rounded border border-blue-500/10">{item.ref || item.payment_method || 'SYSTEM'}</span>

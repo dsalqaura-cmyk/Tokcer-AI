@@ -10,12 +10,13 @@ import PaymentTab from '../components/partner/tabs/PaymentTab.jsx';
 import SupportTab from '../components/partner/tabs/SupportTab.jsx';
 import AcademyTab from '../components/partner/tabs/AcademyTab.jsx';
 import ProfileTab from '../components/partner/tabs/ProfileTab.jsx';
-import { partnerTranslations } from '../locales/partnerLocales';
+import { partnerTranslations } from '../locales/partnerLocales.js';
 
 const PartnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('onboard');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -186,25 +187,127 @@ const PartnerDashboard = () => {
     }
   };
 
-  const handleOnboardSubmit = (e) => {
+  const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-    alert(lang === 'id' ? 'Data aktivasi berhasil dikirim! Tim kami akan segera melakukan verifikasi.' : 'Activation data sent! Our team will verify it shortly.');
+    if (!onboardForm.paymentProof) {
+      alert(lang === 'id' ? 'Silakan upload bukti pembayaran!' : 'Please upload payment proof!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // 1. Upload Payment Proof
+      const file = onboardForm.paymentProof;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from('payment-proofs')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('payment-proofs')
+        .getPublicUrl(filePath);
+
+      // 3. Insert Client Data
+      const { error: insertError } = await supabase
+        .from('clients')
+        .insert([{
+          shop_name: onboardForm.shopName,
+          email: onboardForm.email,
+          whatsapp: onboardForm.whatsapp,
+          plan: onboardForm.plan,
+          payment_method: onboardForm.paymentMethod,
+          payment_proof_url: publicUrl,
+          partner_id: user.id,
+          status: 'pending',
+          tier: onboardForm.plan === 'ultimate' ? 'Ultimate' : onboardForm.plan === 'elite' ? 'Elite' : 'Pro'
+        }]);
+
+      if (insertError) throw insertError;
+
+      alert(lang === 'id' ? 'Data aktivasi berhasil dikirim! Tim kami akan segera melakukan verifikasi.' : 'Activation data sent! Our team will verify it shortly.');
+      setOnboardForm({
+        shopName: '',
+        email: '',
+        whatsapp: '',
+        plan: 'pro',
+        paymentMethod: 'transfer',
+        paymentProof: null
+      });
+      fetchData(); // Refresh list
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSupportSubmit = (e) => {
+  const handleSupportSubmit = async (e) => {
     e.preventDefault();
-    alert(lang === 'id' ? 'Laporan bantuan telah terkirim.' : 'Support report sent.');
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .insert([{
+          partner_id: user.id,
+          category: supportForm.category,
+          description: supportForm.description,
+          status: 'open',
+          priority: 'medium'
+        }]);
+
+      if (error) throw error;
+
+      alert(lang === 'id' ? 'Laporan bantuan telah terkirim.' : 'Support report sent.');
+      setSupportForm({
+        category: 'data',
+        description: '',
+        screenshot: null
+      });
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleIdeaSubmit = (e) => {
+  const handleIdeaSubmit = async (e) => {
     e.preventDefault();
-    alert(lang === 'id' ? 'Ide brilian Anda telah kami simpan!' : 'Your brilliant idea has been saved!');
+    const vision = e.target.elements[0].value;
+    if (!vision) return;
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .insert([{
+          partner_id: user.id,
+          category: 'feedback',
+          description: vision,
+          status: 'open',
+          priority: 'low'
+        }]);
+
+      if (error) throw error;
+
+      alert(lang === 'id' ? 'Ide brilian Anda telah kami simpan!' : 'Your brilliant idea has been saved!');
+      e.target.reset();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'onboard':
-        return <OnboardTab t={t} onboardForm={onboardForm} setOnboardForm={setOnboardForm} handleOnboardSubmit={handleOnboardSubmit} />;
+        return <OnboardTab t={t} onboardForm={onboardForm} setOnboardForm={setOnboardForm} handleOnboardSubmit={handleOnboardSubmit} isSubmitting={isSubmitting} />;
       case 'subscribers':
         return <SubscribersTab t={t} lang={lang} partnerData={partnerData} getPlanBadge={getPlanBadge} getRelativeTime={getRelativeTime} formatCurrency={formatCurrency} />;
       case 'leaderboard':
@@ -212,7 +315,7 @@ const PartnerDashboard = () => {
       case 'payment':
         return <PaymentTab t={t} partnerData={partnerData} formatCurrency={formatCurrency} />;
       case 'support':
-        return <SupportTab t={t} supportTab={supportTab} setSupportTab={setSupportTab} supportForm={supportForm} setSupportForm={setSupportForm} handleSupportSubmit={handleSupportSubmit} handleIdeaSubmit={handleIdeaSubmit} />;
+        return <SupportTab t={t} supportTab={supportTab} setSupportTab={setSupportTab} supportForm={supportForm} setSupportForm={setSupportForm} handleSupportSubmit={handleSupportSubmit} handleIdeaSubmit={handleIdeaSubmit} isSubmitting={isSubmitting} />;
       case 'academy':
         return <AcademyTab t={t} />;
       case 'profile':

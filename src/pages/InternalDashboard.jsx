@@ -40,12 +40,6 @@ const MOCK_PARTNERS = [
   { id: 'TKC-P006', name: 'Lina Beauty Vlogger', email: 'lina.beauty@outlook.com', niche: 'Skincare & Makeup', followers: '890K', media_link: 'https://youtube.com/lina_beauty', status: 'Active', tier: 'Gold', omzet: 195000000, referrals: 112, pic: 'Dina - Gold Partner', joined_at: '2026-02-28' },
 ];
 
-const MOCK_TICKETS = [
-  { id: 'TKT-2026-001', type: 'Bug Report', title: 'Chart Omzet not loading on mobile', priority: 'High', status: 'Open', created_at: '2026-04-25T08:00:00Z', author: 'Andi Saputra', user_id: 'TKC-U001' },
-  { id: 'TKT-2026-002', type: 'Feature Request', title: 'Add export to PDF for monthly analytics', priority: 'Medium', status: 'In Progress', created_at: '2026-04-24T15:30:00Z', author: 'Siska Amelia', user_id: 'TKC-U002' },
-  { id: 'TKT-2026-003', type: 'Billing', title: 'Double charge on subscription renewal', priority: 'High', status: 'Pending', created_at: '2026-04-25T09:45:00Z', author: 'Dimas Pratama', user_id: 'TKC-U003' },
-];
-
 const RECENT_ACTIVITY = [
   { type: 'payment', user: 'Dimas Pratama', action: 'Upgraded to Ultimate', time: '12 mins ago', amount: 'Rp 750,000' },
   { type: 'user', user: 'Budi Hartono', action: 'New Registration', time: '45 mins ago', status: 'Starter' },
@@ -61,6 +55,8 @@ const InternalDashboard = () => {
   const [revenuePeriod, setRevenuePeriod] = useState('daily');
   const [showModal, setShowModal] = useState(false);
   const [showUserStats, setShowUserStats] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
   
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -95,10 +91,19 @@ const InternalDashboard = () => {
     setIsLoading(true);
     const { data, error } = await supabase
       .from('clients')
-      .select('id, shop_name, email, status, plan, tier, pic, ref, payment_method, partners(full_name)')
+      .select('id, shop_name, email, status, plan, tier, pic, ref, payment_method, payment_proof_url, created_at, partners(full_name)')
       .order('created_at', { ascending: false });
     if (!error) setAdminClients(data);
     setIsLoading(false);
+  };
+
+  const fetchTickets = async () => {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .select('*, partners(full_name)')
+      .order('created_at', { ascending: false });
+
+    if (!error) setTickets(data || []);
   };
 
   const fetchPartnerApps = async () => {
@@ -217,6 +222,7 @@ const InternalDashboard = () => {
     fetchAiConfig();
     fetchAiLogs();
     fetchPartnerApps();
+    fetchTickets();
   }, []);
 
   // Chart Initialization
@@ -276,7 +282,7 @@ const InternalDashboard = () => {
       case 'partners':
         return <PartnerSection t={t} MOCK_PARTNERS={MOCK_PARTNERS} getTierBadgeClass={getTierBadgeClass} />;
       case 'tickets':
-        return <TicketSection t={t} MOCK_TICKETS={MOCK_TICKETS} />;
+        return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} />;
       case 'ai-gen':
         return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} isLoading={isLoading} aiLogs={aiLogs} />;
       case 'supabase':

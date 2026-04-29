@@ -7,7 +7,8 @@ const SupportTab = ({
   supportForm, 
   setSupportForm, 
   handleSupportSubmit, 
-  handleIdeaSubmit 
+  handleIdeaSubmit,
+  isSubmitting
 }) => {
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-8">
@@ -86,8 +87,16 @@ const SupportTab = ({
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all">
-              {t('submitReport')}
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all flex items-center justify-center gap-3"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                t('submitReport')
+              )}
             </button>
           </form>
         ) : (
@@ -101,8 +110,16 @@ const SupportTab = ({
                 placeholder={t('visionPlaceholder')}
               ></textarea>
             </div>
-            <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all">
-              {t('submitIdea')}
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl transition-all flex items-center justify-center gap-3"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                t('submitIdea')
+              )}
             </button>
           </form>
         )}

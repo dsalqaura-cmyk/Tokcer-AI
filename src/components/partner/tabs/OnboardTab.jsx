@@ -4,7 +4,8 @@ const OnboardTab = ({
   t, 
   onboardForm, 
   setOnboardForm, 
-  handleOnboardSubmit 
+  handleOnboardSubmit,
+  isSubmitting
 }) => {
   return (
     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -115,9 +116,14 @@ const OnboardTab = ({
 
           <button 
             type="submit"
-            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/10 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0"
+            disabled={isSubmitting}
+            className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/10 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3"
           >
-            {t('submitOnboard')}
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              t('submitOnboard')
+            )}
           </button>
         </form>
       </div>

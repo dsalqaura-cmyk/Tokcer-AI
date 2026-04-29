@@ -2,22 +2,23 @@ import React from 'react';
 
 const TicketSection = ({ 
   t, 
-  MOCK_TICKETS 
+  tickets 
 }) => {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
        <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800 p-8">
           <h3 className="font-black text-white uppercase tracking-tight mb-8">{t('feedbackLoop')}</h3>
           <div className="space-y-4">
-            {MOCK_TICKETS.map(t_item => (
+            {tickets.map(t_item => (
               <div key={t_item.id} className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 flex justify-between items-center">
                  <div className="flex gap-4 items-center">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t_item.priority === 'High' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-400'}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t_item.priority?.toLowerCase() === 'high' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-400'}`}>
                        <iconify-icon icon="solar:shield-warning-bold-duotone" className="text-xl"></iconify-icon>
                     </div>
                     <div>
-                       <h4 className="text-sm font-black text-white uppercase tracking-tight">{t_item.title}</h4>
-                       <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">BY: {t_item.author} • {t_item.priority} {t('priority')}</p>
+                       <h4 className="text-sm font-black text-white uppercase tracking-tight">{t_item.category}</h4>
+                       <p className="text-[10px] text-zinc-300 mt-1 line-clamp-1">{t_item.description}</p>
+                       <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">BY: {t_item.partners?.full_name || 'Partner'} • {t_item.priority} {t('priority')}</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-4">
