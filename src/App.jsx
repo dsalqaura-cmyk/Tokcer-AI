@@ -37,13 +37,14 @@ const ProtectedRoute = ({ children }) => {
   }
 
   const isAdminAuth = localStorage.getItem('tokcer_admin_auth') === 'true';
-  const isStagingSubdomain = window.location.hostname.includes('staging');
   const isPathAdmin = window.location.pathname.startsWith('/admin');
 
-  if (!session && !isAdminAuth && (isStagingSubdomain || isPathAdmin)) {
+  // ONLY redirect to admin-login if user is trying to access /admin and is not authenticated as admin
+  if (isPathAdmin && !session && !isAdminAuth) {
     return <Navigate to="/admin-login" replace />;
   }
 
+  // Regular users/partners redirect to standard login
   if (!session && !isAdminAuth) {
     return <Navigate to="/login" replace />;
   }
@@ -52,12 +53,8 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const isStagingSubdomain = window.location.hostname.includes('staging');
-
-  return (
-    <Router>
       <Routes>
-        <Route path="/" element={isStagingSubdomain ? <Navigate to="/admin" replace /> : <Landing />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
