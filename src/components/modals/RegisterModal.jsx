@@ -41,6 +41,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     const phone = formData.get('phone');
     const affiliate_id = formData.get('affiliate_id');
     const business_type = formData.get('business_type');
+    const planValue = selectedPlan || formData.get('plan') || 'starter';
     
     // Validations
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -58,7 +59,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
     try {
       let proofUrl = null;
-      if (selectedPlan && selectedPlan !== 'starter' && paymentProof) {
+      if (planValue !== 'starter' && paymentProof) {
         setIsUploading(true);
         const fileExt = paymentProof.name.split('.').pop();
         const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
@@ -83,7 +84,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
           shop_name: nama,
           email: email,
           whatsapp: phone,
-          plan: selectedPlan || 'starter',
+          plan: planValue,
           business_type: business_type,
           platforms: selectedPlatforms,
           ref: 'Direct Web',
@@ -178,6 +179,22 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                 placeholder="email@example.com"
               />
             </div>
+
+            {!selectedPlan && (
+              <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">PILIH PAKET LAYANAN</label>
+                <select 
+                  name="plan"
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
+                >
+                  <option value="starter">Starter Edition (Gratis Selamanya)</option>
+                  <option value="pro">Pro Edition (Bulanan)</option>
+                  <option value="elite">Elite Edition (Bulanan)</option>
+                  <option value="ultimate">Ultimate Edition (60 Hari)</option>
+                </select>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
