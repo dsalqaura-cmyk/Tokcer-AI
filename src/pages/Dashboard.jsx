@@ -294,15 +294,22 @@ const Dashboard = () => {
       
       if (session) {
         setUser(session.user);
+        
+        // 1. Fetch from profiles
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        if (prof) {
-            const plan = (prof.subscription_plan || 'starter').toLowerCase();
+        
+        // 2. Fetch from clients (as secondary/admin source)
+        const { data: clientData } = await supabase.from('clients').select('*').eq('email', session.user.email).single();
+        
+        if (prof || clientData) {
+            const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
             const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
             const totalQuota = quotaMap[plan] || 50;
-            const activeTokens = prof.tokens !== undefined ? prof.tokens : (prof.ai_credits_remaining || 0);
+            const activeTokens = prof?.tokens !== undefined ? prof.tokens : (prof?.ai_credits_remaining || 0);
             
             setProfile({ 
-                ...prof, 
+                ...(prof || {}), 
+                subscription_plan: plan,
                 tokens: activeTokens, 
                 totalQuota: totalQuota,
                 isUnlimited: plan === 'ultimate',

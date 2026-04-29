@@ -135,7 +135,9 @@ const Sidebar = ({
                   </div>
                   <div>
                     <p className="text-[8px] text-amber-400/80 uppercase tracking-widest font-semibold">{t('planActive')}</p>
-                    <p className="text-xs font-bold text-amber-300 leading-none">{t(profile?.subscription_plan?.toLowerCase() + 'Plan') || profile?.planName || 'Starter'}</p>
+                    <p className="text-xs font-bold text-amber-300 leading-none">
+                      {profile?.subscription_plan ? t(profile.subscription_plan.toLowerCase() + 'Plan') : (profile?.planName || 'Starter')}
+                    </p>
                   </div>
                 </div>
                 <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">✓ {t('active')}</span>

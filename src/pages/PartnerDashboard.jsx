@@ -69,8 +69,13 @@ const PartnerDashboard = () => {
       const { data: profile } = await supabase
         .from('partners')
         .select('*')
-        .eq('id', session.user.id)
-        .single();
+        .or(`id.eq.${session.user.id},email.eq.${session.user.email}`)
+        .maybeSingle();
+
+      if (!profile) {
+        // Fallback for new partners or if data is missing
+        console.warn("Partner profile not found for:", session.user.email);
+      }
 
       const { data: clients } = await supabase
         .from('clients')

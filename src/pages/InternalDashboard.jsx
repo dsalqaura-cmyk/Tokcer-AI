@@ -49,6 +49,7 @@ const RECENT_ACTIVITY = [
 
 const InternalDashboard = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [activeSection, setActiveSection] = useState('overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeAppTab, setActiveAppTab] = useState('app-subs');
@@ -316,6 +317,11 @@ const InternalDashboard = () => {
   };
 
   useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
     fetchClients();
     fetchPartners();
     fetchAllUsers();
@@ -323,6 +329,7 @@ const InternalDashboard = () => {
     fetchAiLogs();
     fetchPartnerApps();
     fetchTickets();
+    fetchGlobalStats();
   }, []);
 
   // Chart Initialization based on real data
