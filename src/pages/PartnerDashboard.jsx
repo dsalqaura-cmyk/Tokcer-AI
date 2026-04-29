@@ -300,7 +300,18 @@ const PartnerDashboard = () => {
       case 'payment': return <PaymentTab {...commonProps} partnerData={partnerData} />;
       case 'support': return <SupportTab {...commonProps} form={supportForm} setForm={setSupportForm} onSubmit={handleSupportSubmit} />;
       case 'academy': return <AcademyTab {...commonProps} />;
-      case 'profile': return <ProfileTab {...commonProps} form={profileForm} setForm={setProfileForm} onSubmit={handleUpdateProfile} />;
+      case 'profile': return (
+        <ProfileTab 
+          {...commonProps} 
+          lang={lang}
+          partnerData={partnerData}
+          user={user}
+          getTierColor={getTierColor}
+          profileForm={profileForm} 
+          setProfileForm={setProfileForm} 
+          handleUpdateProfile={handleUpdateProfile} 
+        />
+      );
       default: return null;
     }
   };
