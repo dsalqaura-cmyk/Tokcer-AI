@@ -8,7 +8,6 @@ const ProfileTab = ({
   profileForm, 
   setProfileForm, 
   user, 
-  user, 
   getTierColor 
 }) => {
   const [passwordForm, setPasswordForm] = useState({
