@@ -116,7 +116,9 @@ const Dashboard = () => {
             let prodQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
             let ordQuery = supabase.from('orders').select('*').order('order_date', { ascending: false });
 
-            if (userId !== 'admin-bypass') {
+            const isAdmin = userId === 'admin-bypass' || user?.email === 'admin@tokcer-ai.com';
+
+            if (!isAdmin) {
                 prodQuery = prodQuery.eq('user_id', userId);
                 ordQuery = ordQuery.eq('user_id', userId);
             }

@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   const isAdminAuth = localStorage.getItem('tokcer_admin_auth') === 'true';
-  const isStagingSubdomain = window.location.hostname.includes('dashboardstaging');
+  const isStagingSubdomain = window.location.hostname.includes('staging');
   const isPathAdmin = window.location.pathname.startsWith('/admin');
 
   if (!session && !isAdminAuth && (isStagingSubdomain || isPathAdmin)) {
@@ -52,7 +52,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const isStagingSubdomain = window.location.hostname.includes('dashboardstaging');
+  const isStagingSubdomain = window.location.hostname.includes('staging');
 
   return (
     <Router>
