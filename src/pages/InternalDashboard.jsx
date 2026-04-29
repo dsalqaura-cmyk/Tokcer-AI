@@ -213,7 +213,32 @@ const InternalDashboard = () => {
       setSelectedPartnerApp(null);
       await fetchPartnerApps();
     } catch (err) {
-      alert("Error: " + err.message);
+      console.error("Function Error:", err);
+      if (confirm("Edge Function Gagal: " + err.message + "\n\nIngin melakukan Force Approve (Hanya update status di database)?")) {
+        handleManualApprovePartner();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleManualApprovePartner = async () => {
+    if (!selectedPartnerApp) return;
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('partner_applications')
+        .update({ status: 'active' })
+        .eq('id', selectedPartnerApp.id);
+        
+      if (error) throw error;
+      
+      alert("Status Partner diperbarui secara manual ke AKTIF.");
+      setShowApproveModal(false);
+      setSelectedPartnerApp(null);
+      await fetchPartnerApps();
+    } catch (err) {
+      alert("Manual Update Error: " + err.message);
     } finally {
       setIsLoading(false);
     }
