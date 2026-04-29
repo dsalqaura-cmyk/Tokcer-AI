@@ -11,6 +11,7 @@ import SupportTab from '../components/partner/tabs/SupportTab.jsx';
 import ProfileTab from '../components/partner/tabs/ProfileTab.jsx';
 
 const PartnerDashboard = () => {
+  console.log("💎 PartnerDashboard Mounting...");
   const [activeMenu, setActiveMenu] = useState('tab-onboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
