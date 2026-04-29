@@ -91,11 +91,21 @@ const PartnerDashboard = () => {
         const cancelled = (clients || []).filter(c => c.status === 'cancelled').length;
         const totalCommission = (clients || []).filter(c => c.status === 'active').reduce((acc, curr) => acc + (curr.commission_amount || 0), 0);
 
+        // Calculate Performance Bonus
+        // Logic: > 10 clients = 5% bonus, > 50 clients = 10% bonus
+        let bonus = 0;
+        if (active > 50) {
+          bonus = totalCommission * 0.10;
+        } else if (active > 10) {
+          bonus = totalCommission * 0.05;
+        }
+
         setPartnerData(prev => ({
           ...prev,
           activeUsers: active,
           cancelledUsers: cancelled,
-          mtdPace: totalCommission
+          mtdPace: totalCommission,
+          performanceBonus: bonus
         }));
       }
     } catch (err) {

@@ -25,7 +25,7 @@ const SubscribersTab = ({
         </div>
         <div className="relative group overflow-hidden bg-emerald-600/10 backdrop-blur-md border border-emerald-500/20 p-5 rounded-2xl">
           <div className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-3">{t('performanceBonus')}</div>
-          <div className="text-3xl font-black text-white font-mono tracking-tighter">Rp 0</div>
+          <div className="text-3xl font-black text-white font-mono tracking-tighter">{formatCurrency(partnerData.performanceBonus || 0)}</div>
         </div>
       </div>
 

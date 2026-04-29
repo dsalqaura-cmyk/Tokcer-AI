@@ -230,7 +230,10 @@ const Dashboard = () => {
             const systemPrompt = `You are a Senior E-commerce Growth Strategist for Tokcer AI. 
             Analyze the user's business (${bizType}) and their products: [${productNames}]. 
             Respond strictly in ${targetLang}.
+            STRICTLY focus only on the user's specific niche and products. 
+            DO NOT mention irrelevant global news (like fuel prices, politics, or unrelated commodities) unless they directly impact the ${bizType} industry's logistics or costs.
             Provide actionable strategy in JSON format.
+            Analyze seasonal trends in Indonesia for this specific niche, competitor behavior, and identify gap opportunities.
             Keys: 
             "ads_opt": { "golden_hours": string, "strategy": string },
             "bundling": [ { "title": string, "desc": string } ],
@@ -293,8 +296,18 @@ const Dashboard = () => {
         setUser(session.user);
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
         if (prof) {
-            const activeTokens = prof.tokens !== undefined ? prof.tokens : prof.ai_credits_remaining;
-            setProfile({ ...prof, tokens: activeTokens });
+            const plan = (prof.subscription_plan || 'starter').toLowerCase();
+            const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
+            const totalQuota = quotaMap[plan] || 50;
+            const activeTokens = prof.tokens !== undefined ? prof.tokens : (prof.ai_credits_remaining || 0);
+            
+            setProfile({ 
+                ...prof, 
+                tokens: activeTokens, 
+                totalQuota: totalQuota,
+                isUnlimited: plan === 'ultimate',
+                planName: plan.charAt(0).toUpperCase() + plan.slice(1)
+            });
         }
         const metadata = session.user.user_metadata;
         if (metadata?.platforms && metadata?.store_links) {

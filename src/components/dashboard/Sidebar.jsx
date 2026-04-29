@@ -135,7 +135,7 @@ const Sidebar = ({
                   </div>
                   <div>
                     <p className="text-[8px] text-amber-400/80 uppercase tracking-widest font-semibold">{t('planActive')}</p>
-                    <p className="text-xs font-bold text-amber-300 leading-none">{t('ultimatePlan')}</p>
+                    <p className="text-xs font-bold text-amber-300 leading-none">{t(profile?.subscription_plan?.toLowerCase() + 'Plan') || profile?.planName || 'Starter'}</p>
                   </div>
                 </div>
                 <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">✓ {t('active')}</span>
@@ -143,10 +143,17 @@ const Sidebar = ({
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-[9px]">
                   <span className="text-zinc-500">{t('aiQuota')}</span>
-                  <span className="text-amber-400 font-semibold">{profile?.tokens || 0} / 100</span>
+                  {profile?.isUnlimited ? (
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <iconify-icon icon="solar:star-bold" className="text-[10px]"></iconify-icon>
+                      Unlimited
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-semibold">{profile?.tokens || 0} / {profile?.totalQuota || 50}</span>
+                  )}
                 </div>
                 <div className="w-full bg-zinc-800/80 rounded-full h-1">
-                  <div className="h-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: `${Math.min(100, (profile?.tokens || 0))}%`}}></div>
+                  <div className="h-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: `${profile?.isUnlimited ? 100 : Math.min(100, ((profile?.tokens || 0) / (profile?.totalQuota || 50)) * 100)}%`}}></div>
                 </div>
               </div>
               <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
