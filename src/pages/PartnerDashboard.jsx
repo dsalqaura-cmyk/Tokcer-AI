@@ -254,7 +254,18 @@ const PartnerDashboard = () => {
         {activeTab === 'subscribers' && <SubscribersTab t={t} lang={lang} partnerData={partnerData} getPlanBadge={getPlanBadge} getRelativeTime={getRelativeTime} formatCurrency={formatCurrency} />}
         {activeTab === 'leaderboard' && <LeaderboardTab t={t} lang={lang} partnerData={partnerData} leaderboardPeriod={leaderboardPeriod} setLeaderboardPeriod={setLeaderboardPeriod} countdown={countdown} getWeekInfo={getWeekInfo} getTierColor={getTierColor} formatCurrency={formatCurrency} />}
         {activeTab === 'payment' && <PaymentTab t={t} partnerData={partnerData} formatCurrency={formatCurrency} />}
-        {activeTab === 'support' && <SupportTab t={t} supportTab={supportTab} setSupportTab={setSupportTab} />}
+        {activeTab === 'support' && (
+          <SupportTab 
+            t={t} 
+            supportTab={supportTab} 
+            setSupportTab={setSupportTab} 
+            supportForm={supportForm} 
+            setSupportForm={setSupportForm} 
+            handleSupportSubmit={handleSupportSubmit} 
+            handleIdeaSubmit={handleIdeaSubmit} 
+            isSubmitting={isSubmitting} 
+          />
+        )}
         {activeTab === 'academy' && <AcademyTab t={t} />}
         {activeTab === 'profile' && <ProfileTab lang={lang} partnerData={partnerData} profileForm={profileForm} setProfileForm={setProfileForm} user={user} getTierColor={getTierColor} handleUpdateProfile={handleUpdateProfile} isSubmitting={isSubmitting} />}
       </main>
