@@ -188,10 +188,10 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                   required
                   className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
                 >
-                  <option value="starter">Starter Edition (Gratis Selamanya)</option>
+                  <option value="starter">Starter Edition (Gratis)</option>
                   <option value="pro">Pro Edition (Bulanan)</option>
                   <option value="elite">Elite Edition (Bulanan)</option>
-                  <option value="ultimate">Ultimate Edition (60 Hari)</option>
+                  <option value="ultimate">Ultimate Edition (Bulanan)</option>
                 </select>
               </div>
             )}
