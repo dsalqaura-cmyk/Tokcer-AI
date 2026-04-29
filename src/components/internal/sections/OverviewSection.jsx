@@ -7,6 +7,7 @@ const OverviewSection = ({
   chartRef, 
   RECENT_ACTIVITY,
   adminClients = [],
+  adminPartners = [],
   globalStats = { totalRevenue: 0, totalOrders: 0, activeUsers: 0, activePartners: 0 }
 }) => {
   // Calculate Tier Counts for Legend
