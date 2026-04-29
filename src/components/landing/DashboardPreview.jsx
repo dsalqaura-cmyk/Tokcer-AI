@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import DashboardRevenue from '../dashboard/DashboardRevenue';
-import DashboardInventory from '../dashboard/DashboardInventory';
+import DashboardRevenue from '../dashboard/tabs/RevenueTab.jsx';
+import DashboardInventory from '../dashboard/tabs/InventoryTab.jsx';
 
 const TIKTOK_MESSAGES = [
   "AI-nya lagi latian joget pargoy nyari inspirasi hook maut. Biar dia nggak encok pinggang, stopin pakai cara login yuk! 🕺",
