@@ -13,8 +13,8 @@ const PartnerHeader = ({
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-zinc-800/50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-zinc-800/50 px-8 py-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-4">
               <img src={logo} alt="Tokcer AI" className="h-9 w-auto" />
@@ -60,7 +60,7 @@ const PartnerHeader = ({
 
       {/* Tab Navigation - Desktop */}
       <div className="hidden lg:block bg-black/40 backdrop-blur-md border-b border-zinc-800/50 sticky top-[73px] z-40">
-        <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8 overflow-x-auto no-scrollbar">
+        <div className="px-8 flex justify-center lg:justify-start gap-8 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab}
