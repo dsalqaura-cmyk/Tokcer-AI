@@ -53,6 +53,8 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  return (
+    <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
