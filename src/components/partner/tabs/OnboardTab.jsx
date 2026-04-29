@@ -8,7 +8,7 @@ const OnboardTab = ({
   isSubmitting
 }) => {
   return (
-    <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
       <div className="text-center space-y-3 mb-10">
         <h2 className="text-2xl font-black text-white uppercase tracking-[0.4em]">{t('onboardTitle')}</h2>
         <p className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em] max-w-lg mx-auto">{t('onboardDesc')}</p>
