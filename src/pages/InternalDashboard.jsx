@@ -113,15 +113,16 @@ const InternalDashboard = () => {
       const pending = (pays || []).filter(p => p.status === 'pending').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
       setGlobalStats({
-        totalRevenue: revenue,
+        totalRevenue: revenue || 0,
         totalOrders: ords?.length || 0,
         activeUsers: uCount || 0,
         activePartners: pCount || 0,
-        totalPaid: paid,
-        totalPending: pending
+        totalPaid: paid || 0,
+        totalPending: pending || 0
       });
     } catch (err) {
       console.error("Error fetching global stats:", err);
+      setGlobalStats(prev => ({ ...prev })); // Maintain state on error
     }
   };
 

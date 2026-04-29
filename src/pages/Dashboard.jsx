@@ -304,22 +304,30 @@ const Dashboard = () => {
         // 2. Fetch from clients (as secondary/admin source)
         const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
         
-        if (prof || clientData || session.user.email === 'admin@tokcer-ai.com') {
-            const isAdmin = session.user.email === 'admin@tokcer-ai.com';
-            const rawPlan = (clientData?.plan || prof?.subscription_plan || (isAdmin ? 'ultimate' : 'starter')).toLowerCase();
-            const plan = isAdmin ? 'ultimate' : rawPlan;
-            
+        if (session.user.email === 'admin@tokcer-ai.com') {
+            setProfile({
+                full_name: 'Administrator',
+                subscription_plan: 'ultimate',
+                tokens: 9999,
+                totalQuota: 3000,
+                isUnlimited: true,
+                planName: 'Ultimate'
+            });
+            return; // EXIT EARLY - DO NOT LET DB OVERWRITE ADMIN
+        }
+
+        if (prof || clientData) {
+            const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
             const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
-            const totalQuota = quotaMap[plan] || 3000;
-            const activeTokens = isAdmin ? 9999 : (prof?.tokens !== undefined ? prof.tokens : (prof?.ai_credits_remaining || 0));
+            const totalQuota = quotaMap[plan] || 50;
+            const activeTokens = prof?.tokens !== undefined ? prof.tokens : (prof?.ai_credits_remaining || 0);
             
             setProfile({ 
                 ...(prof || {}), 
-                full_name: isAdmin ? 'Administrator' : (prof?.full_name || 'User'),
                 subscription_plan: plan,
                 tokens: activeTokens, 
                 totalQuota: totalQuota,
-                isUnlimited: plan === 'ultimate' || isAdmin,
+                isUnlimited: plan === 'ultimate',
                 planName: plan.charAt(0).toUpperCase() + plan.slice(1)
             });
         }

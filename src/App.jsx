@@ -24,8 +24,13 @@ const ProtectedRoute = ({ children }) => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(prev => {
+        if (prev?.access_token !== currentSession?.access_token) {
+          return currentSession;
+        }
+        return prev;
+      });
     });
 
     return () => subscription.unsubscribe();
