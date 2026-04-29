@@ -37,7 +37,7 @@ const ApprovalSection = ({
             <thead className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">
               <tr>
                 <th className="px-4 pb-2">{t('identification')}</th>
-                <th className="px-4 pb-2">{t('statusPlan')}</th>
+                <th className="px-4 pb-2">{activeAppTab === 'new-partner' ? t('tier') : t('statusPlan')}</th>
                 <th className="px-4 pb-2 text-center">{t('picPartner')}</th>
                 <th className="px-4 pb-2 text-center">Bukti</th>
                 <th className="px-4 pb-2 text-center">{t('refSource')}</th>
@@ -58,7 +58,9 @@ const ApprovalSection = ({
                     <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest opacity-60">{item.email}</div>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50">
-                    <span className={`${getTierBadgeClass(item.tier || item.plan)} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>{item.tier || item.plan}</span>
+                    <span className={`${getTierBadgeClass(activeAppTab === 'new-partner' ? 'bronze' : (item.tier || item.plan))} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>
+                      {activeAppTab === 'new-partner' ? 'Bronze' : (item.tier || item.plan)}
+                    </span>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50 text-center">
                     <span className="text-[10px] font-bold text-zinc-400">{item.pic || item.partners?.full_name || 'Direct Access'}</span>

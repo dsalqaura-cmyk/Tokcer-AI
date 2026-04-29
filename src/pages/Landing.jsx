@@ -14,7 +14,13 @@ import PartnerModal from '../components/modals/PartnerModal.jsx';
 
 const Landing = () => {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [isPartnerOpen, setIsPartnerOpen] = useState(false);
+
+  const openRegister = (plan = null) => {
+    setSelectedPlan(plan);
+    setIsRegisterOpen(true);
+  };
 
   React.useEffect(() => {
     // Fallback routing untuk link non-hash (misal dari email lama)
@@ -34,7 +40,7 @@ const Landing = () => {
 
       <Navbar 
         onOpenPartner={() => setIsPartnerOpen(true)} 
-        onOpenWaitlist={() => setIsRegisterOpen(true)} 
+        onOpenWaitlist={() => openRegister()} 
       />
       
       {/* === SECTION 1: Hero / Above the Fold === */}
@@ -51,7 +57,7 @@ const Landing = () => {
         <Ecosystem />
 
         {/* === SECTION 5: Pricing (Coming Soon) === */}
-        <Pricing onOpenWaitlist={() => setIsRegisterOpen(true)} />
+        <Pricing onOpenWaitlist={(plan) => openRegister(plan)} />
 
         {/* === SECTION 6: Social Proof / Testimonials === */}
         <Testimonial />
@@ -60,12 +66,12 @@ const Landing = () => {
         <AboutUs />
 
         {/* === SECTION 8: Final CTA === */}
-        <WaitlistCTA onOpenWaitlist={() => setIsRegisterOpen(true)} />
+        <WaitlistCTA onOpenWaitlist={() => openRegister()} />
       </main>
 
       <Footer />
 
-      <RegisterModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />
+      <RegisterModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} selectedPlan={selectedPlan} />
       <PartnerModal isOpen={isPartnerOpen} onClose={() => setIsPartnerOpen(false)} />
     </div>
   );

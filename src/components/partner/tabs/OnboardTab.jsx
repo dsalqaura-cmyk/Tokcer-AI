@@ -60,6 +60,7 @@ const OnboardTab = ({
                   onChange={(e) => setOnboardForm({...onboardForm, plan: e.target.value})}
                   className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white transition-all outline-none"
                 >
+                  <option value="starter">{t('planStarter')}</option>
                   <option value="pro">{t('planPro')}</option>
                   <option value="elite">{t('planElite')}</option>
                   <option value="ultimate">{t('planUltimate')}</option>

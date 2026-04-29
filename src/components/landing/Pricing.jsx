@@ -15,129 +15,109 @@ const Pricing = ({ onOpenWaitlist }) => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto relative">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto relative">
         {/* Glow effect background */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-          <div className="w-64 h-64 rounded-full bg-orange-600/10 blur-[80px]"></div>
+          <div className="w-full h-full rounded-full bg-orange-600/5 blur-[120px]"></div>
         </div>
 
         {/* Card 1 - Starter */}
-        <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 flex flex-col items-center text-center gap-4 opacity-60 blur-[1px] select-none pointer-events-none overflow-hidden">
-          <div className="absolute top-3 right-3">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-500 uppercase tracking-wider">Soon</span>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-            <iconify-icon icon="solar:star-linear" className="text-2xl text-zinc-500"></iconify-icon>
+        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-zinc-700 transition-all group shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <iconify-icon icon="solar:star-linear" className="text-2xl text-zinc-400"></iconify-icon>
           </div>
           <div>
-            <p className="text-sm font-medium text-zinc-400 mb-1">Starter</p>
-            <div className="flex items-end justify-center gap-1">
-              <span className="text-3xl font-bold text-white">Rp ???</span>
-              <span className="text-zinc-500 text-sm mb-1">/bln</span>
+            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Starter</p>
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="text-3xl font-black text-white uppercase tracking-tighter">Gratis</span>
             </div>
+            <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Sangat Terbatas</p>
           </div>
-          <div className="w-full space-y-2 text-left">
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <iconify-icon icon="solar:check-circle-linear" className="text-zinc-600 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <iconify-icon icon="solar:check-circle-linear" className="text-zinc-600 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <iconify-icon icon="solar:check-circle-linear" className="text-zinc-600 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
+          <div className="w-full space-y-3 text-left">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
+                <iconify-icon icon="solar:check-circle-bold" className="text-zinc-800 shrink-0"></iconify-icon>
+                <span>Feature {i} Included</span>
+              </div>
+            ))}
           </div>
+          <button onClick={() => onOpenWaitlist('starter')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Pilih Starter</button>
         </div>
 
-        {/* Card 2 - Pro (Featured) */}
-        <div className="relative bg-gradient-to-br from-orange-950/60 to-zinc-900 border border-orange-800/60 rounded-2xl p-6 md:p-8 flex flex-col items-center text-center gap-4 opacity-60 blur-[1px] select-none pointer-events-none shadow-xl overflow-hidden">
-          <div className="absolute top-3 right-3">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-950/50 border border-orange-800/50 text-orange-400 uppercase tracking-wider">Popular</span>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-orange-950/50 border border-orange-800/50 flex items-center justify-center">
-            <iconify-icon icon="solar:crown-linear" className="text-2xl text-orange-500"></iconify-icon>
+        {/* Card 2 - Pro */}
+        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-zinc-700 transition-all group shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <iconify-icon icon="solar:box-linear" className="text-2xl text-zinc-400"></iconify-icon>
           </div>
           <div>
-            <p className="text-sm font-medium text-orange-400 mb-1">Pro</p>
-            <div className="flex items-end justify-center gap-1">
-              <span className="text-3xl font-bold text-white">Rp ???</span>
-              <span className="text-zinc-400 text-sm mb-1">/bln</span>
+            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Pro Edition</p>
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
+              <span className="text-3xl font-black text-white tracking-tighter">999</span>
+              <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
             </div>
           </div>
-          <div className="w-full space-y-2 text-left">
-            <div className="flex items-center gap-2 text-sm text-zinc-300">
-              <iconify-icon icon="solar:check-circle-linear" className="text-orange-500/50 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-300">
-              <iconify-icon icon="solar:check-circle-linear" className="text-orange-500/50 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-300">
-              <iconify-icon icon="solar:check-circle-linear" className="text-orange-500/50 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
+          <div className="w-full space-y-3 text-left">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
+                <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
+                <span>Pro Feature {i}</span>
+              </div>
+            ))}
           </div>
+          <button onClick={() => onOpenWaitlist('pro')} className="w-full py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-lg">Beli Paket</button>
         </div>
 
-        {/* Card 3 - Enterprise */}
-        <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 flex flex-col items-center text-center gap-4 opacity-60 blur-[1px] select-none pointer-events-none overflow-hidden">
-          <div className="absolute top-3 right-3">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-500 uppercase tracking-wider">Soon</span>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-            <iconify-icon icon="solar:buildings-3-linear" className="text-2xl text-zinc-500"></iconify-icon>
+        {/* Card 3 - Elite */}
+        <div className="relative bg-orange-950/20 backdrop-blur-md border border-orange-500/30 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-orange-500/50 transition-all group shadow-2xl scale-105 z-10">
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">Most Popular</div>
+          <div className="w-12 h-12 rounded-2xl bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-600/30">
+            <iconify-icon icon="solar:crown-bold" className="text-2xl text-white"></iconify-icon>
           </div>
           <div>
-            <p className="text-sm font-medium text-zinc-400 mb-1">Enterprise</p>
-            <div className="flex items-end justify-center gap-1">
-              <span className="text-3xl font-bold text-white">Custom</span>
+            <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2">Elite Edition</p>
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="text-[10px] font-black text-orange-800 mb-1">RP</span>
+              <span className="text-3xl font-black text-white tracking-tighter">1.499</span>
+              <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/BLN</span>
             </div>
           </div>
-          <div className="w-full space-y-2 text-left">
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <iconify-icon icon="solar:check-circle-linear" className="text-zinc-600 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <iconify-icon icon="solar:check-circle-linear" className="text-zinc-600 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <iconify-icon icon="solar:check-circle-linear" className="text-zinc-600 shrink-0"></iconify-icon>
-              <span>???</span>
-            </div>
+          <div className="w-full space-y-3 text-left">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
+                <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
+                <span>Elite Privilege {i}</span>
+              </div>
+            ))}
           </div>
+          <button onClick={() => onOpenWaitlist('elite')} className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20 transition-all">Dapatkan Akses</button>
         </div>
 
-        {/* Overlay Coming Soon */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center px-4">
-          <div className="bg-zinc-950/90 backdrop-blur-sm border border-zinc-800 rounded-2xl px-8 py-8 shadow-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-950/50 border border-orange-900/50 mb-5">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-orange-500 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-              </span>
-              <span className="text-[10px] font-medium text-orange-500 uppercase tracking-widest">
-                {t('pricingComingSoonBadge')}
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-white tracking-tight mb-3">
-              {t('pricingComingSoonTitle')}
-            </h3>
-            <p className="text-sm text-zinc-400 leading-relaxed max-w-xs mb-6">
-              {t('pricingComingSoonDesc')}
-            </p>
-            <button
-              onClick={onOpenWaitlist}
-              className="inline-flex items-center gap-2 bg-orange-600 text-white px-6 py-2.5 rounded-full text-xs font-bold hover:bg-orange-500 transition-all hover:scale-105 active:scale-95 border border-orange-500"
-            >
-              {t('navWaitlist')}
-              <iconify-icon icon="solar:arrow-right-linear" className="text-sm"></iconify-icon>
-            </button>
+        {/* Card 4 - Ultimate */}
+        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-zinc-700 transition-all group shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <iconify-icon icon="solar:magic-stick-3-bold" className="text-2xl text-zinc-400"></iconify-icon>
           </div>
+          <div>
+            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Ultimate Edition</p>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp 2.499K</span>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
+                <span className="text-3xl font-black text-white tracking-tighter">2.000</span>
+                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+              </div>
+            </div>
+          </div>
+          <div className="w-full space-y-3 text-left">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
+                <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
+                <span>Ultimate Feature {i}</span>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => onOpenWaitlist('ultimate')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Pilih Ultimate</button>
         </div>
       </div>
     </section>

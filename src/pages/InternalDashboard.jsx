@@ -191,23 +191,41 @@ const InternalDashboard = () => {
 
   const handleApprove = async (client) => {
     if (!client) return;
-    const confirm = window.confirm(`Approve ${client.shop_name}?`);
+    const isDirect = client.ref === 'Direct Web';
+    const needsProof = client.plan !== 'starter';
+
+    if (isDirect && needsProof && !client.payment_proof_url) {
+      alert("Peringatan: User ini belum melampirkan bukti bayar!");
+      return;
+    }
+
+    const confirm = window.confirm(`Approve ${client.shop_name}? ${isDirect ? "Sistem akan otomatis membuatkan akun & kirim email." : ""}`);
     if (!confirm) return;
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('clients')
-        .update({ status: 'active', commission_amount: 100000 })
-        .eq('id', client.id)
-        .select();
-
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        alert(`Berhasil! Status ${client.shop_name} sekarang adalah ACTIVE.`);
+      if (isDirect) {
+        // Trigger Edge Function for Direct Users
+        const { error: functionError } = await supabase.functions.invoke('activate-client', {
+          body: { 
+            email: client.email, 
+            password: 'Tokcer@User2026', 
+            clientId: client.id,
+            shopName: client.shop_name,
+            plan: client.plan
+          }
+        });
+        if (functionError) throw functionError;
+      } else {
+        // Update for Partner-referred clients
+        const { error } = await supabase
+          .from('clients')
+          .update({ status: 'active', commission_amount: 100000 })
+          .eq('id', client.id);
+        if (error) throw error;
       }
       
+      alert(`Berhasil! ${client.shop_name} telah aktif.`);
       await fetchClients();
       setShowModal(false);
     } catch (err) {
@@ -267,6 +285,7 @@ const InternalDashboard = () => {
       case 'ultimate': return 'bg-purple-900/30 text-purple-400 border border-purple-500/20';
       case 'elite': return 'bg-cyan-900/30 text-cyan-400 border border-cyan-500/20';
       case 'pro': return 'bg-indigo-900/30 text-indigo-400 border border-indigo-500/20';
+      case 'starter': return 'bg-zinc-800 text-zinc-400 border border-zinc-700';
       default: return 'bg-zinc-800 text-zinc-500';
     }
   };

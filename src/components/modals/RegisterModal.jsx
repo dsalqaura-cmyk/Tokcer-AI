@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
-const RegisterModal = ({ isOpen, onClose }) => {
+const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const { t } = useLandingTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null); // 'success' or error string
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [storeLinks, setStoreLinks] = useState({});
+  const [paymentProof, setPaymentProof] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -55,21 +57,40 @@ const RegisterModal = ({ isOpen, onClose }) => {
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          data: {
-            full_name: nama,
-            phone: phone,
-            role: 'user',
-            affiliate_id: affiliate_id,
-            business_type: business_type,
-            platforms: selectedPlatforms,
-            store_links: storeLinks
-          },
-          emailRedirectTo: window.location.origin + '/dashboard',
-        }
-      });
+      let proofUrl = null;
+      if (selectedPlan && selectedPlan !== 'starter' && paymentProof) {
+        setIsUploading(true);
+        const fileExt = paymentProof.name.split('.').pop();
+        const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+        const filePath = `direct-payments/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('payment-proofs')
+          .upload(filePath, paymentProof);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('payment-proofs')
+          .getPublicUrl(filePath);
+        
+        proofUrl = publicUrl;
+      }
+
+      const { data, error } = await supabase
+        .from('clients')
+        .insert([{
+          shop_name: nama,
+          email: email,
+          whatsapp: phone,
+          plan: selectedPlan || 'starter',
+          business_type: business_type,
+          platforms: selectedPlatforms,
+          ref: 'Direct Web',
+          status: 'pending',
+          payment_proof_url: proofUrl,
+          metadata: { store_links: storeLinks, affiliate_id: affiliate_id }
+        }]);
 
       if (error) throw error;
       setStatus('success');
@@ -107,8 +128,8 @@ const RegisterModal = ({ isOpen, onClose }) => {
             <div className="w-12 h-12 bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <iconify-icon icon="solar:letter-opened-bold" className="text-2xl"></iconify-icon>
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">Cek Email Anda!</h4>
-            <p className="text-sm text-zinc-400">Kami telah mengirimkan link masuk ke email Anda. Silakan klik link tersebut untuk menuju ke Dashboard.</p>
+            <h4 className="text-lg font-semibold text-white mb-2">Pendaftaran Terkirim!</h4>
+            <p className="text-sm text-zinc-400">Data Anda sedang dalam proses verifikasi oleh tim Tokcer AI. Detail akun dan instruksi login akan kami kirimkan ke email Anda segera.</p>
             <button 
               onClick={onClose}
               className="mt-6 w-full py-3 rounded-xl bg-zinc-800 text-white text-sm font-bold hover:bg-zinc-700 transition-all"
@@ -227,6 +248,37 @@ const RegisterModal = ({ isOpen, onClose }) => {
                 })}
               </div>
             </div>
+            
+            {/* Payment Proof for Paid Plans */}
+            {selectedPlan && selectedPlan !== 'starter' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="p-4 bg-orange-600/5 border border-orange-500/20 rounded-2xl">
+                  <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <iconify-icon icon="solar:bank-note-bold"></iconify-icon>
+                    Informasi Pembayaran
+                  </h4>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
+                    Silakan transfer biaya paket <span className="text-white font-bold uppercase">{selectedPlan}</span> ke rekening:
+                    <br/><span className="text-white font-black tracking-wider">BCA 1234567890 a/n Tokcer AI</span>
+                  </p>
+                  <div className="relative group/proof">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      required
+                      onChange={(e) => setPaymentProof(e.target.files[0])}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <div className="border-2 border-dashed border-zinc-800 group-hover/proof:border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center transition-all bg-black/40">
+                      <iconify-icon icon="solar:camera-add-bold" className="text-xl text-zinc-600 group-hover/proof:text-orange-500 mb-1"></iconify-icon>
+                      <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                        {paymentProof ? paymentProof.name : "Upload Bukti Bayar"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <button 
               type="submit" 
