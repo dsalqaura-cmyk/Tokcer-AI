@@ -296,10 +296,10 @@ const Dashboard = () => {
         setUser(session.user);
         
         // 1. Fetch from profiles
-        const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
         
         // 2. Fetch from clients (as secondary/admin source)
-        const { data: clientData } = await supabase.from('clients').select('*').eq('email', session.user.email).single();
+        const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
         
         if (prof || clientData) {
             const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();

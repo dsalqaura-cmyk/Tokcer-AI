@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 import { supabase } from '../supabase.js';
@@ -21,31 +21,6 @@ import PartnerReviewModal from '../components/internal/modals/PartnerReviewModal
 import AccountSetupModal from '../components/internal/modals/AccountSetupModal.jsx';
 
 import { internalTranslations } from '../locales/internalLocales.js';
-
-// MOCK DATA
-const MOCK_USERS = [
-  { id: 'TKC-U001', name: 'Andi Saputra', email: 'andi.s@gmail.com', business_type: 'Fashion Retail', platforms: ['Shopee', 'TikTok'], created_at: '2026-04-24T10:00:00Z', tier: 'Elite', status: 'Active', due_date: '2026-07-24', amount: 'Rp 350,000', ref: 'REF-8890', pic: 'Dina - Gold Partner', stats: { omzet: 'Rp 45.2M', health: 92, orders: 1250 } },
-  { id: 'TKC-U002', name: 'Siska Amelia', email: 'siska.amelia@outlook.com', business_type: 'Beauty & Skincare', platforms: ['Lazada', 'Tokopedia'], created_at: '2026-04-24T14:20:00Z', tier: 'Pro', status: 'Warning', due_date: '2026-05-12', amount: 'Rp 150,000', ref: 'REF-8891', pic: 'Budi - Silver Partner', stats: { omzet: 'Rp 12.8M', health: 45, orders: 340 } },
-  { id: 'TKC-U003', name: 'Dimas Pratama', email: 'dimas.p@yahoo.com', business_type: 'Electronics', platforms: ['Shopee', 'TikTok', 'Lazada'], created_at: '2026-04-23T09:15:00Z', tier: 'Ultimate', status: 'Active', due_date: '2026-10-23', amount: 'Rp 750,000', ref: 'REF-8892', pic: 'Admin Core', stats: { omzet: 'Rp 128.5M', health: 98, orders: 4200 } },
-  { id: 'TKC-U004', name: 'Budi Hartono', email: 'budi.h@gmail.com', business_type: 'Home & Living', platforms: ['Tokopedia'], created_at: '2026-04-22T11:00:00Z', tier: 'Starter', status: 'Active', due_date: '2026-05-22', amount: 'Rp 50,000', ref: 'REF-8893', pic: 'Direct Registration', stats: { omzet: 'Rp 5.2M', health: 85, orders: 120 } },
-  { id: 'TKC-U005', name: 'Lina Marlina', email: 'lina.m@gmail.com', business_type: 'Food & Beverage', platforms: ['Shopee', 'Gofood'], created_at: '2026-04-21T16:45:00Z', tier: 'Elite', status: 'Active', due_date: '2026-07-21', amount: 'Rp 350,000', ref: 'REF-8894', pic: 'Raffi Digital Agency', stats: { omzet: 'Rp 62.8M', health: 94, orders: 1850 } },
-];
-
-const MOCK_PARTNERS = [
-  { id: 'TKC-P001', name: 'Raffi Digital Agency', email: 'contact@raffi.agency', niche: 'Social Media Marketing', followers: '1.2M', media_link: 'https://instagram.com/raffi_agency', status: 'Active', tier: 'Platinum', omzet: 245000000, referrals: 156, pic: 'Admin Core', joined_at: '2026-01-15' },
-  { id: 'TKC-P002', name: 'Jessica Content Creator', email: 'jess.creator@gmail.com', niche: 'Beauty & Fashion', followers: '450K', media_link: 'https://tiktok.com/@jess_creator', status: 'Active', tier: 'Gold', omzet: 185000000, referrals: 89, pic: 'Dina - Gold Partner', joined_at: '2026-02-10' },
-  { id: 'TKC-P003', name: 'Andrian Tech Reviews', email: 'andrian.tech@gmail.com', niche: 'Gadgets & Tech', followers: '85K', media_link: 'https://youtube.com/andrian_tech', status: 'Active', tier: 'Silver', omzet: 42000000, referrals: 34, pic: 'Admin Core', joined_at: '2026-03-05' },
-  { id: 'TKC-P004', name: 'Sari Healthy Food', email: 'sari.food@yahoo.com', niche: 'Health & Lifestyle', followers: '12K', media_link: 'https://instagram.com/sari_healthy', status: 'Pending', tier: 'Bronze', omzet: 0, referrals: 0, pic: 'Direct Application', joined_at: '2026-04-25' },
-  { id: 'TKC-P005', name: 'Budi Digital Solutions', email: 'budi.solutions@gmail.com', niche: 'Business & Tech', followers: '150K', media_link: 'https://linkedin.com/in/budi_digital', status: 'Active', tier: 'Platinum', omzet: 310000000, referrals: 210, pic: 'Admin Core', joined_at: '2026-01-20' },
-  { id: 'TKC-P006', name: 'Lina Beauty Vlogger', email: 'lina.beauty@outlook.com', niche: 'Skincare & Makeup', followers: '890K', media_link: 'https://youtube.com/lina_beauty', status: 'Active', tier: 'Gold', omzet: 195000000, referrals: 112, pic: 'Dina - Gold Partner', joined_at: '2026-02-28' },
-];
-
-const RECENT_ACTIVITY = [
-  { type: 'payment', user: 'Dimas Pratama', action: 'Upgraded to Ultimate', time: '12 mins ago', amount: 'Rp 750,000' },
-  { type: 'user', user: 'Budi Hartono', action: 'New Registration', time: '45 mins ago', status: 'Starter' },
-  { type: 'partner', user: 'Sari Healthy Food', action: 'New Partner Application', time: '1 hour ago', tier: 'Bronze' },
-  { type: 'ticket', user: 'Andi Saputra', action: 'Reported a Bug', time: '2 hours ago', priority: 'High' },
-];
 
 const InternalDashboard = () => {
   const navigate = useNavigate();
@@ -74,7 +49,7 @@ const InternalDashboard = () => {
   const [approvalAccount, setApprovalAccount] = useState({ username: '', password: '' });
 
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
-  const t = (key) => internalTranslations[lang][key] || key;
+  const t = (key) => internalTranslations[lang]?.[key] || key;
 
   const toggleLang = (newLang) => {
     setLang(newLang);
@@ -191,7 +166,7 @@ const InternalDashboard = () => {
       .select('*, profiles(full_name)')
       .order('created_at', { ascending: false })
       .limit(10);
-    if (!error) setAiLogs(data);
+    if (!error) setAiLogs(data || []);
   };
 
   const handleSaveAiConfig = async () => {
@@ -218,8 +193,7 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      // 1. Panggil Edge Function untuk bikin user di Auth & kirim email
-      const { data, error: functionError } = await supabase.functions.invoke('activate-partner', {
+      const { error: functionError } = await supabase.functions.invoke('activate-partner', {
         body: { 
           email: selectedPartnerApp.email, 
           password: 'Tokcer@2026', 
@@ -230,8 +204,7 @@ const InternalDashboard = () => {
 
       if (functionError) throw functionError;
 
-      // 2. Update status lokal jika berhasil
-      alert(`Berhasil! Akun untuk ${selectedPartnerApp.nama} telah aktif dan email instruksi telah dikirim.`);
+      alert(`Berhasil! Akun untuk ${selectedPartnerApp.nama} telah aktif.`);
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       await fetchPartnerApps();
@@ -252,13 +225,12 @@ const InternalDashboard = () => {
       return;
     }
 
-    const confirm = window.confirm(`Approve ${client.shop_name}? ${isDirect ? "Sistem akan otomatis membuatkan akun & kirim email." : ""}`);
+    const confirm = window.confirm(`Approve ${client.shop_name}?`);
     if (!confirm) return;
 
     setIsLoading(true);
     try {
       if (isDirect) {
-        // Trigger Edge Function for Direct Users
         const { error: functionError } = await supabase.functions.invoke('activate-client', {
           body: { 
             email: client.email, 
@@ -270,7 +242,6 @@ const InternalDashboard = () => {
         });
         if (functionError) throw functionError;
       } else {
-        // Update for Partner-referred clients
         const { error } = await supabase
           .from('clients')
           .update({ status: 'active', commission_amount: 100000 })
@@ -294,21 +265,21 @@ const InternalDashboard = () => {
       return;
     }
 
-    const confirm = window.confirm(`Send follow-up reminder to ${client.partners?.full_name} for user ${client.shop_name}?`);
+    const confirm = window.confirm(`Send follow-up reminder to ${client.partners?.full_name}?`);
     if (!confirm) return;
 
     setIsLoading(true);
     try {
-      // In a real scenario, this would call a Supabase Edge Function to send a real email
-      // For now, we simulate the action and log it.
-      alert(`Reminder sent to ${client.partners?.full_name} (${client.partners?.email})`);
+      alert(`Reminder sent to ${client.partners?.full_name}`);
       
-      await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
-          feature: 'admin_remind_partner',
-          prompt: `Remind ${client.partners?.full_name} to follow up ${client.shop_name}`,
-          response: 'SUCCESS'
-      }]);
+      if (user?.id) {
+        await supabase.from('ai_usage_logs').insert([{
+            user_id: user.id,
+            feature: 'admin_remind_partner',
+            prompt: `Remind ${client.partners?.full_name}`,
+            response: 'SUCCESS'
+        }]);
+      }
     } catch (err) {
       alert("Error: " + err.message);
     } finally {
@@ -317,88 +288,36 @@ const InternalDashboard = () => {
   };
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    const initData = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      setUser(authUser);
+      await Promise.all([
+        fetchClients(),
+        fetchPartners(),
+        fetchAllUsers(),
+        fetchAiConfig(),
+        fetchAiLogs(),
+        fetchPartnerApps(),
+        fetchTickets(),
+        fetchGlobalStats()
+      ]);
     };
-    getUser();
-    fetchClients();
-    fetchPartners();
-    fetchAllUsers();
-    fetchAiConfig();
-    fetchAiLogs();
-    fetchPartnerApps();
-    fetchTickets();
-    fetchGlobalStats();
+    initData();
   }, []);
 
-  // Chart Initialization based on real data
-  useEffect(() => {
-    if (activeSection === 'overview' && chartRef.current && adminPartners.length > 0) {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-
-      const tiers = { platinum: 0, gold: 0, silver: 0, bronze: 0 };
-      adminPartners.forEach(p => {
-        const t_key = (p.tier || 'bronze').toLowerCase();
-        if (tiers[t_key] !== undefined) tiers[t_key]++;
-      });
-
-      const ctx = chartRef.current.getContext('2d');
-      chartInstance.current = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Platinum', 'Gold', 'Silver', 'Bronze'],
-          datasets: [{
-            data: [tiers.platinum, tiers.gold, tiers.silver, tiers.bronze], 
-            backgroundColor: ['#1e40af', '#fbbf24', '#94a3b8', '#b45309'],
-            borderWidth: 0,
-            cutout: '75%'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-    }
-    return () => {
-      if (chartInstance.current) chartInstance.current.destroy();
-    };
-  }, [activeSection, adminPartners]);
-
-  // Dynamic Recent Activity
   const recentActivities = useMemo(() => {
     const activities = [];
-    
-    // Add new clients
     adminClients.slice(0, 5).forEach(c => {
       activities.push({
         type: 'user',
-        user: c.shop_name,
+        user: c.shop_name || 'New Shop',
         action: 'New Registration',
         time: c.created_at,
-        status: c.plan
+        status: c.plan || 'Starter'
       });
     });
-
-    // Add tickets
-    tickets.slice(0, 5).forEach(t_item => {
-      activities.push({
-        type: 'ticket',
-        user: t_item.partners?.full_name || t_item.clients?.shop_name || 'User',
-        action: t_item.title || 'Submitted Ticket',
-        time: t_item.created_at,
-        priority: t_item.priority || 'Medium'
-      });
-    });
-
     return activities.sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 10);
-  }, [adminClients, tickets]);
+  }, [adminClients]);
 
   const getTierBadgeClass = (tier) => {
     switch(tier?.toLowerCase()) {
@@ -406,10 +325,6 @@ const InternalDashboard = () => {
       case 'gold': return 'bg-amber-900/30 text-amber-400 border border-amber-500/20';
       case 'silver': return 'bg-zinc-700 text-zinc-300 border border-zinc-600';
       case 'bronze': return 'bg-orange-900/30 text-orange-400 border border-orange-500/20';
-      case 'ultimate': return 'bg-purple-900/30 text-purple-400 border border-purple-500/20';
-      case 'elite': return 'bg-cyan-900/30 text-cyan-400 border border-cyan-500/20';
-      case 'pro': return 'bg-indigo-900/30 text-indigo-400 border border-indigo-500/20';
-      case 'starter': return 'bg-zinc-800 text-zinc-400 border border-zinc-700';
       default: return 'bg-zinc-800 text-zinc-500';
     }
   };
@@ -419,7 +334,7 @@ const InternalDashboard = () => {
       case 'overview':
         return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivities} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
       case 'approvals':
-        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={MOCK_USERS} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleRemindPartner={handleRemindPartner} />;
+        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleRemindPartner={handleRemindPartner} />;
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':
