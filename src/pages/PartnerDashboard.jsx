@@ -204,7 +204,7 @@ const PartnerDashboard = () => {
       const { data: { publicUrl } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
 
       const { error: insertError } = await supabase.from('clients').insert([{
-        partner_id: targetUser.id,
+        partner_id: user.id === 'admin-bypass' ? null : user.id,
         shop_name: onboardForm.shopName,
         email: onboardForm.email,
         whatsapp: onboardForm.whatsapp,
@@ -263,7 +263,7 @@ const PartnerDashboard = () => {
       if (!user?.id) throw new Error("Sesi berakhir.");
 
       const { error } = await supabase.from('support_tickets').insert([{
-        user_id: user.id,
+        user_id: user.id === 'admin-bypass' ? null : user.id,
         type: 'bug',
         description: supportForm.description,
         status: 'open'
