@@ -197,19 +197,23 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      // MENGGUNAKAN RPC (DATABASE TRIGGER) - Jauh lebih stabil
+      // Mengirimkan plan sesuai pilihan user (starter/pro/elite/ultimate)
+      const targetPlan = selectedPartnerApp.package || selectedPartnerApp.plan || 'starter';
+
       const { data, error: rpcError } = await supabase.rpc('rpc_activate_partner', {
         p_email: selectedPartnerApp.email,
         p_application_id: selectedPartnerApp.id,
-        p_full_name: selectedPartnerApp.nama
+        p_full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
+        p_plan: targetPlan
       });
 
       if (rpcError) throw rpcError;
 
-      alert(data.message || "Berhasil mengaktifkan partner!");
+      alert(data.message || "Berhasil mengaktifkan akun!");
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       await fetchPartnerApps();
+      await fetchClients(); // Refresh data clients juga
     } catch (err) {
       console.error("Activation Error:", err);
       alert("Gagal Aktivasi: " + err.message);
