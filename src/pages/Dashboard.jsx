@@ -109,14 +109,14 @@ const Dashboard = () => {
         }
     };
 
-    const fetchOperationalData = async (userId) => {
+    const fetchOperationalData = async (userId, currentUser) => {
         if (!userId) return;
         setIsFetchingOperational(true);
         try {
             let prodQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
             let ordQuery = supabase.from('orders').select('*').order('order_date', { ascending: false });
 
-            const isAdmin = userId === 'admin-bypass' || user?.email === 'admin@tokcer-ai.com';
+            const isAdmin = userId === 'admin-bypass' || currentUser?.email === 'admin@tokcer-ai.com';
 
             if (!isAdmin) {
                 prodQuery = prodQuery.eq('user_id', userId);
@@ -132,6 +132,7 @@ const Dashboard = () => {
             }
 
             const { data: ordData, error: ordError } = await ordQuery;
+            console.log("📊 Raw Orders Data:", ordData);
             if (ordError) {
                 console.error("Orders Table Error:", ordError.message);
                 setOrders([]);
@@ -322,11 +323,12 @@ const Dashboard = () => {
         if (metadata?.platforms && metadata?.store_links) {
             await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
         }
-        fetchOperationalData(session.user.id);
+        fetchOperationalData(session.user.id, session.user);
       } else if (isAdmin) {
-        setUser({ email: 'admin@tokcer-ai.com', id: 'admin-bypass' });
+        const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
+        setUser(adminUser);
         setProfile({ full_name: 'Administrator', tokens: 999, role: 'admin' });
-        fetchOperationalData('admin-bypass');
+        fetchOperationalData('admin-bypass', adminUser);
       }
     };
     getUser();
