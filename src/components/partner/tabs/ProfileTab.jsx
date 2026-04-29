@@ -48,18 +48,18 @@ const ProfileTab = ({
         <div className="absolute -top-8 -right-8 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none"></div>
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-400 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-orange-600/20">
-            {partnerData.name.charAt(0)}
+            {(partnerData?.full_name || partnerData?.name || 'P').charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-black text-white tracking-tight truncate">{partnerData.name}</h2>
+            <h2 className="text-xl font-black text-white tracking-tight truncate">{partnerData?.full_name || partnerData?.name || 'Partner'}</h2>
             <div className="flex items-center gap-3 mt-1.5">
-              <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${getTierColor(partnerData.tier)}`}>
+              <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${getTierColor ? getTierColor(partnerData?.tier || 'ultimate') : 'text-orange-500'}`}>
                 <iconify-icon icon="solar:medal-star-bold-duotone" className="text-sm"></iconify-icon>
-                {partnerData.tier} Tier
+                {partnerData?.tier || 'Ultimate'} Tier
               </span>
-              <span className="text-[10px] font-bold text-zinc-500">{partnerData.id}</span>
+              <span className="text-[10px] font-bold text-zinc-500">{partnerData?.id || '—'}</span>
             </div>
-            <p className="text-xs text-zinc-400 mt-1 truncate">{user?.email || profileForm.email}</p>
+            <p className="text-xs text-zinc-400 mt-1 truncate">{user?.email || profileForm?.email}</p>
           </div>
         </div>
       </div>
