@@ -76,11 +76,7 @@ const ProfileTab = ({
           </div>
         </div>
 
-        <form className="space-y-6" onSubmit={(e) => {
-          e.preventDefault();
-          setPartnerData(prev => ({...prev, name: profileForm.fullName}));
-          alert(lang === 'id' ? 'Profil berhasil diperbarui!' : 'Profile updated successfully!');
-        }}>
+        <form className="space-y-6" onSubmit={handleUpdateProfile}>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{lang === 'id' ? 'Nama Lengkap (sesuai KTP)' : 'Full Name (as per ID)'}</label>
             <input
@@ -133,9 +129,14 @@ const ProfileTab = ({
           </div>
           <button
             type="submit"
-            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/10 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0"
+            disabled={isSubmitting}
+            className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/10 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3"
           >
-            {lang === 'id' ? 'Simpan Perubahan' : 'Save Changes'}
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              lang === 'id' ? 'Simpan Perubahan' : 'Save Changes'
+            )}
           </button>
         </form>
       </div>

@@ -259,6 +259,33 @@ const PartnerDashboard = () => {
     }
   };
 
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('partners')
+        .update({
+          full_name: profileForm.fullName,
+          whatsapp: profileForm.whatsapp,
+          email: profileForm.email,
+          bank_name: profileForm.bankName,
+          bank_account: profileForm.bankAccount
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      alert(lang === 'id' ? 'Profil berhasil diperbarui!' : 'Profile updated successfully!');
+      fetchData();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'onboard':
@@ -266,15 +293,50 @@ const PartnerDashboard = () => {
       case 'subscribers':
         return <SubscribersTab t={t} lang={lang} partnerData={partnerData} getPlanBadge={getPlanBadge} getRelativeTime={getRelativeTime} formatCurrency={formatCurrency} />;
       case 'leaderboard':
-        return <LeaderboardTab t={t} lang={lang} partnerData={partnerData} leaderboardPeriod={leaderboardPeriod} setLeaderboardPeriod={setLeaderboardPeriod} formatCurrency={formatCurrency} getTierColor={getTierColor} />;
+        return (
+          <LeaderboardTab 
+            t={t} 
+            lang={lang} 
+            partnerData={partnerData} 
+            leaderboardPeriod={leaderboardPeriod} 
+            setLeaderboardPeriod={setLeaderboardPeriod} 
+            countdown={countdown} 
+            getWeekInfo={getWeekInfo} 
+            getTierColor={getTierColor} 
+            formatCurrency={formatCurrency} 
+          />
+        );
       case 'payment':
         return <PaymentTab t={t} partnerData={partnerData} formatCurrency={formatCurrency} />;
       case 'support':
-        return <SupportTab t={t} supportTab={supportTab} setSupportTab={setSupportTab} supportForm={supportForm} setSupportForm={setSupportForm} handleSupportSubmit={handleSupportSubmit} handleIdeaSubmit={handleIdeaSubmit} isSubmitting={isSubmitting} />;
+        return (
+          <SupportTab 
+            t={t} 
+            supportTab={supportTab} 
+            setSupportTab={setSupportTab} 
+            supportForm={supportForm} 
+            setSupportForm={setSupportForm} 
+            handleSupportSubmit={handleSupportSubmit} 
+            handleIdeaSubmit={handleIdeaSubmit} 
+            isSubmitting={isSubmitting} 
+          />
+        );
       case 'academy':
         return <AcademyTab t={t} />;
       case 'profile':
-        return <ProfileTab lang={lang} partnerData={partnerData} setPartnerData={setPartnerData} profileForm={profileForm} setProfileForm={setProfileForm} user={user} getTierColor={getTierColor} />;
+        return (
+          <ProfileTab 
+            lang={lang} 
+            partnerData={partnerData} 
+            setPartnerData={setPartnerData} 
+            profileForm={profileForm} 
+            setProfileForm={setProfileForm} 
+            user={user} 
+            getTierColor={getTierColor} 
+            handleUpdateProfile={handleUpdateProfile}
+            isSubmitting={isSubmitting}
+          />
+        );
       default:
         return null;
     }

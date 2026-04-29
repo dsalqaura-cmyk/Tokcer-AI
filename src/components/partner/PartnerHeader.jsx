@@ -30,6 +30,20 @@ const PartnerHeader = ({
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
               <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('activeUser')}: {partnerData.activeUsers}</span>
             </div>
+            
+            {/* Desktop Logout */}
+            <button 
+              onClick={() => {
+                if(window.confirm(t('confirmLogout') || 'Logout?')) {
+                  supabase.auth.signOut().then(() => window.location.href = '/login');
+                }
+              }}
+              className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full border border-rose-500/30 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/10 transition-all"
+            >
+              <iconify-icon icon="solar:logout-2-linear" className="text-sm"></iconify-icon>
+              {t('logout')}
+            </button>
+
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
               className="lg:hidden w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center text-zinc-400 hover:text-white transition-all active:scale-90"
