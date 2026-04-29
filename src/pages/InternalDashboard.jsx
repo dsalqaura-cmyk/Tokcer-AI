@@ -197,26 +197,22 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      const { error: functionError } = await supabase.functions.invoke('activate-partner', {
-        body: { 
-          email: selectedPartnerApp.email, 
-          password: 'Tokcer@2026', 
-          applicationId: selectedPartnerApp.id,
-          nama: selectedPartnerApp.nama
-        }
+      // MENGGUNAKAN RPC (DATABASE TRIGGER) - Jauh lebih stabil
+      const { data, error: rpcError } = await supabase.rpc('rpc_activate_partner', {
+        p_email: selectedPartnerApp.email,
+        p_application_id: selectedPartnerApp.id,
+        p_full_name: selectedPartnerApp.nama
       });
 
-      if (functionError) throw functionError;
+      if (rpcError) throw rpcError;
 
-      alert(`Berhasil! Akun untuk ${selectedPartnerApp.nama} telah aktif.`);
+      alert(data.message || "Berhasil mengaktifkan partner!");
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       await fetchPartnerApps();
     } catch (err) {
-      console.error("Function Error:", err);
-      if (confirm("Edge Function Gagal: " + err.message + "\n\nIngin melakukan Force Approve (Hanya update status di database)?")) {
-        handleManualApprovePartner();
-      }
+      console.error("Activation Error:", err);
+      alert("Gagal Aktivasi: " + err.message);
     } finally {
       setIsLoading(false);
     }

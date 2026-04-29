@@ -7,11 +7,10 @@ const AccountSetupModal = ({
   approvalAccount, 
   setApprovalAccount, 
   handleApproveWithAccount, 
-  handleManualApprovePartner,
   isLoading 
 }) => {
-
   if (!showApproveModal || !selectedPartnerApp) return null;
+
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[110] flex items-center justify-center p-6 animate-in fade-in duration-300">
@@ -61,15 +60,8 @@ const AccountSetupModal = ({
             {!isLoading && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>}
           </button>
           
-          <button 
-            onClick={handleManualApprovePartner}
-            disabled={isLoading}
-            className="w-full py-3 text-[9px] font-black text-amber-500/50 hover:text-amber-500 uppercase tracking-widest transition-colors border border-amber-500/10 rounded-xl mt-2"
-          >
-            Bypass Edge Function (Force Approve)
-          </button>
-
           <button onClick={() => setShowApproveModal(false)} className="w-full py-4 text-zinc-500 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors">Batal</button>
+
 
         </div>
       </div>
