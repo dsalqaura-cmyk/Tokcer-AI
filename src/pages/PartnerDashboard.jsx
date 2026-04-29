@@ -54,6 +54,17 @@ const PartnerDashboard = () => {
   };
 
 
+  const getTierColor = (tier) => {
+    switch (String(tier).toLowerCase()) {
+      case 'starter': return 'text-zinc-400';
+      case 'pro': return 'text-blue-400';
+      case 'elite': return 'text-purple-400';
+      case 'ultimate': return 'text-orange-500';
+      default: return 'text-orange-500';
+    }
+  };
+
+
   const getWeekInfo = () => {
 
     const now = new Date();
