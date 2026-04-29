@@ -69,7 +69,7 @@ const PartnerDashboard = () => {
       const { data: profile } = await supabase
         .from('partners')
         .select('*')
-        .or(`id.eq."${session.user.id}",email.eq."${session.user.email}"`)
+        .or(`id.eq.${session.user.id},email.eq.${session.user.email}`)
         .maybeSingle();
 
       const { data: clients } = await supabase
@@ -138,11 +138,14 @@ const PartnerDashboard = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        // Handled by ProtectedRoute
-      } else {
-        setUser(session.user);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setUser(session.user);
+        }
+      } catch (err) {
+        console.error("CheckUser Error:", err);
+      } finally {
         setLoading(false);
       }
     };
