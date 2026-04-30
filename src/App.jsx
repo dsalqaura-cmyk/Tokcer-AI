@@ -65,12 +65,8 @@ function App() {
     const path = window.location.pathname;
     
     if (path === '/') {
-      if (host === 'dashboardstaging.tokcer-ai.com' || host === 'admin.tokcer-ai.com') {
+      if (host === 'dashboardstaging.tokcer-ai.com' || host === 'dashboard.tokcer-ai.com') {
         window.location.href = '/admin-login';
-      } else if (host === 'dashboard.tokcer-ai.com') {
-        window.location.href = '/login';
-      } else if (host === 'partner.tokcer-ai.com') {
-        window.location.href = '/login';
       }
     }
   }, []);
