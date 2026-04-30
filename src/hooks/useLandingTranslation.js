@@ -120,7 +120,40 @@ const translations = {
     wlSuccessDesc: "Terima kasih telah bergabung! Kami akan segera menghubungi Anda melalui email/WhatsApp.",
     wlErrDuplicate: "Email sudah terdaftar di waitlist!",
     wlErrEmail: "Format email tidak valid!",
-    wlErrGeneral: "Terjadi kesalahan, silakan coba lagi."
+    wlErrGeneral: "Terjadi kesalahan, silakan coba lagi.",
+
+    // Register Modal Specific
+    regSubtitle: "Lengkapi data Anda untuk mendapatkan akses ke dashboard.",
+    regSuccessTitle: "Pendaftaran Terkirim!",
+    regSuccessDesc: "Data Anda sedang dalam proses verifikasi oleh tim Tokcer AI. Detail akun dan instruksi login akan kami kirimkan ke email Anda segera.",
+    regCloseBtn: "Tutup",
+    regSelectPlan: "PILIH PAKET LAYANAN",
+    regBillingCycle: "SIKLUS PEMBAYARAN",
+    regMonthly: "Bulanan (Monthly)",
+    regYearly: "Tahunan (Tahunan)",
+    regUploadProof: "UPLOAD BUKTI BAYAR",
+    regPaymentInfo: "Informasi Pembayaran",
+    regTransferTo: "Silakan transfer biaya paket ke rekening:",
+    regBcaInfo: "BCA 1234567890 a/n Tokcer AI",
+    regMinPlatform: "Pilih minimal satu platform jualan.",
+    regStoreLink: "Link Toko",
+    regOther: "Lainnya",
+    regLoading: "MENGIRIM LINK...",
+
+    // Partner Modal Specific
+    partBadge: "Mitra Resmi",
+    partDesc: "Perluas network Anda sebagai Exclusive Partner kami dan amankan akses ke revenue stream khusus dari setiap pertumbuhan kami.",
+    partSuccessTitle: "Data Terkirim!",
+    partSuccessDesc: "Terima kasih telah mendaftar. Silakan cek email Anda untuk menyetujui Skema Komisi & mengaktifkan akun Partner Anda.",
+    partMediaLink: "Link Media Utama (IG/TikTok/YT/Web)",
+    partNiche: "Niche Konten",
+    partNichePlaceholder: "Pilih Niche",
+    partFollowers: "Estimasi Followers",
+    partFollowersPlaceholder: "Pilih Jumlah",
+    partPromoMethod: "Cara Promosi",
+    partPromoStrategy: "Strategi Promosi (Min. 50 karakter)",
+    partPromoPlaceholder: "Ceritakan bagaimana cara kamu mempromosikan Tokcer AI...",
+    partErrDuplicate: "Email sudah terdaftar sebagai partner!"
   },
   en: {
     // Navbar
