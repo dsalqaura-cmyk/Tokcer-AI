@@ -67,36 +67,35 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const hostname = window.location.hostname;
   
-  // Detect if we are inside an iframe (cloaking) with safety check
+  // Use the safest possible detection
   const getIsCloaked = () => {
     try {
       return window.self !== window.top;
     } catch (e) {
-      return true; // If we can't access top, we are likely cloaked/in an iframe
+      return true;
     }
   };
   
   const isCloaked = getIsCloaked();
-  
-  // If cloaked, we are likely on the staging.tokcer-ai.com landing page
-  // If not cloaked, we check the hostname for 'dashboard'
-  const isInternalDashboard = !isCloaked && hostname.includes('dashboard');
-
-  useEffect(() => {
-    // Single log for confirmation
-    console.log("Tokcer AI Staging Active:", hostname);
-  }, [hostname]);
+  const isInternal = !isCloaked && hostname.includes('dashboard');
 
   return (
     <Router>
+      {/* Visual Debug for Staging */}
+      {isCloaked && (
+        <div className="fixed top-0 left-0 w-full bg-orange-600 text-white text-[10px] py-1 text-center z-[10000] font-bold">
+          LOADING TOKCER AI LANDING...
+        </div>
+      )}
+      
       <Routes>
-        {/* Domain-based entry point mapping */}
-        <Route path="/" element={isInternalDashboard ? <AdminLogin /> : <Landing />} />
+        <Route path="/" element={isInternal ? <AdminLogin /> : <Landing />} />
         
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        
         <Route 
           path="/dashboard" 
           element={
@@ -113,8 +112,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        {/* Safe redirect: only if path is NOT root */}
-        <Route path="*" element={window.location.pathname === '/' ? null : <Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
