@@ -59,22 +59,27 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const hostname = window.location.hostname;
+  const [hostname, setHostname] = useState(window.location.hostname);
   const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
-  
-  console.log("🌐 Current Hostname:", hostname);
-  console.log("🚀 Rendering Mode:", isDashboardStaging ? "LOGIN (Staging Subdomain)" : "LANDING (Main/Staging)");
+
+  useEffect(() => {
+    console.log("🌐 App Mounted on Hostname:", hostname);
+    console.log("🚀 Rendering Mode:", isDashboardStaging ? "LOGIN (Staging Subdomain)" : "LANDING (Main/Staging)");
+  }, [hostname, isDashboardStaging]);
 
   return (
     <Router>
       <Routes>
-        {/* If on staging subdomain, show Login as the home page, otherwise show Landing */}
-        <Route path="/" element={isDashboardStaging ? <Login /> : <Landing />} />
+        <Route 
+          path="/" 
+          element={isDashboardStaging ? <Login /> : <Landing />} 
+        />
         
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        
         <Route 
           path="/dashboard" 
           element={
@@ -91,7 +96,8 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        {/* Handle other routes */}
+        
+        {/* Handle other routes - avoid immediate Navigate loop if possible */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
