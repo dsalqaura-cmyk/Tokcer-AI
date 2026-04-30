@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MarketplaceSyncTab = ({ t, lang, onConnectShopee }) => {
+const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
   const platforms = [
     { 
       id: 'tiktok', 
@@ -69,6 +69,8 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee }) => {
               onClick={() => {
                 if (p.id === 'shopee') {
                   onConnectShopee();
+                } else if (p.id === 'tiktok') {
+                  onConnectTikTok();
                 } else {
                   alert(`Redirecting to ${p.name} Authorization Center...`);
                 }

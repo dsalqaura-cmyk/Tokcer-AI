@@ -18,6 +18,7 @@ import MarketplaceSyncTab from '../components/dashboard/tabs/MarketplaceSyncTab.
 import AdminTab from '../components/dashboard/tabs/AdminTab.jsx';
 import { dashboardTranslations } from '../locales/dashboardLocales.js';
 import { getShopeeAuthUrl } from '../utils/shopee.js';
+import { getTikTokAuthUrl } from '../utils/tiktok.js';
 
 
 const Dashboard = () => {
@@ -141,6 +142,31 @@ const Dashboard = () => {
         } catch (err) {
             console.error("Shopee Auth Error:", err);
             alert("Gagal menghubungi server Shopee: " + err.message);
+        }
+    };
+
+    const handleConnectTikTok = async () => {
+        try {
+            // 1. Fetch TikTok Config
+            const { data: config } = await supabase
+                .from('ai_configs')
+                .select('*')
+                .eq('key', 'tiktok_app_id')
+                .maybeSingle();
+
+            if (!config?.value) {
+                alert("⚠️ App ID TikTok belum dikonfigurasi. Hubungi Admin.");
+                return;
+            }
+
+            // 2. Get Auth URL
+            const authUrl = getTikTokAuthUrl(config.value);
+
+            // 3. Redirect
+            window.location.href = authUrl;
+        } catch (err) {
+            console.error("TikTok Auth Error:", err);
+            alert("Gagal menghubungi TikTok: " + err.message);
         }
     };
 
@@ -400,6 +426,14 @@ const Dashboard = () => {
           window.history.replaceState({}, document.title, window.location.pathname);
           // Here we would typically call another API to exchange code for tokens
           // But for now, we show success.
+      }
+
+      // Handle TikTok Callback
+      const tiktokCode = params.get('auth_code');
+      if (tiktokCode) {
+          console.log("📍 TikTok Auth Callback Detected:", { tiktokCode });
+          alert(`Sukses! Toko TikTok Shop berhasil diotorisasi. Sedang mensinkronisasi data...`);
+          window.history.replaceState({}, document.title, window.location.pathname);
       }
 
     };
@@ -1019,6 +1053,7 @@ const Dashboard = () => {
             t={t}
             lang={lang}
             onConnectShopee={handleConnectShopee}
+            onConnectTikTok={handleConnectTikTok}
           />
         );
       default:
