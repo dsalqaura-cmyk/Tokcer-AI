@@ -274,7 +274,40 @@ const translations = {
     wlSuccessDesc: "Thank you for joining! We will contact you soon via email/WhatsApp.",
     wlErrDuplicate: "Email already registered in the waitlist!",
     wlErrEmail: "Invalid email format!",
-    wlErrGeneral: "An error occurred, please try again."
+    wlErrGeneral: "An error occurred, please try again.",
+
+    // Register Modal Specific
+    regSubtitle: "Complete your data to get access to the dashboard.",
+    regSuccessTitle: "Registration Sent!",
+    regSuccessDesc: "Your data is being verified by the Tokcer AI team. Account details and login instructions will be sent to your email soon.",
+    regCloseBtn: "Close",
+    regSelectPlan: "SELECT SERVICE PLAN",
+    regBillingCycle: "BILLING CYCLE",
+    regMonthly: "Monthly",
+    regYearly: "Yearly",
+    regUploadProof: "UPLOAD PAYMENT PROOF",
+    regPaymentInfo: "Payment Information",
+    regTransferTo: "Please transfer the plan fee to:",
+    regBcaInfo: "BCA 1234567890 a/n Tokcer AI",
+    regMinPlatform: "Select at least one selling platform.",
+    regStoreLink: "Store Link",
+    regOther: "Other",
+    regLoading: "SENDING LINK...",
+
+    // Partner Modal Specific
+    partBadge: "Official Partner",
+    partDesc: "Expand your network as our Exclusive Partner and secure access to specific revenue streams from our growth.",
+    partSuccessTitle: "Data Sent!",
+    partSuccessDesc: "Thank you for registering. Please check your email to approve the Commission Scheme & activate your Partner account.",
+    partMediaLink: "Main Media Link (IG/TikTok/YT/Web)",
+    partNiche: "Content Niche",
+    partNichePlaceholder: "Select Niche",
+    partFollowers: "Estimated Followers",
+    partFollowersPlaceholder: "Select Amount",
+    partPromoMethod: "Promotion Method",
+    partPromoStrategy: "Promotion Strategy (Min. 50 characters)",
+    partPromoPlaceholder: "Tell us how you will promote Tokcer AI...",
+    partErrDuplicate: "Email already registered as a partner!"
   }
 };
 

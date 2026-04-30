@@ -60,10 +60,15 @@ function App() {
   const hostname = window.location.hostname;
   const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
 
+  useEffect(() => {
+    // Single log for confirmation
+    console.log("Tokcer AI Staging Active:", hostname);
+  }, [hostname]);
+
   return (
     <Router>
       <Routes>
-        {/* Exact mapping based on user instructions */}
+        {/* Domain-based entry point mapping */}
         <Route path="/" element={isDashboardStaging ? <AdminLogin /> : <Landing />} />
         
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
@@ -86,7 +91,8 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Safe redirect: only if path is NOT root */}
+        <Route path="*" element={window.location.pathname === '/' ? null : <Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
