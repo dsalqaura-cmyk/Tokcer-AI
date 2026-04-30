@@ -58,20 +58,18 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const hostname = window.location.hostname;
-const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
-
 function App() {
+  const hostname = window.location.hostname;
+  const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={isDashboardStaging ? <Login /> : <Landing />} />
-        
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        
         <Route 
           path="/dashboard" 
           element={
@@ -88,9 +86,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        
-        {/* Handle other routes */}
-        <Route path="*" element={<Navigate to={isDashboardStaging ? "/" : "/"} replace />} />
+        <Route path="*" element={<div className="bg-black min-h-screen text-white p-10 font-mono">404 - Path Not Found: {window.location.pathname}</div>} />
       </Routes>
     </Router>
   );
