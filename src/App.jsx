@@ -59,27 +59,28 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  // Subdomain Auto-routing
-  useEffect(() => {
-    const host = window.location.hostname;
-    const path = window.location.pathname;
-    
-    if (path === '/') {
-      if (host === 'dashboardstaging.tokcer-ai.com' || host === 'dashboard.tokcer-ai.com') {
-        window.location.href = '/admin-login';
-      }
-    }
-  }, []);
+  const host = window.location.hostname;
+  const isInternalAdminDomain = host === 'dashboardstaging.tokcer-ai.com' || host === 'dashboard.tokcer-ai.com';
+
+  if (isInternalAdminDomain) {
+    return (
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/admin-login" replace />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/admin-login" replace />} />
+        </Routes>
+      </Router>
+    );
+  }
 
   return (
-
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
         <Route 
           path="/dashboard" 
           element={
