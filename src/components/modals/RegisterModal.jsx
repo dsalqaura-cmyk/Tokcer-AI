@@ -12,6 +12,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [storeLinks, setStoreLinks] = useState({});
   const [paymentProof, setPaymentProof] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [formPlan, setFormPlan] = useState(selectedPlan || 'starter');
 
   if (!isOpen) return null;
 
@@ -41,8 +42,9 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     const phone = formData.get('phone');
     const affiliate_id = formData.get('affiliate_id');
     const business_type = formData.get('business_type');
-    const planValue = selectedPlan || formData.get('plan') || 'starter';
-    console.log("📝 Registering with plan:", planValue); // Log untuk debug
+    const billing_cycle = formData.get('billing_cycle') || 'Monthly';
+    const planValue = selectedPlan || formPlan || 'starter';
+    console.log("📝 Registering with plan:", planValue, "Cycle:", billing_cycle); // Log untuk debug
     
     // Validations
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -86,6 +88,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
           email: email,
           whatsapp: phone,
           plan: planValue,
+          billing_cycle: billing_cycle,
           business_type: business_type,
           platforms: selectedPlatforms,
           ref: 'Direct Web',
@@ -187,13 +190,41 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                 <select 
                   name="plan"
                   required
+                  value={formPlan}
+                  onChange={(e) => setFormPlan(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
                 >
-                  <option value="starter">Starter Edition (Gratis)</option>
-                  <option value="pro">Pro Edition (Bulanan)</option>
-                  <option value="elite">Elite Edition (Bulanan)</option>
-                  <option value="ultimate">Ultimate Edition (Bulanan)</option>
+                  <option value="starter">Starter Edition</option>
+                  <option value="pro">Pro Edition</option>
+                  <option value="elite">Elite Edition</option>
+                  <option value="ultimate">Ultimate Edition</option>
                 </select>
+              </div>
+            )}
+
+            {(formPlan !== 'starter') && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">SIKLUS PEMBAYARAN</label>
+                  <select 
+                    name="billing_cycle"
+                    required
+                    className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
+                  >
+                    <option value="Monthly">Bulanan (Monthly)</option>
+                    <option value="Yearly">Tahunan (Yearly)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">UPLOAD BUKTI BAYAR</label>
+                  <input 
+                    type="file"
+                    accept="image/*"
+                    required
+                    onChange={(e) => setPaymentProof(e.target.files[0])}
+                    className="w-full text-xs text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all cursor-pointer"
+                  />
+                </div>
               </div>
             )}
 

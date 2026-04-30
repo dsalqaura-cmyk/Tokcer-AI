@@ -64,9 +64,14 @@ const ApprovalSection = ({
                     <div className="text-[9px] text-emerald-500 font-black mt-0.5">{item.whatsapp || '-'}</div>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50">
-                    <span className={`${getTierBadgeClass(activeAppTab === 'new-partner' ? 'bronze' : (item.tier || item.plan))} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>
-                      {activeAppTab === 'new-partner' ? 'Bronze' : (item.tier || item.plan)}
-                    </span>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className={`${getTierBadgeClass(activeAppTab === 'new-partner' ? 'bronze' : (item.tier || item.plan))} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>
+                        {activeAppTab === 'new-partner' ? 'Bronze' : (item.tier || item.plan)}
+                      </span>
+                      {item.billing_cycle && (
+                        <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest pl-1">{item.billing_cycle}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50 text-center">
                     <div className="flex flex-col items-center">

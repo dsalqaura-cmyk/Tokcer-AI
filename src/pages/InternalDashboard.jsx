@@ -68,7 +68,7 @@ const InternalDashboard = () => {
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from('clients')
-      .select('id, shop_name, email, status, plan, tier, pic, ref, payment_method, payment_proof_url, created_at, partners(full_name)')
+      .select('id, shop_name, email, status, plan, tier, pic, ref, billing_cycle, payment_method, payment_proof_url, created_at, partners(full_name)')
       .order('created_at', { ascending: false });
     if (!error) setAdminClients(data || []);
   };
@@ -194,7 +194,7 @@ const InternalDashboard = () => {
     }
   };
 
-  const sendWelcomeEmail = async (email, name, plan) => {
+  const sendWelcomeEmail = async (email, name, plan, cycle) => {
     // Gunakan dari Database jika ada, kalau tidak ada pakai .env
     const apiKey = aiConfig.resend_api_key || import.meta.env.VITE_RESEND_API_KEY;
     
@@ -217,7 +217,7 @@ const InternalDashboard = () => {
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
               <h2 style="color: #f97316;">Selamat, ${name}!</h2>
-              <p>Pendaftaran Anda untuk paket <b>${plan.toUpperCase()}</b> telah disetujui.</p>
+              <p>Pendaftaran Anda untuk paket <b>${plan.toUpperCase()}</b> (${cycle || 'Monthly'}) telah disetujui.</p>
               <p>Sekarang Anda sudah bisa mengakses seluruh fitur Tokcer AI untuk melejitkan performa toko Anda.</p>
               <div style="background: #fdf2f7; padding: 15px; border-radius: 8px; margin: 20px 0;">
                 <p style="margin: 0;"><b>Link Dashboard:</b> <a href="https://tokcer-ai.com/login">tokcer-ai.com/login</a></p>
@@ -253,7 +253,7 @@ const InternalDashboard = () => {
       if (rpcError) throw rpcError;
 
       // KIRIM EMAIL OTOMATIS
-      await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate');
+      await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate', 'Yearly');
 
       alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif sebagai ULTIMATE.`);
       setShowApproveModal(false);
@@ -292,7 +292,7 @@ const InternalDashboard = () => {
       if (rpcError) throw rpcError;
 
       // KIRIM EMAIL OTOMATIS
-      await sendWelcomeEmail(client.email, client.shop_name, client.plan || 'starter');
+      await sendWelcomeEmail(client.email, client.shop_name, client.plan || 'starter', client.billing_cycle || 'Monthly');
 
       alert(data.message || "User berhasil diaktifkan!");
       await fetchClients();
