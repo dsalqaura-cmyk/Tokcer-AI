@@ -59,18 +59,14 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  // Auto-redirect for dashboardstaging subdomain to admin-login
-  useEffect(() => {
-    if (window.location.hostname === 'dashboardstaging.tokcer-ai.com' && window.location.pathname === '/') {
-      window.location.href = '/admin-login';
-    }
-  }, []);
+  const isDashboardStaging = window.location.hostname === 'dashboardstaging.tokcer-ai.com';
 
   return (
-
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        {/* If on staging subdomain, show Login as the home page, otherwise show Landing */}
+        <Route path="/" element={isDashboardStaging ? <Login /> : <Landing />} />
+        
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
@@ -91,6 +87,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        {/* Handle other routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
