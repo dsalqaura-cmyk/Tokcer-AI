@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '../../../supabase.js';
 
 const PayoutSection = ({ t }) => {
   const [payouts, setPayouts] = useState([]);
