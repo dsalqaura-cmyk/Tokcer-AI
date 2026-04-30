@@ -58,7 +58,8 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   const hostname = window.location.hostname;
-  const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
+  // Detected if we are on an internal dashboard domain (staging or production)
+  const isInternalDashboard = hostname.includes('dashboard');
 
   useEffect(() => {
     // Single log for confirmation
@@ -69,7 +70,7 @@ function App() {
     <Router>
       <Routes>
         {/* Domain-based entry point mapping */}
-        <Route path="/" element={isDashboardStaging ? <AdminLogin /> : <Landing />} />
+        <Route path="/" element={isInternalDashboard ? <AdminLogin /> : <Landing />} />
         
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
