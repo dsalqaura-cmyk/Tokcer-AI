@@ -27,7 +27,9 @@ const AdminLogin = () => {
         supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword }).catch(() => {});
         
         setTimeout(() => {
-          localStorage.setItem('tokcer_admin_auth', 'true');
+          try {
+            localStorage.setItem('tokcer_admin_auth', 'true');
+          } catch (e) {}
           setLoading(false);
           navigate('/admin');
         }, 1200);

@@ -17,7 +17,14 @@ const PartnerDashboard = () => {
   const [activeMenu, setActiveMenu] = useState('onboard'); // Simplified names
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
+  const getInitialLang = () => {
+    try {
+      return localStorage.getItem('tokcer_lang') || 'id';
+    } catch (e) {
+      return 'id';
+    }
+  };
+  const [lang, setLang] = useState(getInitialLang());
   const [user, setUser] = useState(null);
   const [partnerData, setPartnerData] = useState({
     full_name: 'Partner',
@@ -169,7 +176,10 @@ const PartnerDashboard = () => {
       setLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+        let isAdmin = false;
+        try {
+          isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+        } catch (e) {}
         
         if (session) {
           setUser(session.user);
@@ -291,13 +301,17 @@ const PartnerDashboard = () => {
 
   const toggleLang = (l) => {
     setLang(l);
-    localStorage.setItem('tokcer_lang', l);
+    try {
+      localStorage.setItem('tokcer_lang', l);
+    } catch (e) {}
   };
 
   const handleLogout = async () => {
     if(window.confirm(t('confirmLogout') || 'Logout?')) {
       await supabase.auth.signOut();
-      localStorage.clear();
+      try {
+        localStorage.clear();
+      } catch (e) {}
       navigate('/login');
     }
   };

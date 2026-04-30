@@ -4,7 +4,14 @@ import { supabase } from '../supabase.js';
 import logo from '../assets/logo.png';
 
 const Login = () => {
-  const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
+  const getInitialLang = () => {
+    try {
+      return localStorage.getItem('tokcer_lang') || 'id';
+    } catch (e) {
+      return 'id';
+    }
+  };
+  const [lang, setLang] = useState(getInitialLang());
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user'); // 'user' or 'partner'
@@ -64,7 +71,9 @@ const Login = () => {
 
   const toggleLang = (newLang) => {
     setLang(newLang);
-    localStorage.setItem('tokcer_lang', newLang);
+    try {
+      localStorage.setItem('tokcer_lang', newLang);
+    } catch (e) {}
   };
 
   const handleAuth = async (e) => {
@@ -74,7 +83,9 @@ const Login = () => {
     
     // Handle Admin Total Bypass
     if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983' && !useMagicLink) {
-      localStorage.setItem('tokcer_admin_auth', 'true');
+      try {
+        localStorage.setItem('tokcer_admin_auth', 'true');
+      } catch (e) {}
       // Silently attempt supabase login to satisfy RLS if user exists
       await supabase.auth.signInWithPassword({ email, password }).catch(() => {});
       setLoading(false);
