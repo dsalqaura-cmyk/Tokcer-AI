@@ -59,7 +59,11 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const isDashboardStaging = window.location.hostname === 'dashboardstaging.tokcer-ai.com';
+  const hostname = window.location.hostname;
+  const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
+  
+  console.log("🌐 Current Hostname:", hostname);
+  console.log("🚀 Rendering Mode:", isDashboardStaging ? "LOGIN (Staging Subdomain)" : "LANDING (Main/Staging)");
 
   return (
     <Router>
