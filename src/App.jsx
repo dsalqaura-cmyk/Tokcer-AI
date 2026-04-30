@@ -58,18 +58,20 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-function App() {
-  const hostname = window.location.hostname;
-  const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
+const hostname = window.location.hostname;
+const isDashboardStaging = hostname === 'dashboardstaging.tokcer-ai.com';
 
+function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={isDashboardStaging ? <Login /> : <Landing />} />
+        
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        
         <Route 
           path="/dashboard" 
           element={
@@ -86,7 +88,9 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        
+        {/* Handle other routes */}
+        <Route path="*" element={<Navigate to={isDashboardStaging ? "/" : "/"} replace />} />
       </Routes>
     </Router>
   );
