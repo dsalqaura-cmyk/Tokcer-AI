@@ -339,6 +339,30 @@ const InternalDashboard = () => {
     }
   };
 
+  const handleReject = async (item) => {
+    if (!item) return;
+    if (!window.confirm(`Yakin ingin MENOLAK ${item.shop_name || item.name || item.nama}?`)) return;
+
+    setIsLoading(true);
+    try {
+      if (activeAppTab === 'new-partner') {
+        const { error } = await supabase.from('partner_applications').update({ status: 'rejected' }).eq('id', item.id);
+        if (error) throw error;
+        await fetchPartnerApps();
+      } else {
+        const { error } = await supabase.from('clients').update({ status: 'rejected' }).eq('id', item.id);
+        if (error) throw error;
+        await fetchClients();
+      }
+      alert('Pendaftaran berhasil ditolak.');
+    } catch (err) {
+      console.error("Reject Error:", err);
+      alert('Gagal menolak pendaftaran: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const initData = async () => {
       try {
@@ -394,7 +418,7 @@ const InternalDashboard = () => {
       case 'overview':
         return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivities} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
       case 'approvals':
-        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleRemindPartner={handleRemindPartner} />;
+        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleReject={handleReject} handleRemindPartner={handleRemindPartner} />;
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':

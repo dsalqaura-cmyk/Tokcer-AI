@@ -11,6 +11,7 @@ const ApprovalSection = ({
   setSelectedPartnerApp, 
   setShowApproveModal, 
   handleApprove,
+  handleReject,
   handleRemindPartner
 }) => {
   return (
@@ -128,7 +129,7 @@ const ApprovalSection = ({
                               >
                                 Approve
                               </button>
-                              <button className="px-6 py-2 bg-zinc-800 hover:bg-rose-600 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
+                              <button onClick={() => handleReject(item)} className="px-6 py-2 bg-zinc-800 hover:bg-rose-600 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl border border-zinc-700 transition-all active:scale-95">Reject</button>
                             </>
                           )}
                         </>
