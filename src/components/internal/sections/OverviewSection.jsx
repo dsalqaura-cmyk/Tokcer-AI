@@ -36,8 +36,15 @@ const OverviewSection = ({
   const subscriptionRevenue = adminClients
     .filter(c => c.status === 'active')
     .reduce((acc, c) => {
-      const price = c.plan === 'ultimate' ? 2000000 : c.plan === 'elite' ? 350000 : c.plan === 'pro' ? 150000 : 0;
-      return acc + price;
+      let basePrice = 0;
+      if (c.plan === 'ultimate') basePrice = 2000000;
+      else if (c.plan === 'elite') basePrice = 1499000;
+      else if (c.plan === 'pro') basePrice = 999000;
+      
+      const isYearly = c.billing_cycle === 'Yearly';
+      const finalPrice = isYearly ? (basePrice * 11) : basePrice;
+
+      return acc + finalPrice;
     }, 0);
 
   return (
