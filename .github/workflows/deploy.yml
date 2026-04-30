@@ -45,17 +45,7 @@ jobs:
         local-dir: ./dist/
         server-dir: staging.tokcer-ai.com/
 
-    - name: 📂 Sync to Staging (Internal Admin)
-      if: github.ref == 'refs/heads/staging'
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./dist/
-        server-dir: dashboardstaging.tokcer-ai.com/
-
-    - name: 📂 Sync to Production (Main Site)
+    - name: 📂 Sync to Production (Main Site & Internal Admin)
       if: github.ref == 'refs/heads/main'
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -63,14 +53,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./dist/
-        server-dir: tokcer-ai.com/
-
-    - name: 📂 Sync to Production (Internal Admin)
-      if: github.ref == 'refs/heads/main'
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./dist/
-        server-dir: dashboard.tokcer-ai.com/
+        server-dir: ./
