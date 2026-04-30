@@ -135,12 +135,29 @@ const PartnerDashboard = () => {
       // 3. Calculate Stats
       const activeCount = safeSubs.filter(s => s.status === 'active').length;
 
+      // 3.5 Fetch Payouts
+      let payoutsQuery = supabase.from('payouts').select('*').order('created_at', { ascending: false });
+      if (isBypass) {
+        if (partner?.id) {
+          payoutsQuery = payoutsQuery.eq('partner_id', partner.id);
+        } else {
+          payoutsQuery = payoutsQuery.eq('partner_id', 'none');
+        }
+      } else {
+        payoutsQuery = payoutsQuery.eq('partner_id', currentUser.id);
+      }
+      const { data: payoutsData } = await payoutsQuery;
+      const mappedPayouts = (payoutsData || []).map(p => ({
+        ...p,
+        period: p.period || new Date(p.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+      }));
+
       if (partner) {
 
         setPartnerData({
           ...partner,
           activeUsers: activeCount,
-          paymentHistory: partner.paymentHistory || [] // Ensure it exists
+          paymentHistory: mappedPayouts
         });
         setProfileForm({
           fullName: partner.full_name || '',
