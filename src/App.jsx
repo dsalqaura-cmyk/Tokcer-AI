@@ -60,7 +60,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   const host = window.location.hostname;
-  const isInternalAdminDomain = host === 'dashboardstaging.tokcer-ai.com' || host === 'dashboard.tokcer-ai.com';
+  const isInternalAdminDomain = host === 'dashboardstaging.tokcer-ai.com' || host === 'dashboard.tokcer-ai.com' || host === 'www.dashboard.tokcer-ai.com';
 
   if (isInternalAdminDomain) {
     return (
