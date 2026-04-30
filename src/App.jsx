@@ -1,34 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { supabase } from './supabase.js';
-import Landing from './pages/Landing.jsx';
-import Login from './pages/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import PartnerDashboard from './pages/PartnerDashboard.jsx';
-import InternalDashboard from './pages/InternalDashboard.jsx';
-import AdminLogin from './pages/AdminLogin.jsx';
-import PartnerAgreement from './pages/PartnerAgreement.jsx';
+import { supabase } from './lib/supabase';
+
+// Components
+import Navbar from './components/Navbar';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
+import Dashboard from './pages/Dashboard';
+import PartnerDashboard from './pages/PartnerDashboard';
+import InternalDashboard from './admin/InternalDashboard';
+import PartnerAgreement from './pages/PartnerAgreement';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-    };
-    checkSession();
+      setLoading(false);
+    });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      setSession(prev => {
-        if (prev?.access_token !== currentSession?.access_token) {
-          return currentSession;
-        }
-        return prev;
-      });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
     });
 
     return () => subscription.unsubscribe();
@@ -36,8 +31,8 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
       </div>
     );
   }
@@ -57,7 +52,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/admin-login" replace />;
   }
 
-  if (!session && !isAdminAuth) {
+  if (!isPathAdmin && !session) {
     return <Navigate to="/login" replace />;
   }
 
@@ -65,38 +60,29 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  // EMERGENCY: Force Landing Page to debug rendering issue
+  const hostname = window.location.hostname;
+  
+  // Advanced detection to break through cloaking/iframes
+  const getVisibleUrl = () => {
+    try {
+      return window.top.location.href;
+    } catch (e) {
+      return window.location.href;
+    }
+  };
+  
+  const visibleUrl = getVisibleUrl();
+  const isStagingLanding = visibleUrl.includes('staging.tokcer-ai.com');
+  const isProdLanding = hostname === 'tokcer-ai.com' && !hostname.includes('dashboard');
+  
+  // Decide which page to show at root
+  const isInternal = !isStagingLanding && !isProdLanding && (hostname.includes('dashboard') || visibleUrl.includes('dashboard'));
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
-        
-        <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
-        <Route path="/partner-agreement" element={<PartnerAgreement />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/partner-dashboard" 
-          element={
-            <ProtectedRoute>
-              <PartnerDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
-  );
-}
+        {/* Correct mapping for root based on URL/hostname */}
+        <Route path="/" element={isInternal ? <AdminLogin /> : <Landing />} />
         
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
