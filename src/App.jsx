@@ -64,6 +64,7 @@ function App() {
 
   return (
     <Router>
+      <div className="fixed bottom-0 right-0 bg-white/10 text-[8px] text-white/20 p-1 pointer-events-none z-[9999]">v1.0.7-staging</div>
       <Routes>
         <Route path="/" element={isDashboardStaging ? <Login /> : <Landing />} />
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
