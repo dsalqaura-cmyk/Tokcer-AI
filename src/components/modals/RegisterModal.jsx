@@ -56,7 +56,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
     if (selectedPlatforms.length === 0) {
         setLoading(false);
-        setStatus(t('regMinPlatform'));
+        setStatus("Pilih minimal satu platform jualan.");
         return;
     }
 
@@ -111,7 +111,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     { id: 'Shopee', label: 'Shopee', icon: 'simple-icons:shopee' },
     { id: 'Tokopedia', label: 'Tokopedia', icon: 'solar:shop-2-linear' },
     { id: 'Instagram', label: 'Instagram', icon: 'ri:instagram-fill' },
-    { id: 'Other', label: t('regOther'), icon: 'solar:menu-dots-bold' }
+    { id: 'Other', label: 'Lainnya', icon: 'solar:menu-dots-bold' }
   ];
 
   return (
@@ -125,7 +125,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             <iconify-icon icon="solar:magic-stick-3-linear" className="text-2xl text-orange-500"></iconify-icon>
           </div>
           <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight">{t('wlTitle')}</h3>
-          <p className="text-[10px] md:text-xs text-zinc-400 mt-1">{t('regSubtitle')}</p>
+          <p className="text-[10px] md:text-xs text-zinc-400 mt-1">Lengkapi data Anda untuk mendapatkan akses ke dashboard.</p>
         </div>
         
         {status === 'success' ? (
@@ -133,13 +133,13 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             <div className="w-12 h-12 bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <iconify-icon icon="solar:letter-opened-bold" className="text-2xl"></iconify-icon>
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">{t('regSuccessTitle')}</h4>
-            <p className="text-sm text-zinc-400">{t('regSuccessDesc')}</p>
+            <h4 className="text-lg font-semibold text-white mb-2">Pendaftaran Terkirim!</h4>
+            <p className="text-sm text-zinc-400">Data Anda sedang dalam proses verifikasi oleh tim Tokcer AI. Detail akun dan instruksi login akan kami kirimkan ke email Anda segera.</p>
             <button 
               onClick={onClose}
               className="mt-6 w-full py-3 rounded-xl bg-zinc-800 text-white text-sm font-bold hover:bg-zinc-700 transition-all"
             >
-              {t('regCloseBtn')}
+              Tutup
             </button>
           </div>
         ) : (
@@ -186,7 +186,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
             {!selectedPlan && (
               <div>
-                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">{t('regSelectPlan')}</label>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">PILIH PAKET LAYANAN</label>
                 <select 
                   name="plan"
                   required
@@ -205,18 +205,18 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             {(formPlan !== 'starter') && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">{t('regBillingCycle')}</label>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">SIKLUS PEMBAYARAN</label>
                   <select 
                     name="billing_cycle"
                     required
                     className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
                   >
-                    <option value="Monthly">{t('regMonthly')}</option>
-                    <option value="Yearly">{t('regYearly')}</option>
+                    <option value="Monthly">Bulanan (Monthly)</option>
+                    <option value="Yearly">Tahunan (Yearly)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">{t('regUploadProof')}</label>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">UPLOAD BUKTI BAYAR</label>
                   <input 
                     type="file"
                     accept="image/*"
@@ -282,7 +282,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                     <div key={platId} className="animate-in slide-in-from-top-2 duration-300">
                       <label className="block text-[10px] font-bold text-zinc-400 mb-1.5 flex items-center gap-2">
                         <iconify-icon icon={plat.icon} className="text-orange-500"></iconify-icon>
-                        {t('regStoreLink')} {plat.label}
+                        Link Toko {plat.label}
                       </label>
                       <input 
                         type="url" 
@@ -304,11 +304,11 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                 <div className="p-4 bg-orange-600/5 border border-orange-500/20 rounded-2xl">
                   <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <iconify-icon icon="solar:bank-note-bold"></iconify-icon>
-                    {t('regPaymentInfo')}
+                    Informasi Pembayaran
                   </h4>
                   <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
-                    {t('regTransferTo')} <span className="text-white font-bold uppercase">{selectedPlan}</span> {t('navContact').toLowerCase()}:
-                    <br/><span className="text-white font-black tracking-wider">{t('regBcaInfo')}</span>
+                    Silakan transfer biaya paket <span className="text-white font-bold uppercase">{selectedPlan}</span> ke rekening:
+                    <br/><span className="text-white font-black tracking-wider">BCA 1234567890 a/n Tokcer AI</span>
                   </p>
                   <div className="relative group/proof">
                     <input 
@@ -321,7 +321,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                     <div className="border-2 border-dashed border-zinc-800 group-hover/proof:border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center transition-all bg-black/40">
                       <iconify-icon icon="solar:camera-add-bold" className="text-xl text-zinc-600 group-hover/proof:text-orange-500 mb-1"></iconify-icon>
                       <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                        {paymentProof ? paymentProof.name : t('regUploadProof')}
+                        {paymentProof ? paymentProof.name : "Upload Bukti Bayar"}
                       </span>
                     </div>
                   </div>
@@ -335,7 +335,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
               className="w-full bg-orange-600 text-white py-4 rounded-2xl text-sm font-black uppercase tracking-[0.2em] hover:bg-orange-500 transition-all shadow-xl shadow-orange-950/20 flex justify-center items-center gap-2 disabled:opacity-70"
             >
               {loading && <iconify-icon icon="solar:spinner-linear" className="animate-spin text-lg"></iconify-icon>}
-              {loading ? t('regLoading') : t('navWaitlist').toUpperCase()}
+              {loading ? "MENGIRIM LINK..." : "REGISTER NOW"}
             </button>
           </form>
         )}

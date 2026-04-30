@@ -1,8 +1,7 @@
+import React, { useState } from 'react';
 import { supabase } from '../../supabase';
-import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
 const PartnerModal = ({ isOpen, onClose }) => {
-  const { t } = useLandingTranslation();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
 
@@ -34,9 +33,9 @@ const PartnerModal = ({ isOpen, onClose }) => {
     if (error) {
       console.error(error);
       if (error.code === '23505') {
-        setStatus(t('partErrDuplicate'));
+        setStatus('Email sudah terdaftar sebagai partner!');
       } else {
-        setStatus(t('wlErrGeneral'));
+        setStatus('Terjadi kesalahan, silakan coba lagi.');
       }
     } else {
       setStatus('success');
@@ -60,12 +59,12 @@ const PartnerModal = ({ isOpen, onClose }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
             </span>
             <span className="text-[10px] font-medium text-amber-500 uppercase tracking-widest">
-              {t('partBadge')}
+              Mitra Resmi
             </span>
           </div>
-          <h3 className="text-2xl font-semibold text-white tracking-tight">{t('navPartner')}</h3>
+          <h3 className="text-2xl font-semibold text-white tracking-tight">Become a Partner</h3>
           <p className="text-sm text-zinc-400 mt-2 leading-relaxed">
-            {t('partDesc')}
+            Perluas network Anda sebagai Exclusive Partner kami dan amankan akses ke revenue stream khusus dari setiap pertumbuhan kami.
           </p>
         </div>
         
@@ -74,8 +73,8 @@ const PartnerModal = ({ isOpen, onClose }) => {
             <div className="w-12 h-12 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <iconify-icon icon="solar:check-circle-bold" className="text-2xl"></iconify-icon>
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">{t('partSuccessTitle')}</h4>
-            <p className="text-sm text-zinc-400">{t('partSuccessDesc')}</p>
+            <h4 className="text-lg font-semibold text-white mb-2">Data Terkirim!</h4>
+            <p className="text-sm text-zinc-400">Terima kasih telah mendaftar. Silakan <strong>cek email Anda</strong> untuk menyetujui Skema Komisi & mengaktifkan akun Partner Anda.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,39 +86,39 @@ const PartnerModal = ({ isOpen, onClose }) => {
             
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                {t('wlFullName')} <span className="text-rose-500">*</span>
+                Nama Lengkap <span className="text-rose-500">*</span>
               </label>
-              <input type="text" name="nama" required placeholder="Cth: Andi P." className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all" />
+              <input type="text" name="nama" required placeholder="Cth: Budi S." className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all" />
             </div>
             
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                {t('wlEmail')} <span className="text-rose-500">*</span>
+                Email Aktif <span className="text-rose-500">*</span>
               </label>
-              <input type="email" name="email" required placeholder="email@example.com" className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all" />
+              <input type="email" name="email" required placeholder="budi@gmail.com" className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all" />
             </div>
             
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                {t('wlPhone')} <span className="text-rose-500">*</span>
+                No. WhatsApp Aktif <span className="text-rose-500">*</span>
               </label>
               <input type="tel" name="phone" required placeholder="0812xxxxxx" className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all" />
             </div>
             
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                {t('partMediaLink')} <span className="text-rose-500">*</span>
+                Link Media Utama (IG/TikTok/YT/Web) <span className="text-rose-500">*</span>
               </label>
-              <input type="url" name="media_link" required placeholder="https://..." className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all" />
+              <input type="url" name="media_link" required placeholder="https://instagram.com/..." className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all" />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                  {t('partNiche')} <span className="text-rose-500">*</span>
+                  Niche Konten <span className="text-rose-500">*</span>
                 </label>
                 <select name="niche" required defaultValue="" className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all appearance-none cursor-pointer">
-                  <option value="" disabled>{t('partNichePlaceholder')}</option>
+                  <option value="" disabled>Pilih Niche</option>
                   <option value="Bisnis/Edukasi">Bisnis / Edukasi</option>
                   <option value="Teknologi/Gadget">Teknologi / Gadget</option>
                   <option value="Lifestyle/Fashion">Lifestyle / Fashion</option>
@@ -129,10 +128,10 @@ const PartnerModal = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                  {t('partFollowers')} <span className="text-rose-500">*</span>
+                  Estimasi Followers <span className="text-rose-500">*</span>
                 </label>
                 <select name="followers" required defaultValue="" className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all appearance-none cursor-pointer">
-                  <option value="" disabled>{t('partFollowersPlaceholder')}</option>
+                  <option value="" disabled>Pilih Jumlah</option>
                   <option value="< 10k">&lt; 10k</option>
                   <option value="10k - 50k">10k - 50k</option>
                   <option value="50k - 100k">50k - 100k</option>
@@ -143,7 +142,7 @@ const PartnerModal = ({ isOpen, onClose }) => {
 
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-2">
-                {t('partPromoMethod')} <span className="text-rose-500">*</span>
+                Cara Promosi <span className="text-rose-500">*</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex items-center gap-2 p-2 border border-zinc-700 rounded-lg cursor-pointer hover:bg-zinc-800 bg-zinc-800/50 transition-colors">
@@ -167,14 +166,14 @@ const PartnerModal = ({ isOpen, onClose }) => {
 
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                {t('partPromoStrategy')} <span className="text-rose-500">*</span>
+                Strategi Promosi (Min. 50 karakter) <span className="text-rose-500">*</span>
               </label>
-              <textarea name="promo_strategy" required minLength="50" rows="3" placeholder={t('partPromoPlaceholder')} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all resize-none custom-scrollbar"></textarea>
+              <textarea name="promo_strategy" required minLength="50" rows="3" placeholder="Ceritakan bagaimana cara kamu mempromosikan Tokcer AI..." className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all resize-none custom-scrollbar"></textarea>
             </div>
 
             <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-amber-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-amber-500 transition-all shadow-md mt-4 border border-amber-500 disabled:opacity-70 disabled:cursor-not-allowed">
               {loading && <iconify-icon icon="solar:spinner-linear" className="animate-spin text-lg"></iconify-icon>}
-              {loading ? t('wlSubmitLoading') : 'Join the Ecosystem'}
+              {loading ? 'Mengirim Data...' : 'Join the Ecosystem'}
             </button>
           </form>
         )}

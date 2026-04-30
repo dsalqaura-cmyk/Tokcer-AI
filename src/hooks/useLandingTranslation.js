@@ -246,21 +246,11 @@ const translations = {
 };
 
 export const useLandingTranslation = () => {
-  const getSavedLang = () => {
-    try {
-      return localStorage.getItem('tokcer_lang') || 'id';
-    } catch (e) {
-      return 'id';
-    }
-  };
-
-  const [lang, setLang] = useState(getSavedLang());
+  const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
 
   useEffect(() => {
     const handleStorageChange = () => {
-      try {
-        setLang(localStorage.getItem('tokcer_lang') || 'id');
-      } catch (e) {}
+      setLang(localStorage.getItem('tokcer_lang') || 'id');
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('lang-change', handleStorageChange);
@@ -271,14 +261,12 @@ export const useLandingTranslation = () => {
   }, []);
 
   const toggleLang = (newLang) => {
-    try {
-      localStorage.setItem('tokcer_lang', newLang);
-    } catch (e) {}
+    localStorage.setItem('tokcer_lang', newLang);
     setLang(newLang);
     window.dispatchEvent(new Event('lang-change'));
   };
 
-  const t = (key) => translations[lang]?.[key] || key;
+  const t = (key) => translations[lang][key] || key;
 
   return { lang, toggleLang, t };
 };
