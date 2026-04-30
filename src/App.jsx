@@ -65,27 +65,38 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const hostname = window.location.hostname;
-  
-  // Advanced detection to break through cloaking/iframes
-  const getVisibleUrl = () => {
-    try {
-      return window.top.location.href;
-    } catch (e) {
-      return window.location.href;
-    }
-  };
-  
-  const visibleUrl = getVisibleUrl();
-  const isStagingLanding = visibleUrl.includes('staging.tokcer-ai.com');
-  const isProdLanding = hostname === 'tokcer-ai.com' && !hostname.includes('dashboard');
-  
-  const isInternal = !isStagingLanding && (hostname.includes('dashboard') || visibleUrl.includes('dashboard'));
-
+  // EMERGENCY: Force Landing Page to debug rendering issue
   return (
     <Router>
       <Routes>
-        <Route path="/" element={isInternal ? <AdminLogin /> : <Landing />} />
+        <Route path="/" element={<Landing />} />
+        
+        <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
+        <Route path="/partner-agreement" element={<PartnerAgreement />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/partner-dashboard" 
+          element={
+            <ProtectedRoute>
+              <PartnerDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
+}
         
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
