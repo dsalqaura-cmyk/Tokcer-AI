@@ -211,8 +211,28 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                     required
                     className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
                   >
-                    <option value="Monthly">Bulanan (Monthly)</option>
-                    <option value="Yearly">Tahunan (Yearly)</option>
+                    {(() => {
+                      const prices = {
+                        pro: 999000,
+                        elite: 1499000,
+                        ultimate: 2000000
+                      };
+                      const price = prices[formPlan];
+                      if (!price) {
+                        return (
+                          <>
+                            <option value="Monthly">Bulanan (Monthly)</option>
+                            <option value="Yearly">Tahunan (Yearly)</option>
+                          </>
+                        );
+                      }
+                      return (
+                        <>
+                          <option value="Monthly">Bulanan (Rp {price.toLocaleString('id-ID')})</option>
+                          <option value="Yearly">Tahunan (Rp {(price * 11).toLocaleString('id-ID')})</option>
+                        </>
+                      );
+                    })()}
                   </select>
                 </div>
                 <div>
