@@ -62,26 +62,22 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const hostname = window.location.hostname;
   
-  // Advanced detection to break through cloaking/iframes
-  const getVisibleUrl = () => {
+  // Resilient detection for cloaked/direct access
+  const getIsInternal = () => {
     try {
-      return window.top.location.href;
+      // If we are on a dashboard domain AND NOT in an iframe, it is Internal
+      return hostname.includes('dashboard') && (window.self === window.top);
     } catch (e) {
-      return window.location.href;
+      // If window access is blocked (cross-origin iframe), it is definitely NOT internal dashboard
+      return false;
     }
   };
   
-  const visibleUrl = getVisibleUrl();
-  const isStagingLanding = visibleUrl.includes('staging.tokcer-ai.com');
-  const isProdLanding = hostname === 'tokcer-ai.com' && !hostname.includes('dashboard');
-  
-  // Decide which page to show at root
-  const isInternal = !isStagingLanding && !isProdLanding && (hostname.includes('dashboard') || visibleUrl.includes('dashboard'));
+  const isInternal = getIsInternal();
 
   return (
     <Router>
       <Routes>
-        {/* Correct mapping for root based on URL/hostname */}
         <Route path="/" element={isInternal ? <AdminLogin /> : <Landing />} />
         
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
