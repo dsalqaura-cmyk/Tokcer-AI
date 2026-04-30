@@ -67,8 +67,16 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const hostname = window.location.hostname;
   
-  // Detect if we are inside an iframe (cloaking)
-  const isCloaked = window.self !== window.top;
+  // Detect if we are inside an iframe (cloaking) with safety check
+  const getIsCloaked = () => {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true; // If we can't access top, we are likely cloaked/in an iframe
+    }
+  };
+  
+  const isCloaked = getIsCloaked();
   
   // If cloaked, we are likely on the staging.tokcer-ai.com landing page
   // If not cloaked, we check the hostname for 'dashboard'
