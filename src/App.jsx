@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase.js';
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
@@ -11,7 +11,7 @@ import PartnerAgreement from './pages/PartnerAgreement.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(false); // Set to false by default
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -45,12 +45,10 @@ const ProtectedRoute = ({ children }) => {
   const isAdminAuth = localStorage.getItem('tokcer_admin_auth') === 'true';
   const isPathAdmin = window.location.pathname.startsWith('/admin');
 
-  // ONLY redirect to admin-login if user is trying to access /admin and is not authenticated as admin
   if (isPathAdmin && !session && !isAdminAuth) {
     return <Navigate to="/admin-login" replace />;
   }
 
-  // Regular users/partners redirect to standard login
   if (!session && !isAdminAuth) {
     return <Navigate to="/login" replace />;
   }
@@ -64,9 +62,10 @@ function App() {
 
   return (
     <Router>
-      <div className="fixed bottom-0 right-0 bg-white/10 text-[8px] text-white/20 p-1 pointer-events-none z-[9999]">v1.0.7-staging</div>
       <Routes>
-        <Route path="/" element={isDashboardStaging ? <Login /> : <Landing />} />
+        {/* Exact mapping based on user instructions */}
+        <Route path="/" element={isDashboardStaging ? <AdminLogin /> : <Landing />} />
+        
         <Route path="/admin" element={<ProtectedRoute><InternalDashboard /></ProtectedRoute>} />
         <Route path="/partner-agreement" element={<PartnerAgreement />} />
         <Route path="/login" element={<Login />} />
@@ -87,7 +86,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route path="*" element={<div className="bg-black min-h-screen text-white p-10 font-mono">404 - Path Not Found: {window.location.pathname}</div>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
