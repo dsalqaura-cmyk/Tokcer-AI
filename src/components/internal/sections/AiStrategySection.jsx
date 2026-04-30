@@ -59,12 +59,58 @@ const AiStrategySection = ({
           </div>
           <input 
             type="password"
-            className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+            className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono mb-2"
             placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
             value={aiConfig.resend_api_key || ''}
             onChange={(e) => setAiConfig({...aiConfig, resend_api_key: e.target.value})}
           />
-          <p className="text-[9px] text-zinc-600 mt-2 px-2 uppercase font-bold tracking-wider">Used for automatic welcome emails upon approval</p>
+        </div>
+
+        {/* Marketplace API Integration */}
+        <div className="mt-8 pt-8 border-t border-zinc-800/50 grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Shopee Config */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 px-2">
+              <iconify-icon icon="simple-icons:shopee" className="text-xl text-orange-500"></iconify-icon>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Shopee API Config</label>
+            </div>
+            <input 
+              type="text"
+              className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+              placeholder="Partner ID (e.g. 1234567)"
+              value={aiConfig.shopee_partner_id || ''}
+              onChange={(e) => setAiConfig({...aiConfig, shopee_partner_id: e.target.value})}
+            />
+            <input 
+              type="password"
+              className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+              placeholder="Partner Key"
+              value={aiConfig.shopee_partner_key || ''}
+              onChange={(e) => setAiConfig({...aiConfig, shopee_partner_key: e.target.value})}
+            />
+          </div>
+
+          {/* TikTok Config */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 px-2">
+              <iconify-icon icon="ri:tiktok-fill" className="text-xl text-white"></iconify-icon>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">TikTok Shop API Config</label>
+            </div>
+            <input 
+              type="text"
+              className="w-full bg-black/40 border border-zinc-800 focus:border-white/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+              placeholder="App ID / Service ID"
+              value={aiConfig.tiktok_app_id || ''}
+              onChange={(e) => setAiConfig({...aiConfig, tiktok_app_id: e.target.value})}
+            />
+            <input 
+              type="password"
+              className="w-full bg-black/40 border border-zinc-800 focus:border-white/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+              placeholder="App Secret"
+              value={aiConfig.tiktok_app_secret || ''}
+              onChange={(e) => setAiConfig({...aiConfig, tiktok_app_secret: e.target.value})}
+            />
+          </div>
         </div>
 
         <div className="mt-8 flex justify-end">
