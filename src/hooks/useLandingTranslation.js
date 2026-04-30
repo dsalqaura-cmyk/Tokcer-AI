@@ -120,40 +120,7 @@ const translations = {
     wlSuccessDesc: "Terima kasih telah bergabung! Kami akan segera menghubungi Anda melalui email/WhatsApp.",
     wlErrDuplicate: "Email sudah terdaftar di waitlist!",
     wlErrEmail: "Format email tidak valid!",
-    wlErrGeneral: "Terjadi kesalahan, silakan coba lagi.",
-
-    // Register Modal Specific
-    regSubtitle: "Lengkapi data Anda untuk mendapatkan akses ke dashboard.",
-    regSuccessTitle: "Pendaftaran Terkirim!",
-    regSuccessDesc: "Data Anda sedang dalam proses verifikasi oleh tim Tokcer AI. Detail akun dan instruksi login akan kami kirimkan ke email Anda segera.",
-    regCloseBtn: "Tutup",
-    regSelectPlan: "PILIH PAKET LAYANAN",
-    regBillingCycle: "SIKLUS PEMBAYARAN",
-    regMonthly: "Bulanan (Monthly)",
-    regYearly: "Tahunan (Tahunan)",
-    regUploadProof: "UPLOAD BUKTI BAYAR",
-    regPaymentInfo: "Informasi Pembayaran",
-    regTransferTo: "Silakan transfer biaya paket ke rekening:",
-    regBcaInfo: "BCA 1234567890 a/n Tokcer AI",
-    regMinPlatform: "Pilih minimal satu platform jualan.",
-    regStoreLink: "Link Toko",
-    regOther: "Lainnya",
-    regLoading: "MENGIRIM LINK...",
-
-    // Partner Modal Specific
-    partBadge: "Mitra Resmi",
-    partDesc: "Perluas network Anda sebagai Exclusive Partner kami dan amankan akses ke revenue stream khusus dari setiap pertumbuhan kami.",
-    partSuccessTitle: "Data Terkirim!",
-    partSuccessDesc: "Terima kasih telah mendaftar. Silakan cek email Anda untuk menyetujui Skema Komisi & mengaktifkan akun Partner Anda.",
-    partMediaLink: "Link Media Utama (IG/TikTok/YT/Web)",
-    partNiche: "Niche Konten",
-    partNichePlaceholder: "Pilih Niche",
-    partFollowers: "Estimasi Followers",
-    partFollowersPlaceholder: "Pilih Jumlah",
-    partPromoMethod: "Cara Promosi",
-    partPromoStrategy: "Strategi Promosi (Min. 50 karakter)",
-    partPromoPlaceholder: "Ceritakan bagaimana cara kamu mempromosikan Tokcer AI...",
-    partErrDuplicate: "Email sudah terdaftar sebagai partner!"
+    wlErrGeneral: "Terjadi kesalahan, silakan coba lagi."
   },
   en: {
     // Navbar
@@ -274,61 +241,16 @@ const translations = {
     wlSuccessDesc: "Thank you for joining! We will contact you soon via email/WhatsApp.",
     wlErrDuplicate: "Email already registered in the waitlist!",
     wlErrEmail: "Invalid email format!",
-    wlErrGeneral: "An error occurred, please try again.",
-
-    // Register Modal Specific
-    regSubtitle: "Complete your data to get access to the dashboard.",
-    regSuccessTitle: "Registration Sent!",
-    regSuccessDesc: "Your data is being verified by the Tokcer AI team. Account details and login instructions will be sent to your email soon.",
-    regCloseBtn: "Close",
-    regSelectPlan: "SELECT SERVICE PLAN",
-    regBillingCycle: "BILLING CYCLE",
-    regMonthly: "Monthly",
-    regYearly: "Yearly",
-    regUploadProof: "UPLOAD PAYMENT PROOF",
-    regPaymentInfo: "Payment Information",
-    regTransferTo: "Please transfer the plan fee to:",
-    regBcaInfo: "BCA 1234567890 a/n Tokcer AI",
-    regMinPlatform: "Select at least one selling platform.",
-    regStoreLink: "Store Link",
-    regOther: "Other",
-    regLoading: "SENDING LINK...",
-
-    // Partner Modal Specific
-    partBadge: "Official Partner",
-    partDesc: "Expand your network as our Exclusive Partner and secure access to specific revenue streams from our growth.",
-    partSuccessTitle: "Data Sent!",
-    partSuccessDesc: "Thank you for registering. Please check your email to approve the Commission Scheme & activate your Partner account.",
-    partMediaLink: "Main Media Link (IG/TikTok/YT/Web)",
-    partNiche: "Content Niche",
-    partNichePlaceholder: "Select Niche",
-    partFollowers: "Estimated Followers",
-    partFollowersPlaceholder: "Select Amount",
-    partPromoMethod: "Promotion Method",
-    partPromoStrategy: "Promotion Strategy (Min. 50 characters)",
-    partPromoPlaceholder: "Tell us how you will promote Tokcer AI...",
-    partErrDuplicate: "Email already registered as a partner!"
+    wlErrGeneral: "An error occurred, please try again."
   }
 };
 
 export const useLandingTranslation = () => {
-  const getInitialLang = () => {
-    try {
-      return localStorage.getItem('tokcer_lang') || 'id';
-    } catch (e) {
-      return 'id'; // Fallback to 'id' if localStorage is blocked
-    }
-  };
-
-  const [lang, setLang] = useState(getInitialLang());
+  const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
 
   useEffect(() => {
     const handleStorageChange = () => {
-      try {
-        setLang(localStorage.getItem('tokcer_lang') || 'id');
-      } catch (e) {
-        // Ignore storage errors in iframes
-      }
+      setLang(localStorage.getItem('tokcer_lang') || 'id');
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('lang-change', handleStorageChange);
@@ -339,11 +261,7 @@ export const useLandingTranslation = () => {
   }, []);
 
   const toggleLang = (newLang) => {
-    try {
-      localStorage.setItem('tokcer_lang', newLang);
-    } catch (e) {
-      // Ignore if localStorage is blocked
-    }
+    localStorage.setItem('tokcer_lang', newLang);
     setLang(newLang);
     window.dispatchEvent(new Event('lang-change'));
   };

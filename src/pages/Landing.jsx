@@ -22,9 +22,14 @@ const Landing = () => {
     setIsRegisterOpen(true);
   };
 
-  // Fallback routing removed to prevent loops in BrowserRouter mode
-
-  console.log("Landing Page Rendering Started...");
+  React.useEffect(() => {
+    // Fallback routing untuk link non-hash (misal dari email lama)
+    const path = window.location.pathname;
+    if (path === '/partner-agreement') {
+      const search = window.location.search;
+      window.location.replace(`/#/partner-agreement${search}`);
+    }
+  }, []);
 
   return (
     <div className="bg-black min-h-screen text-white font-['Inter',sans-serif] selection:bg-orange-500/30 selection:text-orange-200">
@@ -38,18 +43,30 @@ const Landing = () => {
         onOpenWaitlist={() => openRegister()} 
       />
       
+      {/* === SECTION 1: Hero / Above the Fold === */}
       <main>
-        {/* We use basic error tracking here */}
-        <Suspense fallback={<div className="text-white p-10">Loading Section...</div>}>
-          <Hero />
-          <Problem />
-          <Solution />
-          <Ecosystem />
-          <Pricing onOpenWaitlist={(plan) => openRegister(plan)} />
-          <Testimonial />
-          <AboutUs />
-          <WaitlistCTA onOpenWaitlist={() => openRegister()} />
-        </Suspense>
+        <Hero />
+
+        {/* === SECTION 2: The Problem === */}
+        <Problem />
+
+        {/* === SECTION 3: The Solution === */}
+        <Solution />
+
+        {/* === SECTION 4: Our Ecosystem === */}
+        <Ecosystem />
+
+        {/* === SECTION 5: Pricing (Coming Soon) === */}
+        <Pricing onOpenWaitlist={(plan) => openRegister(plan)} />
+
+        {/* === SECTION 6: Social Proof / Testimonials === */}
+        <Testimonial />
+
+        {/* === SECTION 7: About Us === */}
+        <AboutUs />
+
+        {/* === SECTION 8: Final CTA === */}
+        <WaitlistCTA onOpenWaitlist={() => openRegister()} />
       </main>
 
       <Footer />
