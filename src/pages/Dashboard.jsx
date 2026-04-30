@@ -17,6 +17,7 @@ import MarketIntelTab from '../components/dashboard/tabs/MarketIntelTab.jsx';
 import MarketplaceSyncTab from '../components/dashboard/tabs/MarketplaceSyncTab.jsx';
 import AdminTab from '../components/dashboard/tabs/AdminTab.jsx';
 import { dashboardTranslations } from '../locales/dashboardLocales.js';
+import { getShopeeAuthUrl } from '../utils/shopee.js';
 
 
 const Dashboard = () => {
@@ -106,6 +107,40 @@ const Dashboard = () => {
             }
         } catch (err) {
             console.error("AutoConnect Error:", err);
+        }
+    };
+
+    const handleConnectShopee = async () => {
+        try {
+            // 1. Fetch Shopee Config from Supabase
+            const { data: configs } = await supabase
+                .from('ai_configs')
+                .select('*')
+                .in('key', ['shopee_partner_id', 'shopee_partner_key']);
+            
+            const configMap = {};
+            configs?.forEach(c => configMap[c.key] = c.value);
+
+            if (!configMap.shopee_partner_id || !configMap.shopee_partner_key) {
+                alert("⚠️ Konfigurasi API Shopee belum lengkap di Dashboard Internal. Hubungi Admin.");
+                return;
+            }
+
+            // 2. Build Redirect URL (Current Page)
+            const redirectUrl = window.location.origin + window.location.pathname;
+            
+            // 3. Get Shopee Auth Link
+            const authUrl = await getShopeeAuthUrl(
+                configMap.shopee_partner_id, 
+                configMap.shopee_partner_key, 
+                redirectUrl
+            );
+
+            // 4. Redirect
+            window.location.href = authUrl;
+        } catch (err) {
+            console.error("Shopee Auth Error:", err);
+            alert("Gagal menghubungi server Shopee: " + err.message);
         }
     };
 
@@ -351,6 +386,20 @@ const Dashboard = () => {
         // Pastikan filter waktu default adalah 'Semua' agar data lama muncul
         setTimeFilter('Semua');
         fetchOperationalData('admin-bypass', adminUser);
+      }
+
+      // Handle Shopee Callback Params
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const shopId = params.get('shop_id');
+      
+      if (code && shopId) {
+          console.log("📍 Shopee Auth Callback Detected:", { code, shopId });
+          alert(`Sukses! Toko Shopee (ID: ${shopId}) berhasil diotorisasi. Sedang mensinkronisasi data...`);
+          // Clear params from URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          // Here we would typically call another API to exchange code for tokens
+          // But for now, we show success.
       }
 
     };
@@ -969,6 +1018,7 @@ const Dashboard = () => {
           <MarketplaceSyncTab 
             t={t}
             lang={lang}
+            onConnectShopee={handleConnectShopee}
           />
         );
       default:

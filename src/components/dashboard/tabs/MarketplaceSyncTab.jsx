@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MarketplaceSyncTab = ({ t, lang }) => {
+const MarketplaceSyncTab = ({ t, lang, onConnectShopee }) => {
   const platforms = [
     { 
       id: 'tiktok', 
@@ -66,7 +66,13 @@ const MarketplaceSyncTab = ({ t, lang }) => {
             
             <button 
               disabled={p.status === 'Coming Soon'}
-              onClick={() => alert(`Redirecting to ${p.name} Authorization Center...`)}
+              onClick={() => {
+                if (p.id === 'shopee') {
+                  onConnectShopee();
+                } else {
+                  alert(`Redirecting to ${p.name} Authorization Center...`);
+                }
+              }}
               className={`w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                 p.status === 'Ready to Connect' 
                   ? 'bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-600/20' 
