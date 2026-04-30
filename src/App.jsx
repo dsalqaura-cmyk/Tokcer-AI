@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { supabase } from './lib/supabase';
+import { supabase } from './supabase';
 
 // Components
 import Navbar from './components/Navbar';
@@ -9,7 +9,7 @@ import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
 import Dashboard from './pages/Dashboard';
 import PartnerDashboard from './pages/PartnerDashboard';
-import InternalDashboard from './admin/InternalDashboard';
+import InternalDashboard from './pages/InternalDashboard';
 import PartnerAgreement from './pages/PartnerAgreement';
 
 const ProtectedRoute = ({ children }) => {
