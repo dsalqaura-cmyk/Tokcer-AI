@@ -26,7 +26,7 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
       icon: 'solar:shop-2-linear', 
       color: 'text-teal-400', 
       bg: 'bg-teal-500/10', 
-      status: 'Ready to Connect',
+      status: 'Coming Soon',
       desc: 'Integrate Tokopedia Power Merchant or Official Store data.'
     },
     { 
