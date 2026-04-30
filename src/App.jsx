@@ -59,10 +59,19 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  // Auto-redirect for dashboardstaging subdomain to admin-login
+  // Subdomain Auto-routing
   useEffect(() => {
-    if (window.location.hostname === 'dashboardstaging.tokcer-ai.com' && window.location.pathname === '/') {
-      window.location.href = '/admin-login';
+    const host = window.location.hostname;
+    const path = window.location.pathname;
+    
+    if (path === '/') {
+      if (host === 'dashboardstaging.tokcer-ai.com' || host === 'admin.tokcer-ai.com') {
+        window.location.href = '/admin-login';
+      } else if (host === 'dashboard.tokcer-ai.com') {
+        window.location.href = '/login';
+      } else if (host === 'partner.tokcer-ai.com') {
+        window.location.href = '/login';
+      }
     }
   }, []);
 
