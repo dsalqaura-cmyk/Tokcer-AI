@@ -42,7 +42,15 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  const isAdminAuth = localStorage.getItem('tokcer_admin_auth') === 'true';
+  const getAdminAuth = () => {
+    try {
+      return localStorage.getItem('tokcer_admin_auth') === 'true';
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const isAdminAuth = getAdminAuth();
   const isPathAdmin = window.location.pathname.startsWith('/admin');
 
   if (isPathAdmin && !session && !isAdminAuth) {

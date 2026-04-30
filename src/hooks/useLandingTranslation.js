@@ -312,11 +312,23 @@ const translations = {
 };
 
 export const useLandingTranslation = () => {
-  const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
+  const getInitialLang = () => {
+    try {
+      return localStorage.getItem('tokcer_lang') || 'id';
+    } catch (e) {
+      return 'id'; // Fallback to 'id' if localStorage is blocked
+    }
+  };
+
+  const [lang, setLang] = useState(getInitialLang());
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setLang(localStorage.getItem('tokcer_lang') || 'id');
+      try {
+        setLang(localStorage.getItem('tokcer_lang') || 'id');
+      } catch (e) {
+        // Ignore storage errors in iframes
+      }
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('lang-change', handleStorageChange);
@@ -327,7 +339,11 @@ export const useLandingTranslation = () => {
   }, []);
 
   const toggleLang = (newLang) => {
-    localStorage.setItem('tokcer_lang', newLang);
+    try {
+      localStorage.setItem('tokcer_lang', newLang);
+    } catch (e) {
+      // Ignore if localStorage is blocked
+    }
     setLang(newLang);
     window.dispatchEvent(new Event('lang-change'));
   };
