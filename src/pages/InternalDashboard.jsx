@@ -13,6 +13,7 @@ import PartnerSection from '../components/internal/sections/PartnerSection.jsx';
 import TicketSection from '../components/internal/sections/TicketSection.jsx';
 import AiStrategySection from '../components/internal/sections/AiStrategySection.jsx';
 import SupabaseSection from '../components/internal/sections/SupabaseSection.jsx';
+import PayoutSection from '../components/internal/sections/PayoutSection.jsx';
 
 // Modals
 import UserQuickViewModal from '../components/internal/modals/UserQuickViewModal.jsx';
@@ -103,7 +104,7 @@ const InternalDashboard = () => {
     try {
       const { data: ords } = await supabase.from('orders').select('total_amount');
       const { count: uCount } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
-      const { count: pCount } = await supabase.from('partners').select('*', { count: 'exact', head: true }).eq('status', 'active');
+      const { count: pCount } = await supabase.from('partners').select('*', { count: 'exact', head: true });
       const { data: pays } = await supabase.from('payouts').select('amount, status');
       
       const revenue = (ords || []).reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0);
@@ -398,6 +399,8 @@ const InternalDashboard = () => {
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':
         return <PartnerSection t={t} adminPartners={adminPartners} getTierBadgeClass={getTierBadgeClass} />;
+      case 'payouts':
+        return <PayoutSection t={t} />;
       case 'tickets':
         return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} fetchTickets={fetchTickets} />;
       case 'ai-gen':

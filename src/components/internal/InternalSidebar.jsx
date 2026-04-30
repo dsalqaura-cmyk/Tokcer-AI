@@ -59,6 +59,7 @@ const InternalSidebar = ({
             },
             { id: 'users', label: t('users'), icon: 'solar:users-group-rounded-bold-duotone' },
             { id: 'partners', label: t('partners'), icon: 'solar:users-group-two-rounded-bold-duotone' },
+            { id: 'payouts', label: 'Pembayaran Partner', icon: 'solar:wallet-money-bold-duotone' },
             { id: 'tickets', label: t('tickets'), icon: 'solar:bug-bold-duotone', badge: tickets.length || null },
             { id: 'ai-gen', label: t('aiStrategy'), icon: 'solar:magic-stick-bold-duotone' },
             { id: 'supabase', label: t('supabase'), icon: 'solar:database-bold-duotone' }
