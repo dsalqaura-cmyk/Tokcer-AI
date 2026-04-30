@@ -58,8 +58,13 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   const hostname = window.location.hostname;
-  // Detected if we are on an internal dashboard domain (staging or production)
-  const isInternalDashboard = hostname.includes('dashboard');
+  
+  // Detect if we are inside an iframe (cloaking)
+  const isCloaked = window.self !== window.top;
+  
+  // If cloaked, we are likely on the staging.tokcer-ai.com landing page
+  // If not cloaked, we check the hostname for 'dashboard'
+  const isInternalDashboard = !isCloaked && hostname.includes('dashboard');
 
   useEffect(() => {
     // Single log for confirmation
