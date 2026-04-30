@@ -67,9 +67,20 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const hostname = window.location.hostname;
   
-  // Strict mapping: if it's the main landing domains, force Landing page
-  const isLanding = hostname === 'staging.tokcer-ai.com' || hostname === 'tokcer-ai.com';
-  const isInternal = !isLanding && hostname.includes('dashboard');
+  // Advanced detection to break through cloaking/iframes
+  const getVisibleUrl = () => {
+    try {
+      return window.top.location.href;
+    } catch (e) {
+      return window.location.href;
+    }
+  };
+  
+  const visibleUrl = getVisibleUrl();
+  const isStagingLanding = visibleUrl.includes('staging.tokcer-ai.com');
+  const isProdLanding = hostname === 'tokcer-ai.com' && !hostname.includes('dashboard');
+  
+  const isInternal = !isStagingLanding && (hostname.includes('dashboard') || visibleUrl.includes('dashboard'));
 
   return (
     <Router>
