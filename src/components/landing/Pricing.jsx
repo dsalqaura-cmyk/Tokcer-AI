@@ -54,7 +54,7 @@ const Pricing = ({ onOpenWaitlist }) => {
 
         
         {/* Toggle Switch */}
-        <div className="hidden sm:flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+        <div className="hidden flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           <span className={`text-sm font-bold ${!isYearly ? 'text-white' : 'text-zinc-500'}`}>Bulanan</span>
           <button 
             onClick={() => setIsYearly(!isYearly)}
