@@ -203,36 +203,58 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             )}
 
             {formPlan !== 'starter' && (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">SIKLUS PEMBAYARAN</label>
-                <select 
-                  name="billing_cycle"
-                  required
-                  className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
-                >
-                  {(() => {
-                    const prices = {
-                      pro: 999000,
-                      elite: 1499000,
-                      ultimate: 2000000
-                    };
-                    const price = prices[formPlan];
-                    if (!price) {
-                      return (
-                        <>
-                          <option value="Monthly">Bulanan (Monthly)</option>
-                          <option value="Yearly">Tahunan (Yearly)</option>
-                        </>
-                      );
-                    }
-                    return (
-                      <>
-                        <option value="Monthly">Bulanan (Rp {price.toLocaleString('id-ID')})</option>
-                        <option value="Yearly">Tahunan (Rp {(price * 11).toLocaleString('id-ID')})</option>
-                      </>
-                    );
-                  })()}
-                </select>
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">SIKLUS PEMBAYARAN</label>
+                    <select 
+                      name="billing_cycle"
+                      required
+                      className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
+                    >
+                      {(() => {
+                        const prices = {
+                          pro: 999000,
+                          elite: 1499000,
+                          ultimate: 2000000
+                        };
+                        const price = prices[formPlan];
+                        if (!price) {
+                          return (
+                            <>
+                              <option value="Monthly">Bulanan (Monthly)</option>
+                              <option value="Yearly">Tahunan (Yearly)</option>
+                            </>
+                          );
+                        }
+                        return (
+                          <>
+                            <option value="Monthly">Bulanan (Rp {price.toLocaleString('id-ID')})</option>
+                            <option value="Yearly">Tahunan (Rp {(price * 11).toLocaleString('id-ID')})</option>
+                          </>
+                        );
+                      })()}
+                    </select>
+                  </div>
+                  <div className="flex flex-col justify-end">
+                    <p className="text-[10px] text-zinc-500 mb-1.5 uppercase tracking-widest font-bold">Upload Bukti Bayar</p>
+                    <div className="relative group/proof">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        required
+                        onChange={(e) => setPaymentProof(e.target.files[0])}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="border border-zinc-700 rounded-lg px-4 py-2 flex items-center gap-3 bg-zinc-800 hover:border-orange-500/50 transition-all">
+                        <iconify-icon icon="solar:camera-add-bold" className="text-lg text-orange-500"></iconify-icon>
+                        <span className="text-xs text-zinc-400 truncate">
+                          {paymentProof ? paymentProof.name : "Pilih File Gambar..."}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
