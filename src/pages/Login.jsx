@@ -68,15 +68,17 @@ const Login = () => {
     setError(null);
     
     // Handle Test Accounts & Admin Bypass
+    const cleanEmail = email.trim().toLowerCase();
     const testAccounts = ['starter@tokcer-ai.com', 'pro@tokcer-ai.com', 'elite@tokcer-ai.com', 'admin@tokcer-ai.com'];
-    if (testAccounts.includes(email) && password === 'Dind@2883') {
-      localStorage.setItem('tokcer_test_user', email);
-      if (email === 'admin@tokcer-ai.com') {
+    
+    if (testAccounts.includes(cleanEmail) && password === 'Dind@2883') {
+      localStorage.setItem('tokcer_test_user', cleanEmail);
+      if (cleanEmail === 'admin@tokcer-ai.com') {
         localStorage.setItem('tokcer_admin_auth', 'true');
       }
       
       setLoading(false);
-      if (role === 'admin' || email === 'admin@tokcer-ai.com') navigate('/admin');
+      if (cleanEmail === 'admin@tokcer-ai.com') navigate('/admin');
       else if (role === 'partner') navigate('/partner-dashboard');
       else navigate('/dashboard');
       return;
