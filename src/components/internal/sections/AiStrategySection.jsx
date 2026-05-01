@@ -14,8 +14,38 @@ const AiStrategySection = ({
       setAiConfig(prev => ({ ...prev, [key]: value }));
     }
   };
+  // Real calculation for display
+  const stats = {
+    totalClicks: aiLogs.length,
+    totalInput: aiLogs.reduce((acc, curr) => acc + (Number(curr.input_tokens) || 0), 0),
+    totalOutput: aiLogs.reduce((acc, curr) => acc + (Number(curr.output_tokens) || 0), 0),
+    totalCost: aiLogs.reduce((acc, curr) => acc + (Number(curr.cost_usd) || 0), 0),
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+      {/* AI Usage & Billing Monitor */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'Total AI Clicks', value: stats.totalClicks.toLocaleString(), icon: 'solar:mouse-circle-bold-duotone', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          { label: 'Total Tokens Used', value: (stats.totalInput + stats.totalOutput).toLocaleString(), icon: 'solar:CPU-bold-duotone', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { label: 'Estimated Cost', value: `$${stats.totalCost.toFixed(4)}`, icon: 'solar:wad-of-money-bold-duotone', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { label: 'Est. Remaining Balance', value: `$${(Number(aiConfig.ai_total_topup || 0) - stats.totalCost).toFixed(2)}`, icon: 'solar:wallet-bold-duotone', color: 'text-purple-500', bg: 'bg-purple-500/10', sub: `From $${Number(aiConfig.ai_total_topup || 0).toFixed(2)} Top-up` },
+        ].map((s, i) => (
+          <div key={i} className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800 relative overflow-hidden group">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl ${s.bg} flex items-center justify-center border border-white/5`}>
+                <iconify-icon icon={s.icon} className={`text-2xl ${s.color}`}></iconify-icon>
+              </div>
+              <div>
+                <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{s.label}</p>
+                <p className={`text-xl font-black text-white tracking-tight`}>{s.value}</p>
+                {s.sub && <p className="text-[8px] font-bold text-zinc-600 mt-1 uppercase tracking-widest">{s.sub}</p>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
       <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 p-8 md:p-12 shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-400"></div>
         <div className="flex justify-between items-center mb-10">
@@ -54,6 +84,37 @@ const AiStrategySection = ({
               value={aiConfig.rag_knowledge_base}
               onChange={(e) => setAiConfig({...aiConfig, rag_knowledge_base: e.target.value})}
             ></textarea>
+          </div>
+        </div>
+
+        {/* AI Billing Config */}
+        <div className="mt-8 pt-8 border-t border-zinc-800/50">
+          <div className="flex items-center gap-3 mb-4 px-2">
+            <iconify-icon icon="solar:wallet-bold-duotone" className="text-xl text-purple-500"></iconify-icon>
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">AI Credits Management</label>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[9px] font-bold text-zinc-500 ml-4 mb-2 block uppercase">DeepSeek API Key</label>
+              <input 
+                type="password"
+                className="w-full bg-black/40 border border-zinc-800 focus:border-blue-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+                placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
+                value={aiConfig.deepseek_api_key || ''}
+                onChange={(e) => setAiConfig({...aiConfig, deepseek_api_key: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="text-[9px] font-bold text-zinc-500 ml-4 mb-2 block uppercase">Total Top-up Amount (USD)</label>
+              <input 
+                type="number"
+                step="0.01"
+                className="w-full bg-black/40 border border-zinc-800 focus:border-purple-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
+                placeholder="e.g. 5.00"
+                value={aiConfig.ai_total_topup || ''}
+                onChange={(e) => setAiConfig({...aiConfig, ai_total_topup: e.target.value})}
+              />
+            </div>
           </div>
         </div>
 
@@ -186,7 +247,8 @@ const AiStrategySection = ({
               <tr>
                 <th className="px-4 pb-2">{t('user')}</th>
                 <th className="px-4 pb-2">{t('task')}</th>
-                <th className="px-4 pb-2 text-center">{t('credits')}</th>
+                <th className="px-4 pb-2 text-center">Tokens (In/Out)</th>
+                <th className="px-4 pb-2 text-center">Cost (USD)</th>
                 <th className="px-4 pb-2 text-right">{t('time')}</th>
               </tr>
             </thead>
@@ -200,7 +262,11 @@ const AiStrategySection = ({
                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{log.task_type} ({log.topic})</span>
                   </td>
                   <td className="p-4 border-y border-zinc-800 text-center">
-                     <span className="bg-blue-600/10 text-blue-400 text-[10px] font-black px-3 py-1 rounded-lg">-{log.credits_spent} CR</span>
+                     <div className="text-[10px] font-black text-blue-400">{log.input_tokens || 0} / {log.output_tokens || 0}</div>
+                     <div className="text-[8px] font-bold text-zinc-600 uppercase">Tokens</div>
+                  </td>
+                  <td className="p-4 border-y border-zinc-800 text-center">
+                     <span className="bg-emerald-600/10 text-emerald-400 text-[10px] font-black px-3 py-1 rounded-lg">${Number(log.cost_usd || 0).toFixed(5)}</span>
                   </td>
                   <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
                      <span className="text-[10px] font-bold text-zinc-600 uppercase italic">{new Date(log.created_at).toLocaleTimeString()}</span>

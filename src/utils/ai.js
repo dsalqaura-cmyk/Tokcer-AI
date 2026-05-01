@@ -28,5 +28,8 @@ export const callDeepSeek = async (systemPrompt, userMessage, customApiKey = nul
   }
 
   const data = await res.json();
-  return data.choices?.[0]?.message?.content || 'AI tidak memberikan respons.';
+  return {
+    text: data.choices?.[0]?.message?.content || 'AI tidak memberikan respons.',
+    usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+  };
 };

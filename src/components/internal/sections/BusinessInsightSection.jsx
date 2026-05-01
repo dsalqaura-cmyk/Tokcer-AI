@@ -70,8 +70,19 @@ const BusinessInsightSection = ({ t }) => {
       Please provide a summary in JSON format with keys: "wins", "issues", "actions". 
       Keep it professional and in Bahasa Indonesia.`;
       
-      const aiResult = await callDeepSeek("You are a Business Intelligence expert for a SaaS platform.", prompt);
+      const { text: aiResult, usage } = await callDeepSeek("You are a Business Intelligence expert for a SaaS platform.", prompt);
       const cleanJson = aiResult.replace(/```json|```/g, '').trim();
+
+      // Log AI Usage
+      await supabase.from('ai_usage_logs').insert([{
+          user_id: 'admin-bypass', // Dashboard internal use admin id
+          feature: 'weekly_report_analysis',
+          prompt: prompt,
+          response: aiResult,
+          input_tokens: usage.prompt_tokens,
+          output_tokens: usage.completion_tokens,
+          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+      }]);
       let aiNotes = { wins: '', issues: '', actions: '' };
       try {
         aiNotes = JSON.parse(cleanJson);

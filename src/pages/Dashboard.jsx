@@ -683,7 +683,19 @@ const Dashboard = () => {
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
       // 3. Call DeepSeek
-      const result = await callDeepSeek(fullSystemPrompt, userMessage);
+      const { text: result, usage } = await callDeepSeek(fullSystemPrompt, userMessage);
+      
+      // Update tokens/credits if applicable (optional based on your credit system)
+      // For now we just log it
+      await supabase.from('ai_usage_logs').insert([{
+          user_id: user.id,
+          feature: 'analytics_chat',
+          prompt: userMessage,
+          response: result,
+          input_tokens: usage.prompt_tokens,
+          output_tokens: usage.completion_tokens,
+          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+      }]);
       setAiResult(result);
 
       // 4. Update Tokens & Log Usage (Logic Update: 1 Credit per unique topic)
@@ -762,8 +774,18 @@ const Dashboard = () => {
       }`;
       
       const userQuery = `Analyze this niche/product: "${trendPrompt}" within my business category: ${bizType}`;
-      const result = await callDeepSeek(systemPrompt, userQuery);
+      const { text: result, usage } = await callDeepSeek(systemPrompt, userQuery);
       setTrendResult(result);
+
+      await supabase.from('ai_usage_logs').insert([{
+          user_id: user.id,
+          feature: 'market_intel_analysis',
+          prompt: userQuery,
+          response: result,
+          input_tokens: usage.prompt_tokens,
+          output_tokens: usage.completion_tokens,
+          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+      }]);
 
       // Log Usage
       if (!isAdmin) {
@@ -788,7 +810,19 @@ const Dashboard = () => {
       ALWAYS provide the topics and summary in BAHASA INDONESIA (Indoglish is okay).
       Format: JSON object with keys: "topics" (array of {topic, platform, trend_percent, color_class}), "summary" (string).`;
       
-      const result = await callDeepSeek(systemPrompt, "Fetch current viral trends for " + bizType);
+      const { text: result, usage } = await callDeepSeek(systemPrompt, "Fetch current viral trends for " + bizType);
+      
+      // We don't necessarily need to log every background trend fetch to save space, 
+      // but if you want to track cost:
+      await supabase.from('ai_usage_logs').insert([{
+          user_id: user.id,
+          feature: 'global_market_trends',
+          prompt: "Background Fetch: " + bizType,
+          response: "SUCCESS",
+          input_tokens: usage.prompt_tokens,
+          output_tokens: usage.completion_tokens,
+          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+      }]);
       const cleanJson = result.replace(/```json|```/g, '').trim();
       const data = JSON.parse(cleanJson);
       

@@ -204,7 +204,8 @@ const InternalDashboard = () => {
         { key: 'shopee_partner_id', value: aiConfig.shopee_partner_id || '' },
         { key: 'shopee_partner_key', value: aiConfig.shopee_partner_key || '' },
         { key: 'tiktok_app_id', value: aiConfig.tiktok_app_id || '' },
-        { key: 'tiktok_app_secret', value: aiConfig.tiktok_app_secret || '' }
+        { key: 'tiktok_app_secret', value: aiConfig.tiktok_app_secret || '' },
+        { key: 'ai_total_topup', value: aiConfig.ai_total_topup || '0' }
       ];
 
       for (const item of updates) {
