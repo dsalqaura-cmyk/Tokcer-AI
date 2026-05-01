@@ -86,6 +86,29 @@ const Dashboard = () => {
   const t = (key) => dashboardTranslations[lang][key] || key;
   const navigate = useNavigate();
 
+    const checkStoreLimit = async () => {
+        if (!user) return false;
+        const plan = (profile?.subscription_plan || 'starter').toLowerCase();
+        const limits = { 'starter': 1, 'pro': 3, 'elite': 10, 'ultimate': 9999 };
+        const limit = limits[plan] || 1;
+
+        const { count, error } = await supabase
+            .from('marketplace_connections')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error("Store count error:", error);
+            return false;
+        }
+
+        if (count >= limit) {
+            alert(`⚠️ Batas maksimal toko untuk paket ${plan.toUpperCase()} adalah ${limit} toko. Silakan upgrade paket Anda untuk menambah lebih banyak!`);
+            return false;
+        }
+        return true;
+    };
+
     const autoConnectStores = async (userId, platforms, links) => {
         try {
             const { data: existing } = await supabase
@@ -95,7 +118,14 @@ const Dashboard = () => {
             
             if (existing && existing.length > 0) return;
 
-            const connections = platforms.map(plat => ({
+            const plan = (profile?.subscription_plan || 'starter').toLowerCase();
+            const limits = { 'starter': 1, 'pro': 3, 'elite': 10, 'ultimate': 9999 };
+            const limit = limits[plan] || 1;
+
+            // Only take stores up to limit
+            const allowedPlatforms = platforms.slice(0, limit);
+
+            const connections = allowedPlatforms.map(plat => ({
                 user_id: userId,
                 platform: plat.toLowerCase(),
                 shop_name: plat + " Store",
@@ -112,6 +142,8 @@ const Dashboard = () => {
     };
 
     const handleConnectShopee = async () => {
+        const canAdd = await checkStoreLimit();
+        if (!canAdd) return;
         try {
             // 1. Fetch Shopee Config from Supabase
             const { data: configs } = await supabase
@@ -146,6 +178,8 @@ const Dashboard = () => {
     };
 
     const handleConnectTikTok = async () => {
+        const canAdd = await checkStoreLimit();
+        if (!canAdd) return;
         try {
             // 1. Fetch TikTok Config
             const { data: config } = await supabase
@@ -594,9 +628,31 @@ const Dashboard = () => {
     return data.choices?.[0]?.message?.content || 'AI tidak memberikan respons.';
   };
 
-  const handleGenerateAI = async () => {
+    const checkPlanPermission = (feature) => {
+        const plan = (profile?.subscription_plan || 'starter').toLowerCase();
+        const permissions = {
+            'video_gen': ['pro', 'elite', 'ultimate'],
+            'health_check': ['pro', 'elite', 'ultimate'],
+            'market_intel': ['elite', 'ultimate'],
+            'competitor_analysis': ['ultimate']
+        };
+        
+        if (permissions[feature] && !permissions[feature].includes(plan)) {
+            const minPlan = permissions[feature][0].toUpperCase();
+            alert(`⚠️ Fitur ini hanya tersedia untuk paket ${minPlan} ke atas. Silakan upgrade paket Anda!`);
+            return false;
+        }
+        return true;
+    };
+
+    const handleGenerateAI = async () => {
     if (!aiPrompt || !user) return;
     
+    // Check Plan Permissions for Video Formats
+    if (aiFormat.includes('Video') || aiFormat.includes('Reels')) {
+        if (!checkPlanPermission('video_gen')) return;
+    }
+
     // 1. Check Credits (Bypass for Admin)
     const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
     if (!isAdmin && (!profile || (profile.tokens || 0) < 1)) {
@@ -681,8 +737,12 @@ const Dashboard = () => {
     }
   };
 
-  const handleAnalyzeTrend = async () => {
-    if (!trendPrompt || !user) return;
+    const handleAnalyzeTrend = async () => {
+        if (!trendPrompt) return;
+        
+        if (!checkPlanPermission('market_intel')) return;
+
+        setIsTrendAnalyzing(true);
 
     // 1. Check Credits (Bypass for Admin)
     const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
@@ -955,6 +1015,10 @@ const Dashboard = () => {
           />
         );
       case 'tab-health':
+        if (!checkPlanPermission('health_check')) {
+            setActiveMenu('tab-dash');
+            return null;
+        }
         return (
           <HealthScoreTab 
             t={t}
@@ -987,6 +1051,10 @@ const Dashboard = () => {
           />
         );
       case 'tab-market':
+        if (!checkPlanPermission('market_intel')) {
+            setActiveMenu('tab-dash');
+            return null;
+        }
         return (
           <MarketIntelTab 
             t={t}
