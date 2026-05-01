@@ -408,6 +408,8 @@ const Dashboard = () => {
                 isUnlimited: true,
                 planName: 'Ultimate'
             });
+            setTimeFilter('Semua');
+            fetchOperationalData(session.user.id, session.user);
             return; // EXIT EARLY - DO NOT LET DB OVERWRITE ADMIN
         }
 
