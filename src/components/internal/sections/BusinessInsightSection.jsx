@@ -261,9 +261,17 @@ const BusinessInsightSection = ({ t }) => {
               </h3>
               <div className="space-y-3">
                 {reports.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl hover:border-zinc-700 transition-all cursor-pointer group" onClick={() => setActiveReport(r)}>
+                  <div 
+                    key={i} 
+                    className={`flex items-center justify-between p-3 border rounded-xl transition-all cursor-pointer group ${activeReport?.id === r.id ? 'bg-blue-600/10 border-blue-500' : 'bg-black border-zinc-800 hover:border-zinc-700'}`} 
+                    onClick={() => {
+                        console.log("Switching to report:", r.id);
+                        setActiveReport(r);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black transition-all ${activeReport?.id === r.id ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-500 group-hover:bg-blue-600 group-hover:text-white'}`}>
                         {r.report_week}
                       </div>
                       <div>
@@ -271,7 +279,7 @@ const BusinessInsightSection = ({ t }) => {
                         <p className="text-[8px] font-bold text-zinc-600 uppercase">Financial Report</p>
                       </div>
                     </div>
-                    <iconify-icon icon="solar:alt-arrow-right-linear" className="text-zinc-700 group-hover:text-white"></iconify-icon>
+                    <iconify-icon icon="solar:alt-arrow-right-linear" className={`transition-all ${activeReport?.id === r.id ? 'text-blue-500 rotate-90' : 'text-zinc-700 group-hover:text-white'}`}></iconify-icon>
                   </div>
                 ))}
               </div>
