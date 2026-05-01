@@ -33,8 +33,8 @@ const Pricing = ({ onOpenWaitlist }) => {
   ];
 
   const ultimateFeatures = [
-    <><strong>3.000</strong> Generasi Konten AI / Bulan</>,
-    <>Integrasi Toko <strong>Tanpa Batas (Unlimited)</strong></>,
+    <><strong>Unlimited</strong> Generasi Konten AI / Bulan</>,
+    <>Integrasi Toko <strong>Unlimited</strong></>,
     <>Dashboard Analitik Seller Lengkap</>,
     <>Generator Deskripsi Produk AI</>,
     <>Generator Naskah Video TikTok & Reels</>,
@@ -128,7 +128,7 @@ const Pricing = ({ onOpenWaitlist }) => {
         </div>
 
         {/* Card 3 - Elite */}
-        <div className="relative bg-orange-950/20 backdrop-blur-md border border-orange-500/30 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-orange-500/50 transition-all group shadow-2xl scale-105 z-10">
+        <div className="relative bg-orange-950/20 backdrop-blur-md border border-orange-500/30 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-orange-500/50 transition-all group shadow-2xl z-10">
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">Most Popular</div>
           <div className="w-12 h-12 rounded-2xl bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-600/30">
             <iconify-icon icon="solar:crown-bold" className="text-2xl text-white"></iconify-icon>

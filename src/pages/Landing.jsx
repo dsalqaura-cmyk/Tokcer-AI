@@ -72,7 +72,7 @@ const Landing = () => {
         <AboutUs />
 
         {/* === SECTION 8: Final CTA === */}
-        <WaitlistCTA onOpenWaitlist={() => openRegister()} />
+        {/* <WaitlistCTA onOpenWaitlist={() => openRegister()} /> */}
       </main>
 
       <Footer />
