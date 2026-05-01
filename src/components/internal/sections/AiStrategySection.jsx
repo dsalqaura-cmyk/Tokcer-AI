@@ -3,11 +3,17 @@ import React from 'react';
 const AiStrategySection = ({ 
   t, 
   aiConfig, 
-  setAiConfig, 
   handleSaveAiConfig, 
   isLoading, 
-  aiLogs 
+  aiLogs,
+  aiHistory = [],
+  setAiConfig
 }) => {
+  const handleRestore = (key, value) => {
+    if (window.confirm(`Restore this version of ${key}? Unsaved changes will be lost.`)) {
+      setAiConfig(prev => ({ ...prev, [key]: value }));
+    }
+  };
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
       <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 p-8 md:p-12 shadow-2xl relative overflow-hidden group">
@@ -124,8 +130,54 @@ const AiStrategySection = ({
         </div>
       </div>
 
+      {/* AI Config History */}
+      <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl mt-8">
+        <div className="p-8 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
+          <h3 className="font-black text-white uppercase tracking-tight">Config Version History</h3>
+          <iconify-icon icon="solar:history-bold-duotone" className="text-xl text-zinc-500"></iconify-icon>
+        </div>
+        <div className="p-8">
+          <div className="space-y-4">
+            {aiHistory.length > 0 ? aiHistory.map((h, i) => (
+              <div key={i} className="flex items-center justify-between p-4 bg-zinc-950/50 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${h.key === 'system_prompt' ? 'bg-blue-600/10 text-blue-500' : 'bg-amber-600/10 text-amber-500'}`}>
+                    <iconify-icon icon={h.key === 'system_prompt' ? 'solar:shield-keyhole-bold' : 'solar:library-bold'}></iconify-icon>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black text-white uppercase tracking-widest">{h.key.replace('_', ' ')}</div>
+                    <div className="text-[9px] text-zinc-500 font-medium">Changed on {new Date(h.created_at).toLocaleString()}</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => {
+                      const win = window.open('', '_blank');
+                      win.document.write(`<pre style="background:#111;color:#eee;padding:20px;font-family:mono;white-space:pre-wrap">${h.old_value}</pre>`);
+                    }}
+                    className="text-[9px] font-black text-zinc-500 hover:text-white uppercase tracking-widest px-3 py-1.5 rounded-lg border border-zinc-800 hover:bg-zinc-800"
+                  >
+                    View Diff
+                  </button>
+                  <button 
+                    onClick={() => handleRestore(h.key, h.old_value)}
+                    className="text-[9px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-widest px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10"
+                  >
+                    Restore
+                  </button>
+                </div>
+              </div>
+            )) : (
+              <div className="p-8 text-center text-zinc-500 text-[10px] font-black uppercase tracking-widest italic">No version history yet</div>
+            )}
+          </div>
+        </div>
+      </div>
+      </div>
+
       {/* AI Logs */}
-      <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl">
+      <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl mt-8">
         <div className="p-8 border-b border-zinc-800 bg-zinc-950/50">
           <h3 className="font-black text-white uppercase tracking-tight">{t('aiLogs')}</h3>
         </div>

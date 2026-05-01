@@ -43,6 +43,8 @@ const InternalDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [aiConfig, setAiConfig] = useState({ system_prompt: '', rag_knowledge_base: '' });
+  const [originalAiConfig, setOriginalAiConfig] = useState({});
+  const [aiHistory, setAiHistory] = useState([]);
   const [aiLogs, setAiLogs] = useState([]);
   const [partnerApps, setPartnerApps] = useState([]);
   const [selectedPartnerApp, setSelectedPartnerApp] = useState(null);
@@ -162,7 +164,17 @@ const InternalDashboard = () => {
         configMap[item.key] = item.value;
       });
       setAiConfig(configMap);
+      setOriginalAiConfig(configMap);
     }
+  };
+
+  const fetchAiHistory = async () => {
+    const { data, error } = await supabase
+      .from('ai_configs_history')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (!error) setAiHistory(data || []);
   };
 
   const fetchAiLogs = async () => {
@@ -188,9 +200,24 @@ const InternalDashboard = () => {
       ];
 
       for (const item of updates) {
+        const oldValue = originalAiConfig[item.key];
+        
+        // Only save to history if it's system_prompt or RAG and it has changed
+        if ((item.key === 'system_prompt' || item.key === 'rag_knowledge_base') && oldValue !== item.value) {
+          await supabase.from('ai_configs_history').insert([{
+            key: item.key,
+            old_value: oldValue || '',
+            new_value: item.value,
+            changed_by: user?.id === 'admin-bypass' ? null : user?.id
+          }]);
+        }
+
         const { error } = await supabase.from('ai_configs').upsert(item, { onConflict: 'key' });
         if (error) throw error;
       }
+      
+      setOriginalAiConfig(aiConfig);
+      await fetchAiHistory();
       alert(t('configUpdated'));
     } catch (err) {
       alert("Error saving config: " + err.message);
@@ -439,6 +466,7 @@ const InternalDashboard = () => {
         await fetchPartners();
         await fetchAllUsers();
         await fetchAiConfig();
+        await fetchAiHistory();
         await fetchAiLogs();
         await fetchPartnerApps();
         await fetchTickets();
@@ -490,7 +518,7 @@ const InternalDashboard = () => {
       case 'tickets':
         return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} fetchTickets={fetchTickets} />;
       case 'ai-gen':
-        return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} isLoading={isLoading} aiLogs={aiLogs} />;
+        return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} isLoading={isLoading} aiLogs={aiLogs} aiHistory={aiHistory} />;
       case 'supabase':
         return <SupabaseSection t={t} />;
       default:
