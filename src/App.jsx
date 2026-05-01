@@ -11,12 +11,27 @@ import PartnerAgreement from './pages/PartnerAgreement.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(false); // Set to false by default
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
+      const timeout = setTimeout(() => {
+        if (mounted) setLoading(false);
+      }, 3000);
+
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (mounted) {
+          setSession(currentSession);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Session check error:", err);
+        if (mounted) setLoading(false);
+      } finally {
+        clearTimeout(timeout);
+      }
     };
     checkSession();
 
@@ -51,7 +66,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Regular users/partners redirect to standard login
-  if (!session && !isAdminAuth) {
+  if (!loading && !session && !isAdminAuth) {
     return <Navigate to="/login" replace />;
   }
 
