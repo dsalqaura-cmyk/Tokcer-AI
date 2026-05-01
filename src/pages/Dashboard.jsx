@@ -770,18 +770,18 @@ const Dashboard = () => {
       Your expertise is specifically targeted for a business in the "${bizType}" category.
 
       CORE RULES:
-      1. ONLY provide analysis if the user's request is RELEVANT to the "${bizType}" niche.
-      2. If the user asks about categories outside "${bizType}" (e.g., they sell Fashion but ask about Gadgets), you MUST politely refuse and explain that their current Tokcer AI plan is optimized for their specific business category.
-      3. Provide insights on: viral potential, competitor pricing, and supply-chain risks.
-      4. Compare TikTok Shop (viral/content-driven) vs Shopee (search/price-driven).
+      1. ALWAYS respond in BAHASA INDONESIA or a mix of Indoglish that is trendy and professional.
+      2. ONLY provide analysis if the user's request is RELEVANT to the "${bizType}" niche.
+      3. If the user asks about categories outside "${bizType}", you MUST politely refuse in Bahasa Indonesia, explaining that their account is specialized for their current business category.
+      4. Provide insights on: viral potential, competitor pricing, and supply-chain risks.
       
       Format your response as a JSON object: 
       {
-        "trend": (detailed market trend for ${bizType}), 
-        "demo": (target audience profile), 
-        "top5": (5 high-potential products within ${bizType}), 
-        "risk": (business risks),
-        "strategy": (actionable strategy)
+        "trend": (detil tren pasar dalam Bahasa Indonesia), 
+        "demo": (profil target audiens), 
+        "top5": (5 produk potensial dalam ${bizType}), 
+        "risk": (risiko bisnis),
+        "strategy": (strategi eksekusi yang actionable)
       }`;
       
       const userQuery = `Analyze this niche/product: "${trendPrompt}" within my business category: ${bizType}`;
@@ -807,7 +807,8 @@ const Dashboard = () => {
     setIsFetchingTrends(true);
     try {
       const bizType = profile?.business_type || 'General E-commerce';
-      const systemPrompt = `You are a Market Trend Scout. Provide 3 viral topics and a short live summary for the "${bizType}" category in Indonesia. 
+      const systemPrompt = `You are a Market Trend Scout for the Indonesian market. Provide 3 viral topics and a short live summary for the "${bizType}" category in Indonesia. 
+      ALWAYS provide the topics and summary in BAHASA INDONESIA (Indoglish is okay).
       Format: JSON object with keys: "topics" (array of {topic, platform, trend_percent, color_class}), "summary" (string).`;
       
       const result = await callDeepSeek(systemPrompt, "Fetch current viral trends for " + bizType);
