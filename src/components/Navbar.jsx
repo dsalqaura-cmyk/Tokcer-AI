@@ -39,12 +39,12 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
             <img src={logo} alt="Tokcer AI" className="h-8 w-auto" />
           </div>
           
-          <div className="hidden lg:flex gap-8 items-center text-sm font-medium uppercase tracking-widest text-zinc-400">
+          <div className="hidden lg:flex ml-12 gap-8 items-center text-sm font-medium uppercase tracking-widest text-zinc-400">
             <a href="#problem" className="hover:text-white transition-colors">{t('navProblem')}</a>
             <a href="#ecosystem" className="hover:text-white transition-colors">{t('navEcosystem')}</a>
             <a href="#dashboard" className="text-orange-500 font-bold">{t('navExplore')}</a>
             <a href="#about-us-hero" className="hover:text-white transition-colors">{t('navAbout')}</a>
-            <button onClick={() => setPricingModalOpen(true)} className="hover:text-white transition-colors text-zinc-400">{t('navPricing')}</button>
+            <a href="#pricing" className="hover:text-white transition-colors text-zinc-400">{t('navPricing')}</a>
           </div>
           
           <div className="hidden lg:flex items-center gap-4">
@@ -122,13 +122,14 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
                   {item.label}
                 </a>
               ))}
-              <button 
-                onClick={() => { setPricingModalOpen(true); toggleMobileMenu(); }} 
+              <a 
+                href="#pricing"
+                onClick={toggleMobileMenu} 
                 className="flex items-center gap-3 py-3 px-4 rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 hover:text-white hover:bg-zinc-900 text-left w-full"
               >
                 <iconify-icon icon="solar:tag-price-linear" className="text-xl"></iconify-icon>
                 {t('navPricing')}
-              </button>
+              </a>
             </div>
             
             <div className="h-px bg-zinc-900 w-full shrink-0"></div>
