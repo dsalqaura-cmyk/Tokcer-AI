@@ -13,6 +13,59 @@ const Sidebar = ({
   user,
   handleLogout 
 }) => {
+  const plan = (profile?.subscription_plan || 'starter').toLowerCase();
+
+  const isLocked = (tab) => {
+    // Admin bypass
+    if (plan === 'ultimate' || user?.email === 'admin@tokcer-ai.com' || localStorage.getItem('tokcer_admin_auth') === 'true') return false;
+    
+    const permissions = {
+      'tab-ai': ['pro', 'elite', 'ultimate'],
+      'tab-health': ['pro', 'elite', 'ultimate'],
+      'tab-market': ['elite', 'ultimate'],
+    };
+
+    if (permissions[tab] && !permissions[tab].includes(plan)) return true;
+    return false;
+  };
+
+  const renderMenuItem = (tab, icon, label, isAi = false) => {
+    const locked = isLocked(tab);
+    const active = activeMenu === tab;
+
+    return (
+      <button 
+        onClick={() => { 
+          if (!locked) {
+            setActiveMenu(tab); 
+            setIsSidebarOpen(false); 
+          }
+        }} 
+        disabled={locked}
+        className={`w-full flex items-center justify-between px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 group relative ${
+          active 
+            ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' 
+            : locked
+              ? 'font-normal text-zinc-600 cursor-not-allowed border border-transparent opacity-60'
+              : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'
+        }`}
+      >
+        <div className="flex items-center gap-3 relative z-10">
+          <iconify-icon icon={icon} className={`text-lg ${isAi && !active && !locked ? 'text-orange-500' : ''}`}></iconify-icon>
+          <span>{label}</span>
+        </div>
+        
+        {locked && (
+          <iconify-icon icon="solar:lock-password-bold" className="text-zinc-600 text-sm relative z-10"></iconify-icon>
+        )}
+        
+        {isAi && !active && !locked && (
+          <div className="absolute inset-0 bg-orange-950/50 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity"></div>
+        )}
+      </button>
+    );
+  };
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -39,68 +92,16 @@ const Sidebar = ({
             {t('overview')}
           </div>
           <nav className="flex flex-col gap-1.5 md:gap-2">
-            <button 
-              onClick={() => { setActiveMenu('tab-dash'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-dash' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:widget-linear" className="text-lg"></iconify-icon> {t('dashboard')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-omzet'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-omzet' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:chart-square-linear" className="text-lg"></iconify-icon> {t('revenue')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-inventory'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-inventory' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:box-linear" className="text-lg"></iconify-icon> {t('inventory')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-analytics'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-analytics' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:graph-up-linear" className="text-lg"></iconify-icon> {t('analytics')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-ai'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 group/ai relative ${activeMenu === 'tab-ai' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              {activeMenu !== 'tab-ai' && <div className="absolute inset-0 bg-orange-950/50 opacity-0 group-hover/ai:opacity-100 rounded-xl transition-opacity"></div>}
-              <iconify-icon icon="solar:magic-stick-3-linear" className={`text-lg ${activeMenu !== 'tab-ai' ? 'text-orange-500' : ''} relative z-10`}></iconify-icon> 
-              <span className="relative z-10">{t('aiGenerator')}</span>
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-support'); setIsSidebarOpen(false); }} 
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-support' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:headphones-round-linear" className="text-lg"></iconify-icon> {t('supportCenter')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-health'); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-health' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:shield-check-linear" className="text-lg"></iconify-icon> {t('healthScore')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-market'); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-market' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:global-linear" className="text-lg"></iconify-icon> {t('marketIntel')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-account'); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-account' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:shield-keyhole-linear" className="text-lg"></iconify-icon> {t('accountSecurity')}
-            </button>
-            <button 
-              onClick={() => { setActiveMenu('tab-connections'); setIsSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 ${activeMenu === 'tab-connections' ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'}`}
-            >
-              <iconify-icon icon="solar:link-linear" className="text-lg"></iconify-icon> Marketplace Sync
-            </button>
+            {renderMenuItem('tab-dash', 'solar:widget-linear', t('dashboard'))}
+            {renderMenuItem('tab-omzet', 'solar:chart-square-linear', t('revenue'))}
+            {renderMenuItem('tab-inventory', 'solar:box-linear', t('inventory'))}
+            {renderMenuItem('tab-analytics', 'solar:graph-up-linear', t('analytics'))}
+            {renderMenuItem('tab-ai', 'solar:magic-stick-3-linear', t('aiGenerator'), true)}
+            {renderMenuItem('tab-support', 'solar:headphones-round-linear', t('supportCenter'))}
+            {renderMenuItem('tab-health', 'solar:shield-check-linear', t('healthScore'))}
+            {renderMenuItem('tab-market', 'solar:global-linear', t('marketIntel'))}
+            {renderMenuItem('tab-account', 'solar:shield-keyhole-linear', t('accountSecurity'))}
+            {renderMenuItem('tab-connections', 'solar:link-linear', 'Marketplace Sync')}
           </nav>
         </div>
 
