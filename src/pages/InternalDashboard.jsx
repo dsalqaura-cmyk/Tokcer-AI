@@ -298,23 +298,41 @@ const InternalDashboard = () => {
 
       // UPDATE SALDO PARTNER OTOMATIS
       if (client.plan && client.plan !== 'starter') {
-        const prices = { pro: 499000, elite: 1499000, ultimate: 2000000 };
-        let planPrice = prices[client.plan.toLowerCase()] || 0;
-        if (client.billing_cycle === 'Yearly') planPrice = planPrice * 11;
-        
-        // Komisi misal 20%
-        const commission = planPrice * 0.20;
-
-        // Cari partner berdasarkan partner_id atau ref
+        // Cari partner berdasarkan partner_id atau ref terlebih dahulu untuk mengetahui Tier-nya
         let targetPartnerId = client.partner_id;
+        let partnerTier = 'bronze'; // default
+
         if (!targetPartnerId && client.ref && client.ref !== 'Direct Web') {
-          const { data: refPartner } = await supabase.from('partners').select('id').eq('ref_code', client.ref).maybeSingle();
-          if (refPartner) targetPartnerId = refPartner.id;
+          const { data: refPartner } = await supabase.from('partners').select('id, tier').eq('ref_code', client.ref).maybeSingle();
+          if (refPartner) {
+            targetPartnerId = refPartner.id;
+            if (refPartner.tier) partnerTier = refPartner.tier.toLowerCase();
+          }
+        } else if (targetPartnerId) {
+          const { data: existPartner } = await supabase.from('partners').select('tier').eq('id', targetPartnerId).maybeSingle();
+          if (existPartner && existPartner.tier) partnerTier = existPartner.tier.toLowerCase();
         }
 
         if (targetPartnerId) {
-          // Kita gunakan RPC rpc_add_partner_commission jika ada, atau update langsung
-          // Jika update langsung (bisa ada race condition, tapi untuk MVP cukup)
+          // Tabel Komisi Berdasarkan Partner Agreement v3
+          const commissionTable = {
+            bronze: { pro: 100000, elite: 119600, ultimate: 200000 },
+            silver: { pro: 100000, elite: 149600, ultimate: 300000 },
+            gold: { pro: 100000, elite: 179500, ultimate: 400000 },
+            platinum: { pro: 100000, elite: 199400, ultimate: 500000 }
+          };
+          
+          // Jika tier belum ada/starter, fallback ke bronze
+          const selectedTier = commissionTable[partnerTier] ? partnerTier : 'bronze';
+          const planKey = client.plan.toLowerCase();
+          
+          let commission = commissionTable[selectedTier][planKey] || 0;
+          
+          // Jika yearly, komisi dikalikan 11 sesuai harga pembayaran
+          if (client.billing_cycle === 'Yearly') {
+            commission = commission * 11;
+          }
+
           const { data: partnerData } = await supabase.from('partners').select('total_omzet').eq('id', targetPartnerId).maybeSingle();
           if (partnerData) {
             const currentOmzet = partnerData.total_omzet || 0;
