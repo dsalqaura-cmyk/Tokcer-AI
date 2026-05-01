@@ -30,7 +30,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
           </div>
           
           <div className="hidden lg:flex items-center gap-4">
-            <div className="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800 mr-2">
+            <div className="hidden bg-zinc-900 rounded-lg p-1 border border-zinc-800 mr-2">
               <button 
                 onClick={() => toggleLang('id')}
                 className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${lang === 'id' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
@@ -70,7 +70,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
 
           <div className="flex-1 overflow-y-auto bg-zinc-950 p-6 flex flex-col gap-8 pb-20">
             {/* Language Switch */}
-            <div className="flex bg-zinc-900 rounded-2xl p-2 border border-zinc-800 mx-auto w-fit shrink-0">
+            <div className="hidden bg-zinc-900 rounded-2xl p-2 border border-zinc-800 mx-auto w-fit shrink-0">
               <button 
                 onClick={() => toggleLang('id')}
                 className={`px-10 py-3 text-xs font-black rounded-xl transition-all ${lang === 'id' ? 'bg-orange-600 text-white shadow-xl' : 'text-zinc-500 hover:text-white'}`}
