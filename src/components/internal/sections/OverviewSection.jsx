@@ -37,9 +37,9 @@ const OverviewSection = ({
     .filter(c => c.status === 'active')
     .reduce((acc, c) => {
       let basePrice = 0;
-      if (c.plan === 'ultimate') basePrice = 2000000;
-      else if (c.plan === 'elite') basePrice = 1499000;
-      else if (c.plan === 'pro') basePrice = 999000;
+      if (c.plan === 'ultimate') basePrice = 1999000;
+      else if (c.plan === 'elite') basePrice = 999000;
+      else if (c.plan === 'pro') basePrice = 499000;
       
       const isYearly = c.billing_cycle === 'Yearly';
       const finalPrice = isYearly ? (basePrice * 11) : basePrice;

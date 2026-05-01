@@ -16,16 +16,16 @@ const Pricing = ({ onOpenWaitlist }) => {
     "Integrasi 3 Toko Marketplace",
     "Dashboard Analitik Seller Dasar",
     "Generator Deskripsi Produk AI",
-    "Generator Naskah TikTok & Reels",
+    "Generator Naskah Video TikTok & Reels",
     "Fitur Health Check & Audit Toko"
   ];
 
   const eliteFeatures = [
     "1.000 Generasi Konten AI / Bulan",
-    "Integrasi 10 Toko Marketplace",
-    "Dashboard Analitik Seller Dasar",
+    "Maksimal Integrasi 10 Toko Marketplace",
+    "Dashboard Analitik Seller Lengkap",
     "Generator Deskripsi Produk AI",
-    "Generator Naskah TikTok & Reels",
+    "Generator Naskah Video TikTok & Reels",
     "Fitur Health Check & Audit Toko",
     "Riset Tren Produk Marketplace",
     "Dukungan Prioritas (Fast Response)"
@@ -33,15 +33,15 @@ const Pricing = ({ onOpenWaitlist }) => {
 
   const ultimateFeatures = [
     "3.000 Generasi Konten AI / Bulan",
-    "Integrasi Toko Tanpa Batas",
-    "Dashboard Analitik Seller Dasar",
+    "Integrasi Toko Tanpa Batas (Unlimited)",
+    "Dashboard Analitik Seller Lengkap",
     "Generator Deskripsi Produk AI",
-    "Generator Naskah TikTok & Reels",
+    "Generator Naskah Video TikTok & Reels",
     "Fitur Health Check & Audit Toko",
     "Riset Tren Produk Marketplace",
-    "Laporan Analisis Kompetitor",
-    "Sesi Coaching 1-on-1 Bulanan",
-    "Prioritas Akses Fitur Beta"
+    "Dukungan Prioritas (Fast Response)",
+    "Laporan Analisis Kompetitor Mendalam",
+    "Akses Prioritas Fitur Beta & Update"
   ];
 
   return (
@@ -91,10 +91,13 @@ const Pricing = ({ onOpenWaitlist }) => {
           </div>
           <div>
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Pro Edition</p>
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-              <span className="text-3xl font-black text-white tracking-tighter">499</span>
-              <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp 649.000</span>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
+                <span className="text-3xl font-black text-white tracking-tighter">499</span>
+                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+              </div>
             </div>
           </div>
           <div className="w-full space-y-3 text-left">
@@ -116,10 +119,13 @@ const Pricing = ({ onOpenWaitlist }) => {
           </div>
           <div>
             <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2">Elite Edition</p>
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-[10px] font-black text-orange-800 mb-1">RP</span>
-              <span className="text-3xl font-black text-white tracking-tighter">1.499</span>
-              <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-xs font-bold text-orange-800/60 line-through tracking-tighter">Rp 1.249.000</span>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-[10px] font-black text-orange-800 mb-1">RP</span>
+                <span className="text-3xl font-black text-white tracking-tighter">999</span>
+                <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+              </div>
             </div>
           </div>
           <div className="w-full space-y-3 text-left">
@@ -141,10 +147,10 @@ const Pricing = ({ onOpenWaitlist }) => {
           <div>
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Ultimate Edition</p>
             <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp 2.499K</span>
+              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp 2.499.000</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-                <span className="text-3xl font-black text-white tracking-tighter">2.000</span>
+                <span className="text-3xl font-black text-white tracking-tighter">1.999</span>
                 <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
               </div>
             </div>
