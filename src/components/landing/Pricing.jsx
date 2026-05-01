@@ -1,47 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
 const Pricing = ({ onOpenWaitlist }) => {
   const { t } = useLandingTranslation();
+  const [isYearly, setIsYearly] = useState(false);
 
   const starterFeatures = [
-    "50 Generasi Konten AI / Bulan",
-    "Integrasi 1 Toko Marketplace",
-    "Dashboard Analitik Seller Dasar",
-    "Generator Deskripsi Produk AI"
+    <><strong>50</strong> Generasi Konten AI / Bulan</>,
+    <>Integrasi <strong>1</strong> Toko Marketplace</>,
+    <>Dashboard Analitik Seller Dasar</>,
+    <>Generator Deskripsi Produk AI</>
   ];
 
   const proFeatures = [
-    "300 Generasi Konten AI / Bulan",
-    "Integrasi 3 Toko Marketplace",
-    "Dashboard Analitik Seller Dasar",
-    "Generator Deskripsi Produk AI",
-    "Generator Naskah Video TikTok & Reels",
-    "Fitur Health Check & Audit Toko"
+    <><strong>300</strong> Generasi Konten AI / Bulan</>,
+    <>Integrasi <strong>3</strong> Toko Marketplace</>,
+    <>Dashboard Analitik Seller Dasar</>,
+    <>Generator Deskripsi Produk AI</>,
+    <><strong>Generator Naskah Video TikTok & Reels</strong></>,
+    <><strong>Fitur Health Check & Audit Toko</strong></>
   ];
 
   const eliteFeatures = [
-    "1.000 Generasi Konten AI / Bulan",
-    "Maksimal Integrasi 10 Toko Marketplace",
-    "Dashboard Analitik Seller Lengkap",
-    "Generator Deskripsi Produk AI",
-    "Generator Naskah Video TikTok & Reels",
-    "Fitur Health Check & Audit Toko",
-    "Riset Tren Produk Marketplace",
-    "Dukungan Prioritas (Fast Response)"
+    <><strong>1.000</strong> Generasi Konten AI / Bulan</>,
+    <>Maksimal Integrasi <strong>10</strong> Toko Marketplace</>,
+    <><strong>Dashboard Analitik Seller Lengkap</strong></>,
+    <>Generator Deskripsi Produk AI</>,
+    <>Generator Naskah Video TikTok & Reels</>,
+    <>Fitur Health Check & Audit Toko</>,
+    <><strong>Riset Tren Produk Marketplace</strong></>,
+    <><strong>Dukungan Prioritas (Fast Response)</strong></>
   ];
 
   const ultimateFeatures = [
-    "3.000 Generasi Konten AI / Bulan",
-    "Integrasi Toko Tanpa Batas (Unlimited)",
-    "Dashboard Analitik Seller Lengkap",
-    "Generator Deskripsi Produk AI",
-    "Generator Naskah Video TikTok & Reels",
-    "Fitur Health Check & Audit Toko",
-    "Riset Tren Produk Marketplace",
-    "Dukungan Prioritas (Fast Response)",
-    "Laporan Analisis Kompetitor Mendalam",
-    "Akses Prioritas Fitur Beta & Update"
+    <><strong>3.000</strong> Generasi Konten AI / Bulan</>,
+    <>Integrasi Toko <strong>Tanpa Batas (Unlimited)</strong></>,
+    <>Dashboard Analitik Seller Lengkap</>,
+    <>Generator Deskripsi Produk AI</>,
+    <>Generator Naskah Video TikTok & Reels</>,
+    <>Fitur Health Check & Audit Toko</>,
+    <>Riset Tren Produk Marketplace</>,
+    <>Dukungan Prioritas (Fast Response)</>,
+    <><strong>Laporan Analisis Kompetitor Mendalam</strong></>,
+    <><strong>Akses Prioritas Fitur Beta & Update</strong></>
   ];
 
   return (
@@ -50,9 +51,24 @@ const Pricing = ({ onOpenWaitlist }) => {
         <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tighter">
           {t('pricingComingSoonTitle')}
         </h2>
-        <p className="text-zinc-400 mt-4 text-base font-normal max-w-md mx-auto">
+        <p className="text-zinc-400 mt-4 text-base font-normal max-w-md mx-auto mb-8">
           {t('pricingComingSoonDesc')}
         </p>
+        
+        {/* Toggle Switch */}
+        <div className="flex items-center justify-center gap-4">
+          <span className={`text-sm font-bold ${!isYearly ? 'text-white' : 'text-zinc-500'}`}>Bulanan</span>
+          <button 
+            onClick={() => setIsYearly(!isYearly)}
+            className="w-16 h-8 bg-zinc-800 rounded-full p-1 border border-zinc-700 relative transition-colors"
+          >
+            <div className={`w-6 h-6 bg-orange-500 rounded-full shadow-md transition-all ${isYearly ? 'translate-x-8' : 'translate-x-0'}`}></div>
+          </button>
+          <span className={`text-sm font-bold flex items-center gap-2 ${isYearly ? 'text-white' : 'text-zinc-500'}`}>
+            Tahunan
+            <span className="bg-orange-500/20 text-orange-500 text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-orange-500/20">Hemat 1 Bulan</span>
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto relative">
@@ -92,11 +108,11 @@ const Pricing = ({ onOpenWaitlist }) => {
           <div>
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Pro Edition</p>
             <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp 649.000</span>
+              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '7.139.000' : '649.000'}</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-                <span className="text-3xl font-black text-white tracking-tighter">499</span>
-                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+                <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '5.489' : '499'}</span>
+                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
               </div>
             </div>
           </div>
@@ -104,7 +120,7 @@ const Pricing = ({ onOpenWaitlist }) => {
             {proFeatures.map((feat, i) => (
               <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
                 <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span>{feat}</span>
+                <span className="text-zinc-400">{feat}</span>
               </div>
             ))}
           </div>
@@ -120,11 +136,11 @@ const Pricing = ({ onOpenWaitlist }) => {
           <div>
             <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2">Elite Edition</p>
             <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-bold text-orange-800/60 line-through tracking-tighter">Rp 1.249.000</span>
+              <span className="text-xs font-bold text-orange-800/60 line-through tracking-tighter">Rp {isYearly ? '13.739.000' : '1.249.000'}</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-[10px] font-black text-orange-800 mb-1">RP</span>
-                <span className="text-3xl font-black text-white tracking-tighter">999</span>
-                <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+                <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '10.989' : '999'}</span>
+                <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
               </div>
             </div>
           </div>
@@ -132,7 +148,7 @@ const Pricing = ({ onOpenWaitlist }) => {
             {eliteFeatures.map((feat, i) => (
               <div key={i} className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
                 <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span>{feat}</span>
+                <span className="text-zinc-300">{feat}</span>
               </div>
             ))}
           </div>
@@ -147,11 +163,11 @@ const Pricing = ({ onOpenWaitlist }) => {
           <div>
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Ultimate Edition</p>
             <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp 2.499.000</span>
+              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '27.489.000' : '2.499.000'}</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-                <span className="text-3xl font-black text-white tracking-tighter">1.999</span>
-                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
+                <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '21.989' : '1.999'}</span>
+                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
               </div>
             </div>
           </div>
@@ -159,7 +175,7 @@ const Pricing = ({ onOpenWaitlist }) => {
             {ultimateFeatures.map((feat, i) => (
               <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
                 <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span>{feat}</span>
+                <span className="text-zinc-400">{feat}</span>
               </div>
             ))}
           </div>
