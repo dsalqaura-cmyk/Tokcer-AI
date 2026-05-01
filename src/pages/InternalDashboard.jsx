@@ -14,6 +14,7 @@ import TicketSection from '../components/internal/sections/TicketSection.jsx';
 import AiStrategySection from '../components/internal/sections/AiStrategySection.jsx';
 import SupabaseSection from '../components/internal/sections/SupabaseSection.jsx';
 import PayoutSection from '../components/internal/sections/PayoutSection.jsx';
+import BusinessInsightSection from '../components/internal/sections/BusinessInsightSection.jsx';
 
 // Modals
 import UserQuickViewModal from '../components/internal/modals/UserQuickViewModal.jsx';
@@ -528,7 +529,9 @@ const InternalDashboard = () => {
       case 'tickets':
         return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} fetchTickets={fetchTickets} />;
       case 'ai-gen':
-        return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} isLoading={isLoading} aiLogs={aiLogs} aiHistory={aiHistory} />;
+        return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} aiHistory={aiHistory} fetchAiHistory={fetchAiHistory} aiLogs={aiLogs} />;
+      case 'insight':
+        return <BusinessInsightSection t={t} />;
       case 'supabase':
         return <SupabaseSection t={t} />;
       default:

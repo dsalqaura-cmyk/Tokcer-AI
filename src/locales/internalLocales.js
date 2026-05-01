@@ -75,6 +75,7 @@ export const internalTranslations = {
     daily: "Harian",
     weekly: "Mingguan",
     monthly: "Bulanan",
+    businessInsight: "Business Insight",
   },
   en: {
     overview: "Overview",
@@ -152,5 +153,6 @@ export const internalTranslations = {
     daily: "Daily",
     weekly: "Weekly",
     monthly: "Monthly",
+    businessInsight: "Business Insight",
   }
 };
