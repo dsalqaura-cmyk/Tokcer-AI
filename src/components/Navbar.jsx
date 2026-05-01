@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { useLandingTranslation } from '../hooks/useLandingTranslation.js';
@@ -12,6 +12,24 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <>
@@ -68,7 +86,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-zinc-950 p-6 flex flex-col gap-8 pb-20">
+          <div className="flex-1 overflow-y-auto overscroll-contain bg-zinc-950 p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 pb-10" style={{ WebkitOverflowScrolling: 'touch' }}>
             {/* Language Switch */}
             <div className="hidden bg-zinc-900 rounded-2xl p-2 border border-zinc-800 mx-auto w-fit shrink-0">
               <button 
@@ -98,7 +116,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
                   key={item.href}
                   href={item.href} 
                   onClick={toggleMobileMenu} 
-                  className={`flex items-center gap-4 py-4 px-5 rounded-2xl text-sm font-black uppercase tracking-[0.2em] transition-all border ${item.special ? 'text-orange-500 bg-orange-500/5 border-orange-500/20' : 'text-zinc-400 bg-zinc-900/50 border-zinc-800/50 hover:text-white hover:bg-zinc-900'}`}
+                  className={`flex items-center gap-3 py-3 px-4 rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all border ${item.special ? 'text-orange-500 bg-orange-500/5 border-orange-500/20' : 'text-zinc-400 bg-zinc-900/50 border-zinc-800/50 hover:text-white hover:bg-zinc-900'}`}
                 >
                   <iconify-icon icon={item.icon} className="text-xl"></iconify-icon>
                   {item.label}
@@ -106,7 +124,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
               ))}
               <button 
                 onClick={() => { setPricingModalOpen(true); toggleMobileMenu(); }} 
-                className="flex items-center gap-4 py-4 px-5 rounded-2xl text-sm font-black uppercase tracking-[0.2em] text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 hover:text-white hover:bg-zinc-900 text-left"
+                className="flex items-center gap-3 py-3 px-4 rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 hover:text-white hover:bg-zinc-900 text-left w-full"
               >
                 <iconify-icon icon="solar:tag-price-linear" className="text-xl"></iconify-icon>
                 {t('navPricing')}
@@ -118,17 +136,17 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
             {/* Action Buttons */}
             <div className="flex flex-col gap-4 shrink-0">
               <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] ml-2">Access</p>
-              <button onClick={() => { navigate('/login'); toggleMobileMenu(); }} className="w-full py-5 bg-zinc-900 border border-zinc-800 rounded-2xl text-sm font-black text-zinc-300 uppercase tracking-[0.2em] flex items-center justify-center gap-3">
+              <button onClick={() => { navigate('/login'); toggleMobileMenu(); }} className="w-full py-3 sm:py-4 bg-zinc-900 border border-zinc-800 rounded-xl text-xs sm:text-sm font-black text-zinc-300 uppercase tracking-[0.15em] sm:tracking-[0.2em] flex items-center justify-center gap-3">
                 <iconify-icon icon="solar:user-linear" className="text-xl"></iconify-icon>
                 {t('navLogin')}
               </button>
               
-              <button onClick={() => { onOpenPartner(); toggleMobileMenu(); }} className="w-full py-5 bg-yellow-500 text-black rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-yellow-500/10 border border-yellow-400 flex items-center justify-center gap-3">
+              <button onClick={() => { onOpenPartner(); toggleMobileMenu(); }} className="w-full py-3 sm:py-4 bg-yellow-500 text-black rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-xl shadow-yellow-500/10 border border-yellow-400 flex items-center justify-center gap-3">
                 <iconify-icon icon="solar:hand-stars-bold" className="text-xl"></iconify-icon>
                 {t('navPartner')}
               </button>
               
-              <button onClick={() => { onOpenWaitlist(); toggleMobileMenu(); }} className="w-full py-5 bg-orange-600 text-white rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-orange-600/10 border border-orange-500 flex items-center justify-center gap-3">
+              <button onClick={() => { onOpenWaitlist(); toggleMobileMenu(); }} className="w-full py-3 sm:py-4 bg-orange-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-xl shadow-orange-600/10 border border-orange-500 flex items-center justify-center gap-3">
                 <iconify-icon icon="solar:rocket-bold" className="text-xl"></iconify-icon>
                 {t('navWaitlist')}
               </button>

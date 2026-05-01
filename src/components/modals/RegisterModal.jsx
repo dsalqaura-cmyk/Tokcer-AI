@@ -119,7 +119,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative bg-zinc-900 w-full max-w-xl p-6 md:p-8 rounded-2xl shadow-2xl border border-zinc-800 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div className="relative bg-zinc-900 w-full max-w-xl p-4 sm:p-6 md:p-8 rounded-2xl shadow-2xl border border-zinc-800 max-h-[92vh] overflow-y-auto custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
         <button onClick={onClose} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">
           <iconify-icon icon="solar:close-circle-linear" className="text-2xl"></iconify-icon>
         </button>
@@ -207,7 +207,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
             {formPlan !== 'starter' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">SIKLUS PEMBAYARAN</label>
                     <select 

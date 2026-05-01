@@ -46,7 +46,7 @@ const Pricing = ({ onOpenWaitlist }) => {
   ];
 
   return (
-    <section id="pricing" className="max-w-7xl mx-auto px-6 py-16 md:py-24 border-t border-zinc-800 relative">
+    <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24 border-t border-zinc-800 relative">
       <div className="text-center mb-12 md:mb-16">
         <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tighter mb-8">
           {t('pricingComingSoonTitle')}
@@ -54,29 +54,29 @@ const Pricing = ({ onOpenWaitlist }) => {
 
         
         {/* Toggle Switch */}
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           <span className={`text-sm font-bold ${!isYearly ? 'text-white' : 'text-zinc-500'}`}>Bulanan</span>
           <button 
             onClick={() => setIsYearly(!isYearly)}
-            className="w-16 h-8 bg-zinc-800 rounded-full p-1 border border-zinc-700 relative transition-colors"
+            className="w-16 h-8 bg-zinc-800 rounded-full p-1 border border-zinc-700 relative transition-colors shrink-0"
           >
             <div className={`w-6 h-6 bg-orange-500 rounded-full shadow-md transition-all ${isYearly ? 'translate-x-8' : 'translate-x-0'}`}></div>
           </button>
           <span className={`text-sm font-bold flex items-center gap-2 ${isYearly ? 'text-white' : 'text-zinc-500'}`}>
             Tahunan
-            <span className="bg-orange-500/20 text-orange-500 text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-orange-500/20">Hemat 1 Bulan</span>
+            <span className="bg-orange-500/20 text-orange-500 text-[9px] sm:text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-orange-500/20">Hemat 1 Bulan</span>
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto relative">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto relative">
         {/* Glow effect background */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
           <div className="w-full h-full rounded-full bg-orange-600/5 blur-[120px]"></div>
         </div>
 
         {/* Card 1 - Starter */}
-        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-zinc-700 transition-all group shadow-xl">
+        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-zinc-700 transition-all group shadow-xl">
           <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
             <iconify-icon icon="solar:star-linear" className="text-2xl text-zinc-400"></iconify-icon>
           </div>
@@ -99,7 +99,7 @@ const Pricing = ({ onOpenWaitlist }) => {
         </div>
 
         {/* Card 2 - Pro */}
-        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-zinc-700 transition-all group shadow-xl">
+        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-zinc-700 transition-all group shadow-xl">
           <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
             <iconify-icon icon="solar:box-linear" className="text-2xl text-zinc-400"></iconify-icon>
           </div>
@@ -126,7 +126,7 @@ const Pricing = ({ onOpenWaitlist }) => {
         </div>
 
         {/* Card 3 - Elite */}
-        <div className="relative bg-orange-950/20 backdrop-blur-md border border-orange-500/30 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-orange-500/50 transition-all group shadow-2xl z-10">
+        <div className="relative bg-orange-950/20 backdrop-blur-md border border-orange-500/30 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-orange-500/50 transition-all group shadow-2xl z-10">
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">Most Popular</div>
           <div className="w-12 h-12 rounded-2xl bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-600/30">
             <iconify-icon icon="solar:crown-bold" className="text-2xl text-white"></iconify-icon>
@@ -154,7 +154,7 @@ const Pricing = ({ onOpenWaitlist }) => {
         </div>
 
         {/* Card 4 - Ultimate */}
-        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 flex flex-col items-center text-center gap-6 hover:border-zinc-700 transition-all group shadow-xl">
+        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-zinc-700 transition-all group shadow-xl">
           <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
             <iconify-icon icon="solar:magic-stick-3-bold" className="text-2xl text-zinc-400"></iconify-icon>
           </div>
