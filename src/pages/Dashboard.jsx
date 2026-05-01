@@ -388,15 +388,18 @@ const Dashboard = () => {
   useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      const testUserEmail = localStorage.getItem('tokcer_test_user');
       const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
-
-      if (testUserEmail || session) {
-        const activeUser = session?.user || { email: testUserEmail, id: '00000000-0000-0000-0000-000000000000' };
-        setUser(activeUser);
+      
+      if (session) {
+        setUser(session.user);
         
-        // Handle Admin Bypass (Mock or Session)
-        if (activeUser.email === 'admin@tokcer-ai.com' || isAdmin) {
+        // 1. Fetch from profiles
+        const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+        
+        // 2. Fetch from clients (as secondary/admin source)
+        const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
+        
+        if (session.user.email === 'admin@tokcer-ai.com') {
             setProfile({
                 full_name: 'Administrator',
                 subscription_plan: 'ultimate',
@@ -405,49 +408,23 @@ const Dashboard = () => {
                 isUnlimited: true,
                 planName: 'Ultimate'
             });
-            return;
+            return; // EXIT EARLY - DO NOT LET DB OVERWRITE ADMIN
         }
 
-        // Handle Test Accounts Bypass
-        if (testUserEmail && testUserEmail !== 'admin@tokcer-ai.com') {
-            const plan = testUserEmail.split('@')[0]; // 'starter', 'pro', 'elite'
+        if (prof || clientData) {
+            const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
             const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
             const totalQuota = quotaMap[plan] || 50;
+            const activeTokens = prof?.tokens !== undefined ? prof.tokens : (prof?.ai_credits_remaining || 0);
             
             setProfile({ 
-                full_name: `Test ${plan.toUpperCase()}`,
+                ...(prof || {}), 
                 subscription_plan: plan,
-                tokens: totalQuota, 
+                tokens: activeTokens, 
                 totalQuota: totalQuota,
                 isUnlimited: plan === 'ultimate',
                 planName: plan.charAt(0).toUpperCase() + plan.slice(1)
             });
-            return;
-        }
-        
-        // Regular Flow (Session based)
-        if (session) {
-            // 1. Fetch from profiles
-            const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-            
-            // 2. Fetch from clients (as secondary/admin source)
-            const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
-            
-            if (prof || clientData) {
-                const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
-                const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
-                const totalQuota = quotaMap[plan] || 50;
-                const activeTokens = prof?.tokens !== undefined ? prof.tokens : (prof?.ai_credits_remaining || 0);
-                
-                setProfile({ 
-                    ...(prof || {}), 
-                    subscription_plan: plan,
-                    tokens: activeTokens, 
-                    totalQuota: totalQuota,
-                    isUnlimited: plan === 'ultimate',
-                    planName: plan.charAt(0).toUpperCase() + plan.slice(1)
-                });
-            }
         }
         const metadata = session.user.user_metadata;
         if (metadata?.platforms && metadata?.store_links) {
