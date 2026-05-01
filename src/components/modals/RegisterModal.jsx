@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
@@ -14,6 +14,13 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [formPlan, setFormPlan] = useState(selectedPlan || 'starter');
   const [affiliateId, setAffiliateId] = useState(localStorage.getItem('tokcer_affiliate_id') || '');
+
+  // Sync formPlan when selectedPlan prop changes (e.g., user clicks from Pricing card)
+  useEffect(() => {
+    if (selectedPlan) {
+      setFormPlan(selectedPlan);
+    }
+  }, [selectedPlan]);
 
   if (!isOpen) return null;
 
