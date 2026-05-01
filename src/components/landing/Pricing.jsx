@@ -4,6 +4,46 @@ import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 const Pricing = ({ onOpenWaitlist }) => {
   const { t } = useLandingTranslation();
 
+  const starterFeatures = [
+    "50 Generasi Konten AI / Bulan",
+    "Integrasi 1 Toko Marketplace",
+    "Dashboard Analitik Seller Dasar",
+    "Generator Deskripsi Produk AI"
+  ];
+
+  const proFeatures = [
+    "300 Generasi Konten AI / Bulan",
+    "Integrasi 3 Toko Marketplace",
+    "Dashboard Analitik Seller Dasar",
+    "Generator Deskripsi Produk AI",
+    "Generator Naskah TikTok & Reels",
+    "Fitur Health Check & Audit Toko"
+  ];
+
+  const eliteFeatures = [
+    "1.000 Generasi Konten AI / Bulan",
+    "Integrasi 10 Toko Marketplace",
+    "Dashboard Analitik Seller Dasar",
+    "Generator Deskripsi Produk AI",
+    "Generator Naskah TikTok & Reels",
+    "Fitur Health Check & Audit Toko",
+    "Riset Tren Produk Marketplace",
+    "Dukungan Prioritas (Fast Response)"
+  ];
+
+  const ultimateFeatures = [
+    "3.000 Generasi Konten AI / Bulan",
+    "Integrasi Toko Tanpa Batas",
+    "Dashboard Analitik Seller Dasar",
+    "Generator Deskripsi Produk AI",
+    "Generator Naskah TikTok & Reels",
+    "Fitur Health Check & Audit Toko",
+    "Riset Tren Produk Marketplace",
+    "Laporan Analisis Kompetitor",
+    "Sesi Coaching 1-on-1 Bulanan",
+    "Prioritas Akses Fitur Beta"
+  ];
+
   return (
     <section id="pricing" className="max-w-7xl mx-auto px-6 py-16 md:py-24 border-t border-zinc-800 relative">
       <div className="text-center mb-12 md:mb-16">
@@ -34,14 +74,14 @@ const Pricing = ({ onOpenWaitlist }) => {
             <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Sangat Terbatas</p>
           </div>
           <div className="w-full space-y-3 text-left">
-            {[1, 2, 3].map(i => (
+            {starterFeatures.map((feat, i) => (
               <div key={i} className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
                 <iconify-icon icon="solar:check-circle-bold" className="text-zinc-800 shrink-0"></iconify-icon>
-                <span>Feature {i} Included</span>
+                <span>{feat}</span>
               </div>
             ))}
           </div>
-          <button onClick={() => onOpenWaitlist('starter')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Pilih Starter</button>
+          <button onClick={() => onOpenWaitlist('starter')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Beli Paket</button>
         </div>
 
         {/* Card 2 - Pro */}
@@ -53,15 +93,15 @@ const Pricing = ({ onOpenWaitlist }) => {
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Pro Edition</p>
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-              <span className="text-3xl font-black text-white tracking-tighter">999</span>
+              <span className="text-3xl font-black text-white tracking-tighter">499</span>
               <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/BLN</span>
             </div>
           </div>
           <div className="w-full space-y-3 text-left">
-            {[1, 2, 3, 4].map(i => (
+            {proFeatures.map((feat, i) => (
               <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
                 <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span>Pro Feature {i}</span>
+                <span>{feat}</span>
               </div>
             ))}
           </div>
@@ -83,14 +123,14 @@ const Pricing = ({ onOpenWaitlist }) => {
             </div>
           </div>
           <div className="w-full space-y-3 text-left">
-            {[1, 2, 3, 4, 5].map(i => (
+            {eliteFeatures.map((feat, i) => (
               <div key={i} className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
                 <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span>Elite Privilege {i}</span>
+                <span>{feat}</span>
               </div>
             ))}
           </div>
-          <button onClick={() => onOpenWaitlist('elite')} className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20 transition-all">Dapatkan Akses</button>
+          <button onClick={() => onOpenWaitlist('elite')} className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20 transition-all">Beli Paket</button>
         </div>
 
         {/* Card 4 - Ultimate */}
@@ -110,14 +150,14 @@ const Pricing = ({ onOpenWaitlist }) => {
             </div>
           </div>
           <div className="w-full space-y-3 text-left">
-            {[1, 2, 3, 4, 5].map(i => (
+            {ultimateFeatures.map((feat, i) => (
               <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
                 <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span>Ultimate Feature {i}</span>
+                <span>{feat}</span>
               </div>
             ))}
           </div>
-          <button onClick={() => onOpenWaitlist('ultimate')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Pilih Ultimate</button>
+          <button onClick={() => onOpenWaitlist('ultimate')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Beli Paket</button>
         </div>
       </div>
     </section>
