@@ -174,7 +174,6 @@ const AiStrategySection = ({
           </div>
         </div>
       </div>
-      </div>
 
       {/* AI Logs */}
       <div className="bg-zinc-900/50 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl mt-8">
