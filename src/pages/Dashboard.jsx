@@ -764,18 +764,28 @@ const Dashboard = () => {
         .eq('type', 'market_analyst')
         .single();
 
+      const bizType = profile?.business_type || 'General E-commerce';
+      
       const systemPrompt = config?.system_prompt || `You are an elite Market Research Analyst for the Indonesian e-commerce market. 
-      Analyze the viral potential, competitor pricing landscape, and supply-chain risks for the specific category provided.
-      Be specific and provide unique insights. Compare TikTok Shop (viral/content-driven) vs Shopee (search/price-driven).
+      Your expertise is specifically targeted for a business in the "${bizType}" category.
+
+      CORE RULES:
+      1. ONLY provide analysis if the user's request is RELEVANT to the "${bizType}" niche.
+      2. If the user asks about categories outside "${bizType}" (e.g., they sell Fashion but ask about Gadgets), you MUST politely refuse and explain that their current Tokcer AI plan is optimized for their specific business category.
+      3. Provide insights on: viral potential, competitor pricing, and supply-chain risks.
+      4. Compare TikTok Shop (viral/content-driven) vs Shopee (search/price-driven).
       
-      Format your response as a JSON object with these keys: 
-      "trend": (detailed current market trend), 
-      "demo": (specific target audience profile), 
-      "top5": (array of 5 specific high-potential products), 
-      "risk": (potential business risks),
-      "strategy": (actionable execution strategy).`;
+      Format your response as a JSON object: 
+      {
+        "trend": (detailed market trend for ${bizType}), 
+        "demo": (target audience profile), 
+        "top5": (5 high-potential products within ${bizType}), 
+        "risk": (business risks),
+        "strategy": (actionable strategy)
+      }`;
       
-      const result = await callDeepSeek(systemPrompt, trendPrompt);
+      const userQuery = `Analyze this niche/product: "${trendPrompt}" within my business category: ${bizType}`;
+      const result = await callDeepSeek(systemPrompt, userQuery);
       setTrendResult(result);
 
       // Log Usage
