@@ -48,12 +48,10 @@ const Pricing = ({ onOpenWaitlist }) => {
   return (
     <section id="pricing" className="max-w-7xl mx-auto px-6 py-16 md:py-24 border-t border-zinc-800 relative">
       <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tighter">
+        <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tighter mb-8">
           {t('pricingComingSoonTitle')}
         </h2>
-        <p className="text-zinc-400 mt-4 text-base font-normal max-w-md mx-auto mb-8">
-          {t('pricingComingSoonDesc')}
-        </p>
+
         
         {/* Toggle Switch */}
         <div className="flex items-center justify-center gap-4">
@@ -87,7 +85,7 @@ const Pricing = ({ onOpenWaitlist }) => {
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-3xl font-black text-white uppercase tracking-tighter">Gratis</span>
             </div>
-            <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Sangat Terbatas</p>
+
           </div>
           <div className="w-full space-y-3 text-left">
             {starterFeatures.map((feat, i) => (
