@@ -202,48 +202,69 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
               </div>
             )}
 
-            {(formPlan !== 'starter') && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">SIKLUS PEMBAYARAN</label>
-                  <select 
-                    name="billing_cycle"
-                    required
-                    className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
-                  >
-                    {(() => {
-                      const prices = {
-                        pro: 999000,
-                        elite: 1499000,
-                        ultimate: 2000000
-                      };
-                      const price = prices[formPlan];
-                      if (!price) {
+            {formPlan !== 'starter' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">SIKLUS PEMBAYARAN</label>
+                    <select 
+                      name="billing_cycle"
+                      required
+                      className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
+                    >
+                      {(() => {
+                        const prices = {
+                          pro: 999000,
+                          elite: 1499000,
+                          ultimate: 2000000
+                        };
+                        const price = prices[formPlan];
+                        if (!price) {
+                          return (
+                            <>
+                              <option value="Monthly">Bulanan (Monthly)</option>
+                              <option value="Yearly">Tahunan (Yearly)</option>
+                            </>
+                          );
+                        }
                         return (
                           <>
-                            <option value="Monthly">Bulanan (Monthly)</option>
-                            <option value="Yearly">Tahunan (Yearly)</option>
+                            <option value="Monthly">Bulanan (Rp {price.toLocaleString('id-ID')})</option>
+                            <option value="Yearly">Tahunan (Rp {(price * 11).toLocaleString('id-ID')})</option>
                           </>
                         );
-                      }
-                      return (
-                        <>
-                          <option value="Monthly">Bulanan (Rp {price.toLocaleString('id-ID')})</option>
-                          <option value="Yearly">Tahunan (Rp {(price * 11).toLocaleString('id-ID')})</option>
-                        </>
-                      );
-                    })()}
-                  </select>
+                      })()}
+                    </select>
+                  </div>
+                  <div className="flex flex-col justify-end">
+                    <p className="text-[10px] text-zinc-500 mb-1.5 uppercase tracking-widest font-bold">Upload Bukti Bayar</p>
+                    <div className="relative group/proof">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        required
+                        onChange={(e) => setPaymentProof(e.target.files[0])}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="border border-zinc-700 rounded-lg px-4 py-2 flex items-center gap-3 bg-zinc-800 hover:border-orange-500/50 transition-all">
+                        <iconify-icon icon="solar:camera-add-bold" className="text-lg text-orange-500"></iconify-icon>
+                        <span className="text-xs text-zinc-400 truncate">
+                          {paymentProof ? paymentProof.name : "Pilih File Gambar..."}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">UPLOAD BUKTI BAYAR</label>
-                  <input 
-                    type="file"
-                    accept="image/*"
-                    required
-                    onChange={(e) => setPaymentProof(e.target.files[0])}
-                    className="w-full text-xs text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all cursor-pointer"
-                  />
+
+                <div className="p-4 bg-orange-600/5 border border-orange-500/20 rounded-xl">
+                  <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <iconify-icon icon="solar:bank-note-bold"></iconify-icon>
+                    Informasi Pembayaran
+                  </h4>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed">
+                    Silakan transfer biaya paket <span className="text-white font-bold uppercase">{formPlan}</span> ke rekening:
+                    <br/><span className="text-white font-black tracking-wider">BCA 1234567890 a/n Tokcer AI</span>
+                  </p>
                 </div>
               </div>
             )}
@@ -318,36 +339,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
               </div>
             </div>
             
-            {/* Payment Proof for Paid Plans */}
-            {selectedPlan && selectedPlan !== 'starter' && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="p-4 bg-orange-600/5 border border-orange-500/20 rounded-2xl">
-                  <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <iconify-icon icon="solar:bank-note-bold"></iconify-icon>
-                    Informasi Pembayaran
-                  </h4>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
-                    Silakan transfer biaya paket <span className="text-white font-bold uppercase">{selectedPlan}</span> ke rekening:
-                    <br/><span className="text-white font-black tracking-wider">BCA 1234567890 a/n Tokcer AI</span>
-                  </p>
-                  <div className="relative group/proof">
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      required
-                      onChange={(e) => setPaymentProof(e.target.files[0])}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <div className="border-2 border-dashed border-zinc-800 group-hover/proof:border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center transition-all bg-black/40">
-                      <iconify-icon icon="solar:camera-add-bold" className="text-xl text-zinc-600 group-hover/proof:text-orange-500 mb-1"></iconify-icon>
-                      <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                        {paymentProof ? paymentProof.name : "Upload Bukti Bayar"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+
 
             <button 
               type="submit" 
