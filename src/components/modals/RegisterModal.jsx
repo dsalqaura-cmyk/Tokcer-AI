@@ -214,7 +214,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                     >
                       {(() => {
                         const prices = {
-                          pro: 999000,
+                          pro: 499000,
                           elite: 1499000,
                           ultimate: 2000000
                         };
