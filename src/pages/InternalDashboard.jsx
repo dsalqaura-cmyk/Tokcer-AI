@@ -296,6 +296,33 @@ const InternalDashboard = () => {
 
       if (rpcError) throw rpcError;
 
+      // UPDATE SALDO PARTNER OTOMATIS
+      if (client.plan && client.plan !== 'starter') {
+        const prices = { pro: 499000, elite: 1499000, ultimate: 2000000 };
+        let planPrice = prices[client.plan.toLowerCase()] || 0;
+        if (client.billing_cycle === 'Yearly') planPrice = planPrice * 11;
+        
+        // Komisi misal 20%
+        const commission = planPrice * 0.20;
+
+        // Cari partner berdasarkan partner_id atau ref
+        let targetPartnerId = client.partner_id;
+        if (!targetPartnerId && client.ref && client.ref !== 'Direct Web') {
+          const { data: refPartner } = await supabase.from('partners').select('id').eq('ref_code', client.ref).maybeSingle();
+          if (refPartner) targetPartnerId = refPartner.id;
+        }
+
+        if (targetPartnerId) {
+          // Kita gunakan RPC rpc_add_partner_commission jika ada, atau update langsung
+          // Jika update langsung (bisa ada race condition, tapi untuk MVP cukup)
+          const { data: partnerData } = await supabase.from('partners').select('total_omzet').eq('id', targetPartnerId).maybeSingle();
+          if (partnerData) {
+            const currentOmzet = partnerData.total_omzet || 0;
+            await supabase.from('partners').update({ total_omzet: currentOmzet + commission }).eq('id', targetPartnerId);
+          }
+        }
+      }
+
       // KIRIM EMAIL OTOMATIS
       await sendWelcomeEmail(client.email, client.shop_name, client.plan || 'starter', client.billing_cycle || 'Monthly');
 
@@ -322,6 +349,23 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
+      const apiKey = aiConfig.resend_api_key || import.meta.env.VITE_RESEND_API_KEY;
+      if (apiKey && apiKey !== 'your_resend_api_key_here') {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            from: 'Tokcer AI <onboarding@resend.dev>',
+            to: [client.partners.email],
+            subject: 'Notifikasi Partner Tokcer AI',
+            html: `<p>Halo ${client.partners.full_name},</p><p>Terdapat klien baru Anda yang perlu di follow-up.</p>`
+          })
+        });
+      }
+
       alert(`Reminder sent to ${client.partners?.full_name}`);
       
       if (user?.id) {

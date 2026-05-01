@@ -23,11 +23,17 @@ const Landing = () => {
   };
 
   React.useEffect(() => {
+    // Tangkap affiliate ID dari URL (?ref=ID001)
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('tokcer_affiliate_id', ref);
+    }
+
     // Fallback routing untuk link non-hash (misal dari email lama)
     const path = window.location.pathname;
     if (path === '/partner-agreement') {
-      const search = window.location.search;
-      window.location.replace(`/#/partner-agreement${search}`);
+      window.location.replace(`/#/partner-agreement${window.location.search}`);
     }
   }, []);
 

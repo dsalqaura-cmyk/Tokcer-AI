@@ -56,7 +56,7 @@ const PaymentTab = ({
               <h3 className="text-sm font-black text-white uppercase tracking-[0.3em]">{t('paymentInfo')}</h3>
             </div>
             <p className="text-xs leading-loose text-zinc-300 font-medium italic">
-              "{t('paymentDesc')}"
+              "Komisi partner akan dibayarkan secara otomatis ke rekening Anda yang terdaftar pada tanggal 25 setiap bulannya. Tidak perlu mengajukan penarikan manual."
             </p>
             <div className="mt-8 pt-8 border-t border-zinc-800/50 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-zinc-400">
               <span>{t('cyclePeriod')}</span>

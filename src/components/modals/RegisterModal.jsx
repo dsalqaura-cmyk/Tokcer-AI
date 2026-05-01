@@ -13,6 +13,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [paymentProof, setPaymentProof] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [formPlan, setFormPlan] = useState(selectedPlan || 'starter');
+  const [affiliateId, setAffiliateId] = useState(localStorage.getItem('tokcer_affiliate_id') || '');
 
   if (!isOpen) return null;
 
@@ -81,6 +82,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
         proofUrl = publicUrl;
       }
 
+      const refValue = affiliate_id || affiliateId || 'Direct Web';
+
       const { data, error } = await supabase
         .from('clients')
         .insert([{
@@ -91,10 +94,10 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
           billing_cycle: billing_cycle,
           business_type: business_type,
           platforms: selectedPlatforms,
-          ref: 'Direct Web',
+          ref: refValue,
           status: 'pending',
           payment_proof_url: proofUrl,
-          metadata: { store_links: storeLinks, affiliate_id: affiliate_id }
+          metadata: { store_links: storeLinks, affiliate_id: affiliate_id || affiliateId }
         }]);
 
       if (error) throw error;
@@ -264,6 +267,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                 <input 
                   type="text" 
                   name="affiliate_id"
+                  defaultValue={affiliateId}
                   className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
                   placeholder="ID001"
                 />
