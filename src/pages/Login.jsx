@@ -78,7 +78,7 @@ const Login = () => {
       }
       
       setLoading(false);
-      if (cleanEmail === 'admin@tokcer-ai.com') navigate('/admin');
+      if (role === 'admin') navigate('/admin');
       else if (role === 'partner') navigate('/partner-dashboard');
       else navigate('/dashboard');
       return;

@@ -392,7 +392,7 @@ const Dashboard = () => {
       const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
 
       if (testUserEmail || session) {
-        const activeUser = session?.user || { email: testUserEmail, id: 'test-user-id' };
+        const activeUser = session?.user || { email: testUserEmail, id: '00000000-0000-0000-0000-000000000000' };
         setUser(activeUser);
         
         // Handle Admin Bypass (Mock or Session)
