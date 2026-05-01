@@ -12,7 +12,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [fullName, setFullName] = useState('');
-  const [useMagicLink, setUseMagicLink] = useState(false);
   const [isForgotPass, setIsForgotPass] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
@@ -20,18 +19,16 @@ const Login = () => {
   const translations = {
     id: {
       loginTitle: "Login Dashboard",
-      loginDesc: useMagicLink ? "Masukkan email untuk menerima link login." : "Masuk untuk kelola tokomu.",
+      loginDesc: "Masuk untuk kelola tokomu.",
       emailLabel: "Email Akses",
       passwordLabel: "Password",
       forgotPass: "Lupa Password?",
-      loginBtn: useMagicLink ? "Kirim Link Login" : "Masuk ke Sistem",
+      loginBtn: "Masuk ke Sistem",
       loggingIn: "Memproses...",
       asUser: "Sebagai User",
       asPartner: "Sebagai Partner",
       noAccount: "Belum punya akun?",
       signUp: "Daftar di sini",
-      useMagicLink: "Masuk pakai Magic Link (Email)",
-      usePassword: "Masuk pakai Password",
       resetTitle: "Reset Password",
       resetDesc: "Masukkan email untuk menerima instruksi reset password.",
       sendReset: "Kirim Instruksi",
@@ -40,18 +37,16 @@ const Login = () => {
     },
     en: {
       loginTitle: "Dashboard Login",
-      loginDesc: useMagicLink ? "Enter your email to receive a login link." : "Sign in to manage your shop.",
+      loginDesc: "Sign in to manage your shop.",
       emailLabel: "Access Email",
       passwordLabel: "Password",
       forgotPass: "Forgot Password?",
-      loginBtn: useMagicLink ? "Send Login Link" : "Sign In",
+      loginBtn: "Sign In",
       loggingIn: "Processing...",
       asUser: "As User",
       asPartner: "As Partner",
       noAccount: "Don't have an account?",
       signUp: "Sign up here",
-      useMagicLink: "Login with Magic Link",
-      usePassword: "Login with Password",
       resetTitle: "Reset Password",
       resetDesc: "Enter your email to receive password reset instructions.",
       sendReset: "Send Instructions",
@@ -73,7 +68,7 @@ const Login = () => {
     setError(null);
     
     // Handle Admin Total Bypass
-    if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983' && !useMagicLink) {
+    if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
       localStorage.setItem('tokcer_admin_auth', 'true');
       // Silently attempt supabase login to satisfy RLS if user exists
       await supabase.auth.signInWithPassword({ email, password }).catch(() => {});
@@ -81,18 +76,6 @@ const Login = () => {
       if (role === 'admin') navigate('/admin');
       else if (role === 'partner') navigate('/partner-dashboard');
       else navigate('/dashboard');
-      return;
-    }
-
-
-    if (useMagicLink) {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: window.location.origin + '/dashboard' }
-      });
-      if (otpError) setError(otpError.message);
-      else alert(lang === 'id' ? 'Link login telah dikirim!' : 'Login link sent!');
-      setLoading(false);
       return;
     }
 
@@ -169,15 +152,13 @@ const Login = () => {
               <input type="email" required className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:ring-2 focus:ring-orange-500/50 outline-none" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             
-            {!useMagicLink && (
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs font-medium text-zinc-400">{t('passwordLabel')}</label>
-                  <button type="button" onClick={() => setIsForgotPass(true)} className="text-[10px] text-orange-500 hover:underline">{t('forgotPass')}</button>
-                </div>
-                <input type="password" required className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:ring-2 focus:ring-orange-500/50 outline-none" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-xs font-medium text-zinc-400">{t('passwordLabel')}</label>
+                <button type="button" onClick={() => setIsForgotPass(true)} className="text-[10px] text-orange-500 hover:underline">{t('forgotPass')}</button>
               </div>
-            )}
+              <input type="password" required className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:ring-2 focus:ring-orange-500/50 outline-none" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
 
             <button type="submit" disabled={loading} className="w-full bg-orange-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-orange-500 transition-all flex justify-center items-center gap-2">
               {loading ? t('loggingIn') : t('loginBtn')}
@@ -199,12 +180,6 @@ const Login = () => {
             </button>
           </form>
         )}
-
-        <div className="mt-6 text-center">
-            <button onClick={() => setUseMagicLink(!useMagicLink)} className="text-xs text-zinc-400 hover:text-white underline">
-                {useMagicLink ? t('usePassword') : t('useMagicLink')}
-            </button>
-        </div>
 
         <div className="mt-8 pt-6 border-t border-zinc-800 text-center">
           <p className="text-xs text-zinc-500 mb-3">{t('noAccount')}</p>
