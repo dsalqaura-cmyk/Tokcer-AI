@@ -390,17 +390,16 @@ const Dashboard = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
       
-      if (testUserEmail || session) {
-        const activeUser = session?.user || { email: testUserEmail, id: '00000000-0000-0000-0000-000000000000' };
-        setUser(activeUser);
+      if (session) {
+        setUser(session.user);
         
         // 1. Fetch from profiles
-        const { data: prof } = await supabase.from('profiles').select('*').eq('id', activeUser.id).maybeSingle();
+        const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
         
         // 2. Fetch from clients (as secondary/admin source)
-        const { data: clientData } = await supabase.from('clients').select('*').ilike('email', activeUser.email?.toLowerCase().trim()).maybeSingle();
+        const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
         
-        if (activeUser.email === 'admin@tokcer-ai.com') {
+        if (session.user.email === 'admin@tokcer-ai.com') {
             setProfile({
                 full_name: 'Administrator',
                 subscription_plan: 'ultimate',
@@ -427,11 +426,11 @@ const Dashboard = () => {
                 planName: plan.charAt(0).toUpperCase() + plan.slice(1)
             });
         }
-        const metadata = activeUser.user_metadata;
+        const metadata = session.user.user_metadata;
         if (metadata?.platforms && metadata?.store_links) {
-            await autoConnectStores(activeUser.id, metadata.platforms, metadata.store_links);
+            await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
         }
-        fetchOperationalData(activeUser.id, activeUser);
+        fetchOperationalData(session.user.id, session.user);
       } else if (isAdmin) {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);
