@@ -2,6 +2,7 @@ import React from 'react';
 
 const HealthScoreTab = ({ 
   t, 
+  profile,
   lang, 
   healthPlatform, 
   setHealthPlatform, 
