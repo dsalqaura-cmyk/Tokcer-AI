@@ -71,8 +71,10 @@ const Login = () => {
     // Handle Admin Total Bypass
     if (email === 'admin@tokcer-ai.com' && password === 'Dind@2883') {
       localStorage.setItem('tokcer_admin_auth', 'true');
-      // Silently attempt supabase login to satisfy RLS if user exists
-      await supabase.auth.signInWithPassword({ email, password }).catch(() => {});
+      const adminUser = { 
+        email: 'admin@tokcer-ai.com', 
+        id: '81c19c28-9614-4a6d-b2f2-b8244c0ced29' 
+      };
       setLoading(false);
       if (role === 'admin') navigate('/admin');
       else if (role === 'partner') navigate('/partner-dashboard');

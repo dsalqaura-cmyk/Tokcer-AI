@@ -100,84 +100,70 @@ const PartnerDashboard = () => {
     );
   };
 
-  const fetchData = async (currentUser) => {
-    if (!currentUser) return;
-    try {
-      const isBypass = currentUser.email === 'admin@tokcer-ai.com';
-      
-      // 1. Fetch Partner Profile
-      let query = supabase.from('partners').select('*');
-      if (isBypass) {
-        query = query.eq('email', currentUser.email);
-      } else {
-        query = query.eq('id', currentUser.id);
-      }
-      const { data: partner } = await query.maybeSingle();
-      
-      // 2. Fetch Clients (Subscribers)
-      let currentPartnerId = currentUser.id;
-      if (partner?.id) {
-        currentPartnerId = partner.id;
-      } else if (isBypass) {
-        currentPartnerId = 'none'; // Prevent showing other people's data
-      }
-
-      const { data: subs } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('partner_id', currentPartnerId)
-        .order('created_at', { ascending: false });
+    const fetchData = async (currentUser) => {
+      if (!currentUser) return;
+      try {
+        setLoading(true);
+        // 1. Fetch Partner Profile
+        const { data: partner } = await supabase
+          .from('partners')
+          .select('*')
+          .eq('id', currentUser.id)
+          .maybeSingle();
         
-      const currentSubs = subs || [];
-      setSubscribers(currentSubs);
+        // 2. Fetch Clients (Subscribers)
+        const { data: subs } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('partner_id', currentUser.id)
+          .order('created_at', { ascending: false });
+          
+        const currentSubs = subs || [];
+        setSubscribers(currentSubs);
 
-      // 3. Calculate Stats
-      const activeCount = currentSubs.filter(s => s.status === 'active').length;
+        // 3. Calculate Stats
+        const activeCount = currentSubs.filter(s => s.status === 'active').length;
+        const cancelledCount = currentSubs.filter(s => s.status === 'cancelled').length;
 
-      // 3.5 Fetch Payouts
-      let payoutsQuery = supabase.from('payouts').select('*').order('created_at', { ascending: false });
-      if (isBypass) {
-        if (partner?.id) {
-          payoutsQuery = payoutsQuery.eq('partner_id', partner.id);
-        } else {
-          payoutsQuery = payoutsQuery.eq('partner_id', 'none');
+        // 3.5 Fetch Payouts
+        const { data: payoutsData } = await supabase
+          .from('payouts')
+          .select('*')
+          .eq('partner_id', currentUser.id)
+          .order('created_at', { ascending: false });
+          
+        const mappedPayouts = (payoutsData || []).map(p => ({
+          ...p,
+          period: p.period || new Date(p.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+        }));
+
+        if (partner) {
+          setPartnerData({
+            ...partner,
+            activeUsers: activeCount,
+            paymentHistory: mappedPayouts
+          });
+          setProfileForm({
+            fullName: partner.full_name || '',
+            whatsapp: partner.whatsapp || '',
+            bankName: partner.bank_name || '',
+            bankAccount: partner.bank_account || ''
+          });
         }
-      } else {
-        payoutsQuery = payoutsQuery.eq('partner_id', currentUser.id);
-      }
-      const { data: payoutsData } = await payoutsQuery;
-      const mappedPayouts = (payoutsData || []).map(p => ({
-        ...p,
-        period: p.period || new Date(p.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-      }));
 
-      if (partner) {
-        setPartnerData({
-          ...partner,
-          activeUsers: activeCount,
-          paymentHistory: mappedPayouts
-        });
-        setProfileForm({
-          fullName: partner.full_name || '',
-          whatsapp: partner.whatsapp || '',
-          bankName: partner.bank_name || '',
-          bankAccount: partner.bank_account || ''
-        });
+        // 4. Fetch Leaderboard
+        const { data: leaders } = await supabase.from('partners')
+          .select('full_name, total_omzet')
+          .not('full_name', 'is', null)
+          .order('total_omzet', { ascending: false })
+          .limit(10);
+        setLeaderboardData(leaders || []);
+      } catch (err) {
+        console.error("Fetch Data Error:", err);
+      } finally {
+        setLoading(false);
       }
-
-      // 4. Fetch Leaderboard
-      const { data: leaders } = await supabase.from('partners')
-        .select('full_name, total_omzet')
-        .not('full_name', 'is', null)
-        .order('total_omzet', { ascending: false })
-        .limit(10);
-      setLeaderboardData(leaders || []);
-    } catch (err) {
-      console.error("Fetch Data Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   useEffect(() => {
     const init = async () => {
