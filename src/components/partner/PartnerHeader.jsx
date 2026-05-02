@@ -22,7 +22,7 @@ const PartnerHeader = ({
               <div className="hidden sm:block">
                 <div className="flex items-center gap-2 mb-0.5">
                   <div className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em]">{t('partnerDashboard')}</div>
-                  {partnerData?.email === 'admin@tokcer-ai.com' && (
+                  {partnerData?.email === 'admin@tokcer-ai.com' && window.location.hostname !== 'tokcer-ai.com' && (
                     <span className="text-[8px] font-black bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 animate-pulse">SIMULATOR MODE</span>
                   )}
                 </div>

@@ -131,10 +131,10 @@ const PartnerDashboard = () => {
       const { data: subs } = await subsQuery.order('created_at', { ascending: false });
       let safeSubs = subs || [];
       
-      // Simulation Mode for Admin (Always active for admin@tokcer-ai.com if DB is empty)
-      if (isBypass && safeSubs.length === 0) {
-        console.log("🛠️ Admin Simulation Mode Active");
-        safeSubs = [
+      // Simulation Mode for Admin: ALWAYS provide data for admin demo
+      if (isBypass && window.location.hostname !== 'tokcer-ai.com') {
+        console.log("🛠️ Admin Simulation Mode Active (Sticky)");
+        const simulationData = [
           { id: 'sim-1', shop_name: 'Fashion Hub Jakarta', email: 'fhub@sample.com', status: 'active', plan: 'pro', created_at: new Date(Date.now() - 86400000).toISOString(), commission_amount: 100000 },
           { id: 'sim-2', shop_name: 'Gadget Store ID', email: 'gstore@sample.com', status: 'active', plan: 'elite', created_at: new Date(Date.now() - 172800000).toISOString(), commission_amount: 149600 },
           { id: 'sim-3', shop_name: 'Beauty Care Official', email: 'bcare@sample.com', status: 'active', plan: 'ultimate', created_at: new Date(Date.now() - 259200000).toISOString(), commission_amount: 500000 },
@@ -142,6 +142,9 @@ const PartnerDashboard = () => {
           { id: 'sim-5', shop_name: 'Baby Shop Indonesia', email: 'bshop@sample.com', status: 'active', plan: 'ultimate', created_at: new Date(Date.now() - 432000000).toISOString(), commission_amount: 500000 },
           { id: 'sim-6', shop_name: 'Starter Shop Test', email: 'starter@sample.com', status: 'active', plan: 'starter', created_at: new Date(Date.now() - 518400000).toISOString(), commission_amount: 50000 }
         ];
+        
+        // Combine real data (if any) with simulation data, but for demo we mostly want these 6
+        safeSubs = [...simulationData, ...safeSubs].slice(0, 10);
       }
       setSubscribers(safeSubs);
 
