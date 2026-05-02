@@ -327,6 +327,17 @@ const InternalDashboard = () => {
         role: 'partner'
       }]);
 
+      // 4. PINDAHKAN IDE/STRATEGI KE TABEL IDE (Agar tidak kosong)
+      if (selectedPartnerApp.promo_strategy) {
+        console.log("💡 Recording partner ideas...");
+        await supabase.from('partner_ideas').upsert([{
+          partner_id: realId,
+          title: 'Strategi Awal Pendaftaran',
+          content: selectedPartnerApp.promo_strategy,
+          status: 'draft'
+        }]);
+      }
+
       // KIRIM EMAIL OTOMATIS
       await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate', 'Yearly');
 
