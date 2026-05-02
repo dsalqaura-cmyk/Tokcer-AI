@@ -297,10 +297,22 @@ const InternalDashboard = () => {
 
       if (rpcError) throw rpcError;
 
+      // 1. CREATE PARTNER RECORD (FIX MISSING LINK)
+      console.log("🛠️ Creating partner record in DB...");
+      const { error: pError } = await supabase.from('partners').insert([{
+        id: data?.user_id || selectedPartnerApp.id, // Use ID from RPC or fallback
+        email: selectedPartnerApp.email,
+        full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
+        whatsapp: selectedPartnerApp.whatsapp,
+        affiliate_id: (selectedPartnerApp.nama || 'PARTNER').substring(0, 3).toUpperCase() + Math.floor(1000 + Math.random() * 9000)
+      }]);
+      
+      if (pError) console.error("Partner Insert Error:", pError.message);
+
       // KIRIM EMAIL OTOMATIS
       await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate', 'Yearly');
 
-      alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif sebagai ULTIMATE.`);
+      alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif dan data partner terbuat di database.`);
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       await fetchPartnerApps();
