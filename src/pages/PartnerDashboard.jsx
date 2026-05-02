@@ -131,8 +131,9 @@ const PartnerDashboard = () => {
       const { data: subs } = await subsQuery.order('created_at', { ascending: false });
       let safeSubs = subs || [];
       
-      // Simulation Mode for Admin
-      if (isBypass && safeSubs.length === 0) {
+      // Simulation Mode for Admin (ONLY IN NON-PRODUCTION)
+      const isProduction = import.meta.env.MODE === 'production';
+      if (isBypass && safeSubs.length === 0 && !isProduction) {
         console.log("🛠️ Admin Simulation Mode Active");
         safeSubs = [
           { id: 'sim-1', shop_name: 'Fashion Hub Jakarta', email: 'fhub@sample.com', status: 'active', plan: 'pro', created_at: new Date(Date.now() - 86400000).toISOString(), commission_amount: 100000 },
@@ -177,7 +178,7 @@ const PartnerDashboard = () => {
           bankName: partner.bank_name || '',
           bankAccount: partner.bank_account || ''
         });
-      } else if (isBypass) {
+      } else if (isBypass && !isProduction) {
         // Mock Partner Profile for Admin Simulation
         const mockPartner = {
           id: 'admin-bypass',
