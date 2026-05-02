@@ -379,7 +379,6 @@ const BusinessInsightSection = ({ t }) => {
                 </div>
               </div>
             </div>
-          </div>
 
           <div className="space-y-6">
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
