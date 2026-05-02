@@ -67,27 +67,10 @@ const HealthScoreTab = ({
   };
 
   const hd = getMetricsForPlatform(healthPlatform);
-  const isStarter = (profile?.subscription_plan || 'starter').toLowerCase() === 'starter';
+  const isStarter = profile && (profile?.subscription_plan || 'starter').toLowerCase() === 'starter';
 
   return (
     <div className="relative z-10 space-y-6">
-      {/* Starter Lock Overlay */}
-      {isStarter && (
-        <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-[3px] rounded-[2.5rem] flex items-center justify-center border border-zinc-800">
-           <div className="text-center p-8 bg-zinc-900/90 rounded-3xl border border-zinc-800 shadow-2xl max-w-sm">
-              <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
-                <iconify-icon icon="solar:lock-keyhole-bold-duotone" className="text-4xl text-amber-500"></iconify-icon>
-              </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Health Score Locked</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                Fitur analisa kesehatan toko otomatis hanya tersedia untuk member **PRO** ke atas. Upgrade sekarang untuk optimasi toko Anda!
-              </p>
-              <button className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-orange-600/20 active:scale-95 transition-all">
-                UPGRADE TO PRO
-              </button>
-           </div>
-        </div>
-      )}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
           <h2 className="text-2xl font-semibold text-white tracking-tight">{t('shopHealth')}</h2>
@@ -95,8 +78,8 @@ const HealthScoreTab = ({
         </div>
         <div className="relative w-full sm:w-auto">
           <div 
-            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-            className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+            onClick={() => !isStarter && setShowFilterDropdown(!showFilterDropdown)}
+            className={`text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start ${isStarter ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div className="flex items-center gap-2">
               <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon> 
@@ -123,8 +106,27 @@ const HealthScoreTab = ({
         </div>
       </header>
 
-      {/* Platform Tabs */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Content Area with Conditional Lock */}
+      <div className="relative space-y-6">
+        {isStarter && (
+          <div className="absolute inset-x-0 -inset-y-4 z-[60] bg-zinc-950/20 backdrop-blur-[6px] rounded-[2rem] flex items-center justify-center border border-zinc-800/50 shadow-2xl overflow-hidden">
+             <div className="text-center p-8 bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-zinc-800 shadow-2xl max-w-sm animate-in zoom-in-95 duration-300">
+                <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
+                  <iconify-icon icon="solar:lock-keyhole-bold-duotone" className="text-4xl text-amber-500"></iconify-icon>
+                </div>
+                <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Health Score Locked</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                  Fitur analisa kesehatan toko otomatis hanya tersedia untuk member **PRO** ke atas. Upgrade sekarang untuk optimasi toko Anda!
+                </p>
+                <button className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-orange-600/20 active:scale-95 transition-all">
+                  UPGRADE TO PRO
+                </button>
+             </div>
+          </div>
+        )}
+
+        {/* Platform Tabs */}
+        <div className={`flex gap-2 flex-wrap ${isStarter ? 'opacity-30' : ''}`}>
         {[['all', t('allPlatforms'), 'solar:widget-linear', 'text-orange-400'],
           ['TikTok', 'TikTok Shop', 'ri:tiktok-fill', 'text-zinc-300'],
           ['Shopee', 'Shopee', 'simple-icons:shopee', 'text-orange-500'],

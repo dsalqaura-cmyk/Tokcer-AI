@@ -28,27 +28,10 @@ const MarketIntelTab = ({
   }, [viralTopics.length, fetchGlobalMarketTrends]);
 
   const plan = (profile?.subscription_plan || 'starter').toLowerCase();
-  const isLocked = plan === 'starter' || plan === 'pro';
+  const isLocked = profile && (plan === 'starter' || plan === 'pro');
 
   return (
     <div className="relative z-10 space-y-6">
-      {/* Lock Overlay for Starter & Pro */}
-      {isLocked && (
-        <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-[3px] rounded-[2.5rem] flex items-center justify-center border border-zinc-800">
-           <div className="text-center p-8 bg-zinc-900/90 rounded-3xl border border-zinc-800 shadow-2xl max-w-sm">
-              <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
-                <iconify-icon icon="solar:globus-bold-duotone" className="text-4xl text-indigo-500"></iconify-icon>
-              </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Market Intel Locked</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                Fitur intelijen pasar global dan tren viral hanya tersedia untuk member **ELITE** ke atas. Raih keunggulan kompetitif sekarang!
-              </p>
-              <button className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all">
-                UPGRADE TO ELITE
-              </button>
-           </div>
-        </div>
-      )}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
           <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketIntelTitle')}</h2>
@@ -56,8 +39,8 @@ const MarketIntelTab = ({
         </div>
         <div className="relative w-full sm:w-auto">
           <div 
-            onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
-            className="text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start"
+            onClick={() => !isLocked && setShowPlatformDropdown(!showPlatformDropdown)}
+            className={`text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div className="flex items-center gap-2">
               <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
@@ -84,8 +67,27 @@ const MarketIntelTab = ({
         </div>
       </header>
 
-      {/* Radar Trend AI - Sample Data */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
+      {/* Content Area with Conditional Lock */}
+      <div className="relative space-y-6">
+        {isLocked && (
+          <div className="absolute inset-x-0 -inset-y-4 z-[60] bg-zinc-950/20 backdrop-blur-[6px] rounded-[2rem] flex items-center justify-center border border-zinc-800/50 shadow-2xl overflow-hidden">
+             <div className="text-center p-8 bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-zinc-800 shadow-2xl max-w-sm animate-in zoom-in-95 duration-300">
+                <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
+                  <iconify-icon icon="solar:globus-bold-duotone" className="text-4xl text-indigo-500"></iconify-icon>
+                </div>
+                <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Market Intel Locked</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                  Fitur intelijen pasar global dan tren viral hanya tersedia untuk member **ELITE** ke atas. Raih keunggulan kompetitif sekarang!
+                </p>
+                <button className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all">
+                  UPGRADE TO ELITE
+                </button>
+             </div>
+          </div>
+        )}
+
+        {/* Radar Trend AI - Sample Data */}
+        <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm ${isLocked ? 'opacity-30' : ''}`}>
         <div className="flex items-center gap-3 mb-5">
           <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
             <iconify-icon icon="solar:radar-linear" className="text-white text-xl"></iconify-icon>
@@ -306,6 +308,7 @@ const MarketIntelTab = ({
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
