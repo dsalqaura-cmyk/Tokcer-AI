@@ -9,7 +9,18 @@ const SubscribersTab = ({
   const safeSubs = subscribers || [];
   const activeCount = safeSubs.filter(s => s.status === 'active' || s.status === 'paid').length;
   const cancelledCount = safeSubs.filter(s => s.status === 'cancelled' || s.status === 'returned').length;
-  const totalCommission = safeSubs.reduce((acc, curr) => acc + (Number(curr.commission_amount) || 0), 0);
+  
+  // LOGIC: Performance bonus only runs when there are at least 5 closings (Non-Starter)
+  const nonStarterActiveCount = safeSubs.filter(s => 
+    (s.status === 'active' || s.status === 'paid') && 
+    s.plan?.toLowerCase() !== 'starter'
+  ).length;
+
+  const totalCommission = nonStarterActiveCount >= 5 
+    ? safeSubs.reduce((acc, curr) => acc + (Number(curr.commission_amount) || 0), 0)
+    : 0;
+
+  const bonusProgress = Math.min(100, (nonStarterActiveCount / 5) * 100);
 
   const getPlanBadge = (plan) => {
     switch(plan?.toLowerCase()) {
@@ -47,9 +58,25 @@ const SubscribersTab = ({
           <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('cancelled')}</div>
           <div className="text-3xl font-black text-rose-500 font-mono tracking-tighter">{cancelledCount}</div>
         </div>
-        <div className="relative group overflow-hidden bg-emerald-600/10 backdrop-blur-md border border-emerald-500/20 p-5 rounded-2xl">
-          <div className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-3">{t('performanceBonus')}</div>
-          <div className="text-3xl font-black text-white font-mono tracking-tighter">{formatCurrency(totalCommission)}</div>
+        <div className={`relative group overflow-hidden backdrop-blur-md border p-5 rounded-2xl transition-all duration-500 ${nonStarterActiveCount >= 5 ? 'bg-emerald-600/10 border-emerald-500/20' : 'bg-zinc-900/40 border-zinc-800/50 grayscale'}`}>
+          <div className="flex justify-between items-start mb-3">
+            <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${nonStarterActiveCount >= 5 ? 'text-emerald-500' : 'text-zinc-500'}`}>{t('performanceBonus')}</div>
+            <iconify-icon icon={nonStarterActiveCount >= 5 ? "solar:lock-unlock-bold-duotone" : "solar:lock-bold-duotone"} className={nonStarterActiveCount >= 5 ? "text-emerald-500" : "text-zinc-500"}></iconify-icon>
+          </div>
+          <div className="text-3xl font-black text-white font-mono tracking-tighter mb-4">{formatCurrency(totalCommission)}</div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-zinc-500">
+              <span>{nonStarterActiveCount >= 5 ? 'Bonus Unlocked' : 'Unlock Progress'}</span>
+              <span>{nonStarterActiveCount}/5 Units</span>
+            </div>
+            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-1000 ${nonStarterActiveCount >= 5 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`}
+                style={{ width: `${bonusProgress}%` }}
+              ></div>
+            </div>
+          </div>
         </div>
       </div>
 

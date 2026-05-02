@@ -129,7 +129,20 @@ const PartnerDashboard = () => {
       }
       
       const { data: subs } = await subsQuery.order('created_at', { ascending: false });
-      const safeSubs = subs || [];
+      let safeSubs = subs || [];
+      
+      // Simulation Mode for Admin
+      if (isBypass && safeSubs.length === 0) {
+        console.log("🛠️ Admin Simulation Mode Active");
+        safeSubs = [
+          { id: 'sim-1', shop_name: 'Fashion Hub Jakarta', email: 'fhub@sample.com', status: 'active', plan: 'pro', created_at: new Date(Date.now() - 86400000).toISOString(), commission_amount: 100000 },
+          { id: 'sim-2', shop_name: 'Gadget Store ID', email: 'gstore@sample.com', status: 'active', plan: 'elite', created_at: new Date(Date.now() - 172800000).toISOString(), commission_amount: 149600 },
+          { id: 'sim-3', shop_name: 'Beauty Care Official', email: 'bcare@sample.com', status: 'active', plan: 'ultimate', created_at: new Date(Date.now() - 259200000).toISOString(), commission_amount: 500000 },
+          { id: 'sim-4', shop_name: 'Home Decor Solution', email: 'hdecor@sample.com', status: 'active', plan: 'pro', created_at: new Date(Date.now() - 345600000).toISOString(), commission_amount: 100000 },
+          { id: 'sim-5', shop_name: 'Baby Shop Indonesia', email: 'bshop@sample.com', status: 'active', plan: 'ultimate', created_at: new Date(Date.now() - 432000000).toISOString(), commission_amount: 500000 },
+          { id: 'sim-6', shop_name: 'Starter Shop Test', email: 'starter@sample.com', status: 'active', plan: 'starter', created_at: new Date(Date.now() - 518400000).toISOString(), commission_amount: 50000 }
+        ];
+      }
       setSubscribers(safeSubs);
 
       // 3. Calculate Stats
@@ -153,7 +166,6 @@ const PartnerDashboard = () => {
       }));
 
       if (partner) {
-
         setPartnerData({
           ...partner,
           activeUsers: activeCount,
@@ -164,6 +176,29 @@ const PartnerDashboard = () => {
           whatsapp: partner.whatsapp || '',
           bankName: partner.bank_name || '',
           bankAccount: partner.bank_account || ''
+        });
+      } else if (isBypass) {
+        // Mock Partner Profile for Admin Simulation
+        const mockPartner = {
+          id: 'admin-bypass',
+          full_name: 'Tokcer Admin (Simulator)',
+          email: 'admin@tokcer-ai.com',
+          tier: 'platinum',
+          total_omzet: 125000000,
+          affiliate_id: 'ADMIN-SAMPLE',
+          activeUsers: activeCount,
+          paymentHistory: [
+            { period: 'Januari 2026', status: 'paid', amount: 4500000 },
+            { period: 'Februari 2026', status: 'paid', amount: 5200000 },
+            { period: 'Maret 2026', status: 'pending', amount: 3800000 }
+          ]
+        };
+        setPartnerData(mockPartner);
+        setProfileForm({
+          fullName: mockPartner.full_name,
+          whatsapp: '08123456789',
+          bankName: 'BCA',
+          bankAccount: '1234567890'
         });
       }
 

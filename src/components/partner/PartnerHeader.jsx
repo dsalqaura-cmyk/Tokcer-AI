@@ -20,7 +20,12 @@ const PartnerHeader = ({
               <img src={logo} alt="Tokcer AI" className="h-9 w-auto" />
               <div className="h-6 w-px bg-zinc-800 hidden sm:block"></div>
               <div className="hidden sm:block">
-                <div className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em]">{t('partnerDashboard')}</div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em]">{t('partnerDashboard')}</div>
+                  {partnerData?.email === 'admin@tokcer-ai.com' && (
+                    <span className="text-[8px] font-black bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 animate-pulse">SIMULATOR MODE</span>
+                  )}
+                </div>
                 <div className="text-xs font-bold text-zinc-400">{partnerData?.full_name || 'Partner'}</div>
               </div>
             </div>
