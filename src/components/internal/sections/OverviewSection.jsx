@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import Chart from 'chart.js/auto';
 
 const OverviewSection = ({ 
   t, 
@@ -10,27 +11,78 @@ const OverviewSection = ({
   adminPartners = [],
   globalStats = { totalRevenue: 0, totalOrders: 0, activeUsers: 0, activePartners: 0 }
 }) => {
-  // Calculate Tier Counts for Legend
-  // Calculate Tier Counts for Legend (Dynamic based on Omzet if tier is null)
-  const tierCounts = adminPartners.reduce((acc, p) => {
-    let currentTier = p.tier?.toLowerCase();
-    
-    // Auto-assign tier based on Omzet if not set
-    if (!currentTier) {
-      const omzet = Number(p.total_omzet || 0);
-      if (omzet >= 50000000) currentTier = 'platinum';
-      else if (omzet >= 25000000) currentTier = 'gold';
-      else if (omzet >= 10000000) currentTier = 'silver';
-      else currentTier = 'bronze';
+  const chartInstance = useRef(null);
+
+  // Calculate Distribution (Show Partners if exist, otherwise show Client Plans)
+  const hasPartners = adminPartners.length > 0;
+  const distributionData = hasPartners 
+    ? adminPartners.reduce((acc, p) => {
+        let currentTier = p.tier?.toLowerCase();
+        if (!currentTier) {
+          const omzet = Number(p.total_omzet || 0);
+          if (omzet >= 50000000) currentTier = 'platinum';
+          else if (omzet >= 25000000) currentTier = 'gold';
+          else if (omzet >= 10000000) currentTier = 'silver';
+          else currentTier = 'bronze';
+        }
+        if (currentTier === 'platinum') acc.Platinum++;
+        else if (currentTier === 'gold') acc.Gold++;
+        else if (currentTier === 'silver') acc.Silver++;
+        else acc.Bronze++;
+        return acc;
+      }, { Platinum: 0, Gold: 0, Silver: 0, Bronze: 0 })
+    : adminClients.reduce((acc, c) => {
+        const plan = c.plan?.toLowerCase() || 'starter';
+        if (plan === 'ultimate') acc.Ultimate++;
+        else if (plan === 'elite') acc.Elite++;
+        else if (plan === 'pro') acc.Pro++;
+        else acc.Starter++;
+        return acc;
+      }, { Ultimate: 0, Elite: 0, Pro: 0, Starter: 0 });
+
+  const chartItems = hasPartners 
+    ? [
+        { label: 'Platinum', color: '#2563eb', count: distributionData.Platinum },
+        { label: 'Gold', color: '#fbbf24', count: distributionData.Gold },
+        { label: 'Silver', color: '#9ca3af', count: distributionData.Silver },
+        { label: 'Bronze', color: '#ea580c', count: distributionData.Bronze }
+      ]
+    : [
+        { label: 'Ultimate', color: '#9333ea', count: distributionData.Ultimate },
+        { label: 'Elite', color: '#f59e0b', count: distributionData.Elite },
+        { label: 'Pro', color: '#3b82f6', count: distributionData.Pro },
+        { label: 'Starter', color: '#6b7280', count: distributionData.Starter }
+      ];
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
     }
 
-    if (currentTier === 'platinum') acc.Platinum++;
-    else if (currentTier === 'gold') acc.Gold++;
-    else if (currentTier === 'silver') acc.Silver++;
-    else acc.Bronze++;
-    
-    return acc;
-  }, { Platinum: 0, Gold: 0, Silver: 0, Bronze: 0 });
+    const ctx = chartRef.current.getContext('2d');
+    chartInstance.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: chartItems.map(i => i.label),
+        datasets: [{
+          data: chartItems.map(i => i.count),
+          backgroundColor: chartItems.map(i => i.color),
+          borderWidth: 0,
+          cutout: '80%'
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        maintainAspectRatio: false
+      }
+    });
+
+    return () => {
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
+  }, [adminPartners, adminClients]);
 
   const getRelativeTime = (date) => {
     if (!date) return '-';
@@ -117,7 +169,9 @@ const OverviewSection = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-zinc-800 lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-black text-white uppercase tracking-tight">{t('tierDist')}</h3>
+            <h3 className="font-black text-white uppercase tracking-tight">
+              {hasPartners ? t('tierDist') : 'SUBSCRIPTION PLAN DISTRIBUTION'}
+            </h3>
             <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-tighter">{t('liveMonitor')}</span>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-8 md:h-40">
@@ -125,15 +179,10 @@ const OverviewSection = ({
               <canvas ref={chartRef}></canvas>
             </div>
             <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-4 w-full">
-              {[
-                { label: 'Platinum', color: 'bg-blue-600', count: tierCounts.Platinum },
-                { label: 'Gold', color: 'bg-amber-400', count: tierCounts.Gold },
-                { label: 'Silver', color: 'bg-zinc-400', count: tierCounts.Silver },
-                { label: 'Bronze', color: 'bg-orange-600', count: tierCounts.Bronze }
-              ].map((t_item) => (
+              {chartItems.map((t_item) => (
                 <div key={t_item.label} className="flex items-center justify-between bg-zinc-950/50 p-3 rounded-xl border border-zinc-800">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${t_item.color}`}></span>
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t_item.color }}></span>
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t_item.label}</span>
                   </div>
                   <span className="font-black text-white text-xs">{t_item.count}</span>
