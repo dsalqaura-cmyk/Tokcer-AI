@@ -18,7 +18,7 @@ export const callDeepSeek = async (systemPrompt, userMessage, customApiKey = nul
         { role: 'user', content: userMessage }
       ],
       temperature: 0.8,
-      max_tokens: 2048,
+      max_tokens: 4096,
     })
   });
 

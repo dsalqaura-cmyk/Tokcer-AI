@@ -279,7 +279,14 @@ const BusinessInsightSection = ({ t }) => {
       Tiap section berisi teks narasi yang kuat, cerdas, dan profesional dalam Bahasa Indonesia (Indoglish diperbolehkan).`;
 
       const { text: aiResult } = await callDeepSeek("You are Udin, the Strategic Growth Lead at Tokcer AI.", prompt);
-      const cleanJson = aiResult.replace(/```json|```/g, '').trim();
+      
+      // Robust JSON Extraction
+      let cleanJson = aiResult;
+      const jsonMatch = aiResult.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanJson = jsonMatch[0];
+      }
+      
       const narrative = JSON.parse(cleanJson);
 
       // 2. Setup visual for PDF (Hidden Div)
