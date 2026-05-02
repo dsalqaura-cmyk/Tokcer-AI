@@ -336,8 +336,8 @@ const BusinessInsightSection = ({ t }) => {
                   Export to CSV
                 </button>
               </div>
-              <div className="p-6 space-y-6">
-              <div className="p-6 space-y-8">
+              
+              <div className="p-8 space-y-8">
                 {[
                   { id: 'fh', title: 'Part 1: Financial Health', data: activeReport.executive_summary?.financial_health, icon: 'solar:wallet-money-bold-duotone', color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
                   { id: 'sm', title: 'Part 2: Subscriber Movement', data: activeReport.executive_summary?.subscriber_movement, icon: 'solar:users-group-rounded-bold-duotone', color: 'text-blue-500', bg: 'bg-blue-500/5' },
@@ -358,19 +358,18 @@ const BusinessInsightSection = ({ t }) => {
                             <span className="text-zinc-600 mt-1">•</span>
                             {point}
                           </li>
-                        )) : <li className="text-xs text-zinc-500 italic">No data available for this section</li>}
+                        )) : <li className="text-xs text-zinc-500 italic">No data available</li>}
                       </ul>
                     </div>
                   </div>
                 ))}
                 
-                {/* Target Progress Bar */}
-                <div className="pt-4 border-t border-zinc-800">
-                   <div className="flex justify-between items-center mb-2">
+                <div className="pt-6 border-t border-zinc-800">
+                   <div className="flex justify-between items-center mb-3">
                       <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Progress to 100M Target</span>
                       <span className="text-[10px] font-black text-white uppercase tracking-widest">{activeReport.progress_target}%</span>
                    </div>
-                   <div className="w-full bg-zinc-900 rounded-full h-2 overflow-hidden border border-zinc-800">
+                   <div className="w-full bg-zinc-900 rounded-full h-2.5 overflow-hidden border border-zinc-800">
                       <div 
                         className="bg-gradient-to-r from-blue-600 to-indigo-400 h-full transition-all duration-1000" 
                         style={{ width: `${Math.min(activeReport.progress_target, 100)}%` }}
@@ -382,7 +381,7 @@ const BusinessInsightSection = ({ t }) => {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl">
               <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                 <iconify-icon icon="solar:history-bold-duotone" className="text-zinc-500"></iconify-icon>
                 {reportPeriod === 'weekly' ? 'Weekly' : 'Monthly'} History
@@ -391,20 +390,19 @@ const BusinessInsightSection = ({ t }) => {
                 {filteredReports.map((r, i) => (
                   <div 
                     key={i} 
-                    className={`flex items-center justify-between p-3 border rounded-xl transition-all cursor-pointer group ${activeReport?.id === r.id ? 'bg-blue-600/10 border-blue-500' : 'bg-black border-zinc-800 hover:border-zinc-700'}`} 
+                    className={`flex items-center justify-between p-4 border rounded-2xl transition-all cursor-pointer group ${activeReport?.id === r.id ? 'bg-blue-600/10 border-blue-500' : 'bg-black border-zinc-800 hover:border-zinc-700'}`} 
                     onClick={() => {
-                        console.log("Switching to report:", r.id);
                         setActiveReport(r);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black transition-all ${activeReport?.id === r.id ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-500 group-hover:bg-blue-600 group-hover:text-white'}`}>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[10px] font-black transition-all ${activeReport?.id === r.id ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-500 group-hover:bg-blue-600 group-hover:text-white'}`}>
                         {r.report_week}
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-white uppercase">{r.date_end}</p>
-                        <p className="text-[8px] font-bold text-zinc-600 uppercase">Financial Report</p>
+                        <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Financial Report</p>
                       </div>
                     </div>
                     <iconify-icon icon="solar:alt-arrow-right-linear" className={`transition-all ${activeReport?.id === r.id ? 'text-blue-500 rotate-90' : 'text-zinc-700 group-hover:text-white'}`}></iconify-icon>
