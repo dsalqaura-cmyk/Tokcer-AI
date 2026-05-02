@@ -170,18 +170,10 @@ const PartnerDashboard = () => {
       setLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
         
         if (session) {
           setUser(session.user);
           await fetchData(session.user);
-        } else if (isAdmin) {
-          const adminUser = { 
-            email: 'admin@tokcer-ai.com', 
-            id: '81c19c28-9614-4a6d-b2f2-b8244c0ced29' 
-          };
-          setUser(adminUser);
-          await fetchData(adminUser);
         } else {
           navigate('/login');
         }

@@ -297,17 +297,25 @@ const InternalDashboard = () => {
 
       if (rpcError) throw rpcError;
 
-      // 1. CREATE PARTNER RECORD (FIX MISSING LINK)
-      console.log("🛠️ Creating partner record in DB...");
-      const { error: pError } = await supabase.from('partners').insert([{
-        id: data?.user_id || selectedPartnerApp.id, // Use ID from RPC or fallback
+      // 1. UPSERT PARTNER RECORD (Mencegah error duplicate dan memastikan data sinkron)
+      console.log("🛠️ Syncing partner record in DB...");
+      const { error: pError } = await supabase.from('partners').upsert([{
+        id: data?.user_id || selectedPartnerApp.id, 
         email: selectedPartnerApp.email,
         full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
         whatsapp: selectedPartnerApp.whatsapp,
-        affiliate_id: (selectedPartnerApp.nama || 'PARTNER').substring(0, 3).toUpperCase() + Math.floor(1000 + Math.random() * 9000)
+        status: 'active'
       }]);
       
-      if (pError) console.error("Partner Insert Error:", pError.message);
+      if (pError) console.error("Partner Sync Error:", pError.message);
+
+      // 2. PASTIKAN ROLE DI PROFILES ADALAH PARTNER
+      await supabase.from('profiles').upsert([{
+        id: data?.user_id || selectedPartnerApp.id,
+        full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
+        email: selectedPartnerApp.email,
+        role: 'partner'
+      }]);
 
       // KIRIM EMAIL OTOMATIS
       await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate', 'Yearly');
