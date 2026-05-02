@@ -297,10 +297,20 @@ const InternalDashboard = () => {
 
       if (rpcError) throw rpcError;
 
-      // 1. UPSERT PARTNER RECORD (Mencegah error duplicate dan memastikan data sinkron)
-      console.log("🛠️ Syncing partner record in DB...");
+      // 1. CARI ID USER YANG SEBENARNYA (Agar tidak salah alamat)
+      console.log("🔍 Finding real User ID for email:", selectedPartnerApp.email);
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', selectedPartnerApp.email)
+        .single();
+      
+      const realId = userData?.id || data?.user_id || selectedPartnerApp.id;
+
+      // 2. UPSERT PARTNER RECORD (Pakai ID yang sudah benar)
+      console.log("🛠️ Syncing partner record in DB with ID:", realId);
       const { error: pError } = await supabase.from('partners').upsert([{
-        id: data?.user_id || selectedPartnerApp.id, 
+        id: realId, 
         email: selectedPartnerApp.email,
         full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
         whatsapp: selectedPartnerApp.whatsapp,
@@ -309,9 +319,9 @@ const InternalDashboard = () => {
       
       if (pError) console.error("Partner Sync Error:", pError.message);
 
-      // 2. PASTIKAN ROLE DI PROFILES ADALAH PARTNER
+      // 3. PASTIKAN ROLE DI PROFILES ADALAH PARTNER
       await supabase.from('profiles').upsert([{
-        id: data?.user_id || selectedPartnerApp.id,
+        id: realId,
         full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
         email: selectedPartnerApp.email,
         role: 'partner'
