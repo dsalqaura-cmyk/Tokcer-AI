@@ -115,20 +115,19 @@ const PartnerDashboard = () => {
       const { data: partner } = await query.maybeSingle();
       
       // 2. Fetch Clients (Subscribers)
-      let subsQuery = supabase.from('clients').select('*');
-      if (isBypass) {
-        // If bypass, we try to find by the real partner id if found, else by email link
-        if (partner?.id) {
-          subsQuery = subsQuery.eq('partner_id', partner.id);
-        } else {
-          // Fallback or empty
-          subsQuery = subsQuery.eq('partner_id', 'none');
-        }
-      } else {
-        subsQuery = subsQuery.eq('partner_id', currentUser.id);
+      let currentPartnerId = currentUser.id;
+      if (partner?.id) {
+        currentPartnerId = partner.id;
+      } else if (isBypass) {
+        currentPartnerId = 'none'; // Prevent showing other people's data
       }
-      
-      const { data: subs } = await subsQuery.order('created_at', { ascending: false });
+
+      const { data: subs } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('partner_id', currentPartnerId)
+        .order('created_at', { ascending: false });
+        
       const currentSubs = subs || [];
       setSubscribers(currentSubs);
 
