@@ -85,7 +85,7 @@ const AiGeneratorTab = ({
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {['Shopee Description', 'Tokopedia Description', 'TikTok Shop Description'].map(f => (
+                  {['Shopee Description', 'Tokopedia Description', 'TikTok Shop Description'].filter(f => f !== 'Tokopedia Description').map(f => (
                     <button
                       key={f}
                       onClick={() => setAiFormat(f)}

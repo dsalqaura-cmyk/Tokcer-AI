@@ -1039,13 +1039,10 @@ const Dashboard = () => {
           />
         );
       case 'tab-health':
-        if (!checkPlanPermission('health_check')) {
-            setActiveMenu('tab-dash');
-            return null;
-        }
         return (
           <HealthScoreTab 
             t={t}
+            profile={profile}
             lang={lang}
             healthPlatform={healthPlatform}
             setHealthPlatform={setHealthPlatform}
@@ -1075,13 +1072,10 @@ const Dashboard = () => {
           />
         );
       case 'tab-market':
-        if (!checkPlanPermission('market_intel')) {
-            setActiveMenu('tab-dash');
-            return null;
-        }
         return (
           <MarketIntelTab 
             t={t}
+            profile={profile}
             lang={lang}
             platformFilter={platformFilter}
             setPlatformFilter={setPlatformFilter}

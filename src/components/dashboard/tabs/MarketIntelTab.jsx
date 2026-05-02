@@ -2,6 +2,7 @@ import React from 'react';
 
 const MarketIntelTab = ({ 
   t, 
+  profile,
   lang, 
   platformFilter, 
   setShowPlatformDropdown, 
@@ -26,8 +27,28 @@ const MarketIntelTab = ({
     if (viralTopics.length === 0) fetchGlobalMarketTrends();
   }, [viralTopics.length, fetchGlobalMarketTrends]);
 
+  const plan = (profile?.subscription_plan || 'starter').toLowerCase();
+  const isLocked = plan === 'starter' || plan === 'pro';
+
   return (
     <div className="relative z-10 space-y-6">
+      {/* Lock Overlay for Starter & Pro */}
+      {isLocked && (
+        <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-[3px] rounded-[2.5rem] flex items-center justify-center border border-zinc-800">
+           <div className="text-center p-8 bg-zinc-900/90 rounded-3xl border border-zinc-800 shadow-2xl max-w-sm">
+              <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
+                <iconify-icon icon="solar:globus-bold-duotone" className="text-4xl text-indigo-500"></iconify-icon>
+              </div>
+              <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Market Intel Locked</h3>
+              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                Fitur intelijen pasar global dan tren viral hanya tersedia untuk member **ELITE** ke atas. Raih keunggulan kompetitif sekarang!
+              </p>
+              <button className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all">
+                UPGRADE TO ELITE
+              </button>
+           </div>
+        </div>
+      )}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
           <h2 className="text-2xl font-semibold text-white tracking-tight">{t('marketIntelTitle')}</h2>
@@ -46,7 +67,7 @@ const MarketIntelTab = ({
           </div>
           {showPlatformDropdown && (
             <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
-              {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+              {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee']].map(([val, label]) => (
                 <div
                   key={val}
                   onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
@@ -54,7 +75,6 @@ const MarketIntelTab = ({
                 >
                   {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
                   {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                  {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
                   {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
                   {label}
                 </div>
@@ -231,12 +251,11 @@ const MarketIntelTab = ({
               {(viralTopics.length > 0 ? viralTopics : [
                 { topic: 'Old Money Aesthetic', platform: 'TikTok', trend_percent: '+142%', color_class: 'text-zinc-300' },
                 { topic: 'Skincare Barrier Repair', platform: 'Shopee', trend_percent: '+85%', color_class: 'text-orange-500' },
-                { topic: 'Eco-friendly Home Living', platform: 'Tokopedia', trend_percent: '+64%', color_class: 'text-teal-400' },
               ]).map((t, i) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl animate-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color_class || (t.platform === 'TikTok' ? 'text-zinc-300' : t.platform === 'Shopee' ? 'text-orange-500' : 'text-teal-400')}`}>
-                      <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : t.platform === 'Shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'}></iconify-icon>
+                    <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : 'simple-icons:shopee'}></iconify-icon>
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white">{t.topic}</div>

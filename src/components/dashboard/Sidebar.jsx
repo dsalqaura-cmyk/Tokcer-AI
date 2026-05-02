@@ -20,9 +20,9 @@ const Sidebar = ({
     if (plan === 'ultimate' || user?.email === 'admin@tokcer-ai.com' || localStorage.getItem('tokcer_admin_auth') === 'true') return false;
     
     const permissions = {
-      'tab-ai': ['pro', 'elite', 'ultimate'],
-      'tab-health': ['pro', 'elite', 'ultimate'],
-      'tab-market': ['elite', 'ultimate'],
+      // 'tab-ai': ['pro', 'elite', 'ultimate'],
+      // 'tab-health': ['pro', 'elite', 'ultimate'],
+      // 'tab-market': ['elite', 'ultimate'],
     };
 
     if (permissions[tab] && !permissions[tab].includes(plan)) return true;
@@ -107,23 +107,25 @@ const Sidebar = ({
 
         <div className="p-4 border-t border-zinc-800">
           {/* Language Toggle */}
-          <div className="flex items-center justify-between mb-6 px-2">
-            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Language</span>
-            <div className="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
-              <button 
-                onClick={() => { setLang('id'); localStorage.setItem('tokcer_lang', 'id'); }}
-                className={`px-2 py-1 text-[10px] font-bold rounded ${lang === 'id' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
-              >
-                ID
-              </button>
-              <button 
-                onClick={() => { setLang('en'); localStorage.setItem('tokcer_lang', 'en'); }}
-                className={`px-2 py-1 text-[10px] font-bold rounded ${lang === 'en' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
-              >
-                EN
-              </button>
+          {plan === 'ultimate' && (
+            <div className="flex items-center justify-between mb-6 px-2">
+              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Language</span>
+              <div className="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+                <button 
+                  onClick={() => { setLang('id'); localStorage.setItem('tokcer_lang', 'id'); }}
+                  className={`px-2 py-1 text-[10px] font-bold rounded ${lang === 'id' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  ID
+                </button>
+                <button 
+                  onClick={() => { setLang('en'); localStorage.setItem('tokcer_lang', 'en'); }}
+                  className={`px-2 py-1 text-[10px] font-bold rounded ${lang === 'en' ? 'bg-orange-600 text-white shadow-sm' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  EN
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* User Tier Card */}
           <div className="mb-4 px-2">

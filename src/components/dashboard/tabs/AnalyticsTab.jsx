@@ -45,7 +45,7 @@ const AnalyticsTab = ({
   const platformStats = {
     tiktok: { name: 'TikTok Shop', revenue: 0, orders: 0, trend: '+12.5%', color: 'border-zinc-800' },
     shopee: { name: 'Shopee', revenue: 0, orders: 0, trend: '+8.2%', color: 'border-orange-500/30' },
-    tokopedia: { name: 'Tokopedia', revenue: 0, orders: 0, trend: '+4.1%', color: 'border-teal-500/30' },
+    // tokopedia: { name: 'Tokopedia', revenue: 0, orders: 0, trend: '+4.1%', color: 'border-teal-500/30' },
   };
 
   filteredOrders.forEach(o => {
@@ -82,7 +82,7 @@ const AnalyticsTab = ({
             </div>
             {showAnalyticsPlatformDropdown && (
               <div className="absolute top-full left-0 sm:right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] py-1 overflow-hidden">
-                {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+                {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee']].map(([val, label]) => (
                   <div
                     key={val}
                     onClick={() => { setAnalyticsPlatform(val); setShowAnalyticsPlatformDropdown(false); }}
@@ -90,7 +90,6 @@ const AnalyticsTab = ({
                   >
                     {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
                     {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                    {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
                     {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
                     {label}
                   </div>

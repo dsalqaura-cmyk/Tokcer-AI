@@ -102,7 +102,7 @@ const OverviewTab = ({
             </div>
             {showPlatformDropdown && (
               <div className="absolute top-full left-0 sm:right-0 mt-2 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-[60] py-1 overflow-hidden">
-                {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+                {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee']].map(([val, label]) => (
                   <div
                     key={val}
                     onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
@@ -110,7 +110,6 @@ const OverviewTab = ({
                   >
                     {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
                     {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                    {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
                     {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
                     {label}
                   </div>
@@ -324,7 +323,7 @@ const OverviewTab = ({
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800">
                       <iconify-icon 
-                        icon={(trx.platform || '').toLowerCase() === 'tiktok' ? 'ri:tiktok-fill' : (trx.platform || '').toLowerCase() === 'shopee' ? 'simple-icons:shopee' : 'solar:shop-2-linear'} 
+                        icon={(trx.platform || '').toLowerCase() === 'tiktok' ? 'ri:tiktok-fill' : 'simple-icons:shopee'} 
                         className={`text-xl ${(trx.platform || '').toLowerCase() === 'shopee' ? 'text-orange-500' : 'text-zinc-400'}`}
                       ></iconify-icon>
                     </div>
