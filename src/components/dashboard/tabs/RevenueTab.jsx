@@ -20,7 +20,7 @@ const RevenueTab = ({
 
   // --- REAL DATA CALCULATIONS ---
   const filteredByPlatform = platformFilter === 'all' 
-    ? safeOrders 
+    ? safeOrders.filter(o => (o.platform || '').toLowerCase() !== 'tokopedia') 
     : safeOrders.filter(o => (o.platform || '').toLowerCase() === platformFilter.toLowerCase());
 
   const getFilteredByTime = (data, filter) => {
@@ -96,7 +96,7 @@ const RevenueTab = ({
             </div>
             {showPlatformDropdown && (
               <div className="absolute top-full right-0 mt-1 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
-                {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee'], ['Tokopedia', 'Tokopedia']].map(([val, label]) => (
+                {[['all', t('allPlatforms')], ['TikTok', 'TikTok Shop'], ['Shopee', 'Shopee']].map(([val, label]) => (
                   <div
                     key={val}
                     onClick={() => { setPlatformFilter(val); setShowPlatformDropdown(false); }}
@@ -104,7 +104,6 @@ const RevenueTab = ({
                   >
                     {val === 'TikTok' && <iconify-icon icon="ri:tiktok-fill" className="text-sm"></iconify-icon>}
                     {val === 'Shopee' && <iconify-icon icon="simple-icons:shopee" className="text-sm text-orange-500"></iconify-icon>}
-                    {val === 'Tokopedia' && <iconify-icon icon="solar:shop-2-linear" className="text-sm text-teal-400"></iconify-icon>}
                     {val === 'all' && <iconify-icon icon="solar:widget-linear" className="text-sm text-orange-400"></iconify-icon>}
                     {label}
                   </div>

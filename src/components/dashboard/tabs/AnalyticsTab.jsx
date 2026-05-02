@@ -2,6 +2,7 @@ import React from 'react';
 
 const AnalyticsTab = ({ 
   t, 
+  profile,
   lang, 
   analyticsPlatform, 
   setAnalyticsPlatform, 
@@ -45,7 +46,6 @@ const AnalyticsTab = ({
   const platformStats = {
     tiktok: { name: 'TikTok Shop', revenue: 0, orders: 0, trend: '+12.5%', color: 'border-zinc-800' },
     shopee: { name: 'Shopee', revenue: 0, orders: 0, trend: '+8.2%', color: 'border-orange-500/30' },
-    // tokopedia: { name: 'Tokopedia', revenue: 0, orders: 0, trend: '+4.1%', color: 'border-teal-500/30' },
   };
 
   filteredOrders.forEach(o => {
@@ -57,7 +57,7 @@ const AnalyticsTab = ({
   });
 
   const finalPlatforms = Object.values(platformStats).filter(p => 
-    analyticsPlatform === 'all' || p.name.toLowerCase().includes(analyticsPlatform.toLowerCase())
+    (analyticsPlatform === 'all' || p.name.toLowerCase().includes(analyticsPlatform.toLowerCase())) && p.name !== 'Tokopedia'
   );
 
   return (
@@ -153,7 +153,6 @@ const AnalyticsTab = ({
         ))}
       </div>
 
-      {/* AI Strategic Intel Section - DEEPSEEK DATA */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Peak Hours & Ads Optimization */}
         <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm min-h-[300px] relative">
@@ -230,6 +229,23 @@ const AnalyticsTab = ({
 
       {/* Price Recommendation Engine */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm overflow-hidden relative">
+        {((profile?.subscription_plan || 'starter').toLowerCase() === 'starter' || (profile?.subscription_plan || 'starter').toLowerCase() === 'pro') && (
+           <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-[6px] z-[60] flex items-center justify-center border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="text-center p-8 bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-zinc-800 shadow-2xl max-w-sm animate-in zoom-in-95 duration-300">
+                 <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
+                   <iconify-icon icon="solar:lock-keyhole-bold-duotone" className="text-4xl text-orange-500"></iconify-icon>
+                 </div>
+                 <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Price Optimizer Locked</h3>
+                 <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                   Fitur optimasi harga cerdas berbasis AI hanya tersedia untuk member **ELITE** ke atas. Upgrade sekarang untuk maksimalkan profit Anda!
+                 </p>
+                 <button className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-orange-600/20 active:scale-95 transition-all">
+                   UPGRADE TO ELITE
+                 </button>
+              </div>
+           </div>
+        )}
+
         {isAnalyzingAnalytics && (
             <div className="absolute inset-0 bg-zinc-900/30 backdrop-blur-[2px] z-20 flex items-center justify-center">
                <div className="flex items-center gap-2 bg-black/80 px-4 py-2 rounded-full border border-zinc-800">
@@ -244,11 +260,19 @@ const AnalyticsTab = ({
           <iconify-icon icon="solar:magic-stick-3-linear" className="text-8xl text-orange-500"></iconify-icon>
         </div>
         
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center">
-            <iconify-icon icon="solar:globus-linear" className="text-white"></iconify-icon>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center">
+              <iconify-icon icon="solar:globus-linear" className="text-white"></iconify-icon>
+            </div>
+            <h3 className="text-lg font-semibold text-white">{t('priceRec')}</h3>
           </div>
-          <h3 className="text-lg font-semibold text-white">{t('priceRec')}</h3>
+          {(profile?.subscription_plan || '').toLowerCase() === 'elite' && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+              <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Elite Tier - Monthly Quota Active</span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">

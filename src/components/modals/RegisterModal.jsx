@@ -119,7 +119,6 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const platformOptions = [
     { id: 'TikTok', label: 'TikTok Shop', icon: 'ri:tiktok-fill' },
     { id: 'Shopee', label: 'Shopee', icon: 'simple-icons:shopee' },
-    { id: 'Tokopedia', label: 'Tokopedia', icon: 'solar:shop-2-linear' },
     { id: 'Instagram', label: 'Instagram', icon: 'ri:instagram-fill' },
     { id: 'Other', label: 'Lainnya', icon: 'solar:menu-dots-bold' }
   ];

@@ -19,24 +19,6 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
       bg: 'bg-orange-500/10', 
       status: 'Ready to Connect',
       desc: 'Connect your Shopee store to automate order management.'
-    },
-    { 
-      id: 'tokopedia', 
-      name: 'Tokopedia', 
-      icon: 'solar:shop-2-linear', 
-      color: 'text-teal-400', 
-      bg: 'bg-teal-500/10', 
-      status: 'Coming Soon',
-      desc: 'Integrate Tokopedia Power Merchant or Official Store data.'
-    },
-    { 
-      id: 'lazada', 
-      name: 'Lazada', 
-      icon: 'solar:clapperboard-edit-linear', 
-      color: 'text-blue-500', 
-      bg: 'bg-blue-500/10', 
-      status: 'Coming Soon',
-      desc: 'Lazada integration is currently in development.'
     }
   ];
 

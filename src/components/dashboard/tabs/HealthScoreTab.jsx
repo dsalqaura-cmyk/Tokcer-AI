@@ -17,7 +17,7 @@ const HealthScoreTab = ({
   // --- REAL DATA CALCULATIONS ---
   const getMetricsForPlatform = (plat) => {
     const platformFiltered = plat === 'all' 
-      ? orders 
+      ? orders.filter(o => (o.platform || '').toLowerCase() !== 'tokopedia') 
       : orders.filter(o => (o.platform || '').toLowerCase() === plat.toLowerCase());
 
     const getFilteredByTime = (data, filter) => {

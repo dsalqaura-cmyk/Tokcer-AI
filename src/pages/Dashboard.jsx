@@ -659,8 +659,6 @@ const Dashboard = () => {
         platformContext = `Buatlah naskah Instagram Reels yang estetik. Sertakan: Hook yang menarik perhatian, transisi antar adegan, saran filter/mood, dan caption singkat yang powerful.`;
       } else if (aiFormat === 'Shopee Description') {
         platformContext = `Buatlah deskripsi produk khusus Shopee. Gunakan banyak emoji, highlight promo/voucher, dan gaya bahasa yang persuasif serta "hype" untuk menarik pembeli diskon.`;
-      } else if (aiFormat === 'Tokopedia Description') {
-        platformContext = `Buatlah deskripsi produk khusus Tokopedia. Gunakan gaya bahasa profesional, informatif, jelaskan spesifikasi produk dengan detail dan layout yang bersih/rapi.`;
       } else if (aiFormat === 'TikTok Shop Description') {
         platformContext = `Buatlah deskripsi produk TikTok Shop. Fokus pada 'USP' produk secara cepat, buat kesan urgensi/kelangkaan, dan arahkan ke keranjang kuning.`;
       }
@@ -673,8 +671,6 @@ const Dashboard = () => {
             .replace('Sertakan: Hook yang menarik perhatian, transisi antar adegan, saran filter/mood, dan caption singkat yang powerful.', 'Include: Attention-grabbing hook, transitions between scenes, filter/mood suggestions, and a powerful short caption.')
             .replace('Buatlah deskripsi produk khusus Shopee', 'Create a specific Shopee product description')
             .replace('Gunakan banyak emoji, highlight promo/voucher, dan gaya bahasa yang persuasif serta "hype" untuk menarik pembeli diskon.', 'Use plenty of emojis, highlight promos/vouchers, and use persuasive "hype" language to attract discount hunters.')
-            .replace('Buatlah deskripsi produk khusus Tokopedia', 'Create a specific Tokopedia product description')
-            .replace('Gunakan gaya bahasa profesional, informatif, jelaskan spesifikasi produk dengan detail dan layout yang bersih/rapi.', 'Use professional, informative language, explain product specs in detail, and use a clean/neat layout.')
             .replace('Buatlah deskripsi produk TikTok Shop', 'Create a TikTok Shop product description')
             .replace("Fokus pada 'USP' produk secara cepat, buat kesan urgensi/kelangkaan, dan arahkan ke keranjang kuning.", "Focus on the product's USP quickly, create a sense of urgency/scarcity, and direct to the yellow basket.");
       }
@@ -1023,6 +1019,7 @@ const Dashboard = () => {
         return (
           <AnalyticsTab 
             t={t}
+            profile={profile}
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
             showFilterDropdown={showFilterDropdown}

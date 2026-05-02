@@ -18,13 +18,6 @@ const StoreIntegrator = ({ t, onBack }) => {
       desc: 'Kelola keranjang kuning dan live streaming data langsung dari Dashboard Tokcer AI.',
       status: 'Ready'
     },
-    { 
-      id: 'tokopedia', 
-      name: 'Tokopedia', 
-      icon: 'solar:shop-2-linear', 
-      color: 'bg-[#42B549]', 
-      desc: 'Hubungkan Power Merchant atau Official Store kamu untuk analisis market intel mendalam.',
-      status: 'Coming Soon'
     }
   ];
 

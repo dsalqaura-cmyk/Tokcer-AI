@@ -80,7 +80,7 @@ const DashboardPreview = () => {
   const dummyOrders = [
     { id: '1', order_number: 'TK-12345', customer_name: 'Budi Santoso', platform: 'TikTok', total_amount: 250000, status: 'completed', order_date: new Date().toISOString() },
     { id: '2', order_number: 'SP-99821', customer_name: 'Siti Aminah', platform: 'Shopee', total_amount: 120000, status: 'pending', order_date: new Date().toISOString() },
-    { id: '3', order_number: 'TP-77612', customer_name: 'Andi Wijaya', platform: 'Tokopedia', total_amount: 450000, status: 'completed', order_date: new Date().toISOString() },
+    { id: '3', order_number: 'SP-77612', customer_name: 'Andi Wijaya', platform: 'Shopee', total_amount: 450000, status: 'completed', order_date: new Date().toISOString() },
   ];
 
   const dummyProducts = [
