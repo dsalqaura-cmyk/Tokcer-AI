@@ -278,7 +278,7 @@ const BusinessInsightSection = ({ t }) => {
       FORMAT RESPON: WAJIB dalam JSON dengan key "section1" sampai "section10".
       Tiap section berisi teks narasi yang kuat, cerdas, dan profesional dalam Bahasa Indonesia (Indoglish diperbolehkan).`;
 
-      const { text: aiResult } = await callDeepSeek("You are Udin, the Strategic Growth Lead at Tokcer AI.", prompt);
+      const { text: aiResult } = await callDeepSeek("You are Udin, the Strategic Growth Lead at Tokcer AI.", prompt, null, 8192);
       
       // Robust JSON Extraction
       let cleanJson = aiResult;
@@ -569,11 +569,28 @@ const BusinessInsightSection = ({ t }) => {
 
           <div className="grid grid-cols-2 gap-8 mb-12">
             <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
-               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Total Gross Revenue</p>
+               <div className="flex items-center gap-2 mb-4">
+                  <iconify-icon icon="solar:chart-square-bold-duotone" className="text-emerald-500"></iconify-icon>
+                  <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Revenue Growth (Visual)</p>
+               </div>
+               <div className="flex items-end gap-2 h-24 mb-2">
+                  {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
+                    <div key={i} className="flex-1 bg-emerald-500/20 border-t-2 border-emerald-500 rounded-t-sm" style={{ height: `${h}%` }}></div>
+                  ))}
+               </div>
                <p className="text-3xl font-black text-emerald-400">IDR {proReportHtml.gross_income_idr.toLocaleString()}</p>
             </div>
             <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
-               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Subscriber Progress</p>
+               <div className="flex items-center gap-2 mb-4">
+                  <iconify-icon icon="solar:user-plus-bold-duotone" className="text-blue-500"></iconify-icon>
+                  <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">User Adoption (Trend)</p>
+               </div>
+               <div className="relative h-24 mb-2 flex items-center justify-center">
+                  <svg className="w-full h-full" viewBox="0 0 100 40">
+                    <path d="M0 35 Q 25 30, 50 15 T 100 5" fill="none" stroke="#3b82f6" strokeWidth="2" />
+                    <circle cx="100" cy="5" r="2" fill="#3b82f6" />
+                  </svg>
+               </div>
                <p className="text-3xl font-black text-blue-400">{proReportHtml.progress_target}% to Target</p>
             </div>
           </div>

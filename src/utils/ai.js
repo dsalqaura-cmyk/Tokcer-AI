@@ -1,4 +1,4 @@
-export const callDeepSeek = async (systemPrompt, userMessage, customApiKey = null) => {
+export const callDeepSeek = async (systemPrompt, userMessage, customApiKey = null, maxTokens = 2048) => {
   const apiKey = customApiKey || import.meta.env.VITE_DEEPSEEK_API_KEY;
   
   if (!apiKey || apiKey === 'your_deepseek_api_key_here') {
@@ -18,7 +18,7 @@ export const callDeepSeek = async (systemPrompt, userMessage, customApiKey = nul
         { role: 'user', content: userMessage }
       ],
       temperature: 0.8,
-      max_tokens: 4096,
+      max_tokens: maxTokens,
     })
   });
 
