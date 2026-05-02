@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../supabase';
 import { callDeepSeek } from '../../../utils/ai';
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 const BusinessInsightSection = ({ t }) => {
   const [reports, setReports] = useState([]);
@@ -13,6 +15,8 @@ const BusinessInsightSection = ({ t }) => {
   const [userNeedsCSV, setUserNeedsCSV] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [reportPeriod, setReportPeriod] = useState('weekly'); // weekly | monthly
+  const [isGeneratingPro, setIsGeneratingPro] = useState(false);
+  const [proReportHtml, setProReportHtml] = useState(null);
 
   // Prices Mapping (Hardcoded as requested for logic safety)
   const PLAN_PRICES = {
@@ -244,6 +248,73 @@ const BusinessInsightSection = ({ t }) => {
     document.body.removeChild(link);
   };
 
+  const handleExportProReport = async (report) => {
+    if (!report) return;
+    setIsGeneratingPro(true);
+    try {
+      // 1. Prepare data for Udin
+      const prompt = `Anda adalah Udin, Senior Strategic & Financial Analyst untuk Tokcer AI. 
+      Tugas Anda: Buatlah laporan bisnis profesional mendalam untuk Investor berdasarkan data berikut:
+      
+      METRIK UTAMA:
+      - Pendapatan Gross: IDR ${report.gross_income_idr.toLocaleString()}
+      - Total MRR: IDR ${report.total_mrr_idr.toLocaleString()}
+      - Net Revenue: IDR ${report.net_revenue_idr.toLocaleString()}
+      - Progress Target 100M: ${report.progress_target}%
+      - User Aktif (Pro/Elite/Ultimate): ${report.active_subscribers_pro}/${report.active_subscribers_elite}/${report.active_subscribers_ultimate}
+      
+      Bapak meminta laporan dalam 10 POIN STRATEGIS berikut:
+      1. Ringkasan Eksekutif (Pencapaian & Fokus Investor)
+      2. Kinerja Keuangan (Revenue growth, margins, burn rate estimate, cash balance)
+      3. Metrik Operasional & Pertumbuhan (Churn rate, CAC, LTV estimate)
+      4. Pengguna & Pelanggan (Engagement & Tren Akuisisi)
+      5. Produk & Pengembangan (Roadmap & Feature adoption)
+      6. Tim & SDM (Moral & Recruitment plan)
+      7. Pemasaran & Penjualan (Conversion rate & Channel efficiency)
+      8. Pasar, Kompetisi & Risiko (Industry trends & Competitor move)
+      9. Penggunaan Dana (Realisasi vs Rencana %)
+      10. Pencapaian Milestone & Rencana 3-6 Bulan Ke Depan.
+      
+      FORMAT RESPON: WAJIB dalam JSON dengan key "section1" sampai "section10".
+      Tiap section berisi teks narasi yang kuat, cerdas, dan profesional dalam Bahasa Indonesia (Indoglish diperbolehkan).`;
+
+      const { text: aiResult } = await callDeepSeek("You are Udin, the Strategic Growth Lead at Tokcer AI.", prompt);
+      const cleanJson = aiResult.replace(/```json|```/g, '').trim();
+      const narrative = JSON.parse(cleanJson);
+
+      // 2. Setup visual for PDF (Hidden Div)
+      const reportId = `pro-report-temp-${report.id}`;
+      setProReportHtml({ ...report, narrative });
+
+      // Wait for React to render the hidden template
+      setTimeout(async () => {
+        const element = document.getElementById(reportId);
+        if (!element) {
+          setIsGeneratingPro(false);
+          return;
+        }
+
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`Tokcer_Investor_Report_${report.date_end}.pdf`);
+        setIsGeneratingPro(false);
+        setProReportHtml(null);
+        alert("✅ Investor Report (PDF) berhasil dibuat!");
+      }, 1000);
+
+    } catch (err) {
+      console.error("Pro Export Error:", err);
+      alert("Gagal membuat laporan Pro: " + err.message);
+      setIsGeneratingPro(false);
+    }
+  };
+
   const filteredReports = reports.filter(r => (r.report_period || 'weekly') === reportPeriod);
 
   return (
@@ -328,13 +399,27 @@ const BusinessInsightSection = ({ t }) => {
                   <iconify-icon icon="solar:notes-bold-duotone" className="text-blue-500 text-xl"></iconify-icon>
                   <span className="text-[10px] font-black text-white uppercase tracking-widest">AI Business Summary</span>
                 </div>
-                <button 
-                  onClick={() => exportToCSV(activeReport)}
-                  className="text-[10px] font-black text-blue-500 hover:text-blue-400 flex items-center gap-1 uppercase tracking-widest"
-                >
-                  <iconify-icon icon="solar:download-square-bold-duotone" className="text-base"></iconify-icon>
-                  Export to CSV
-                </button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => exportToCSV(activeReport)}
+                    className="text-[10px] font-black text-zinc-500 hover:text-white flex items-center gap-1 uppercase tracking-widest px-3 py-1.5 border border-zinc-800 rounded-lg"
+                  >
+                    <iconify-icon icon="solar:file-text-bold-duotone" className="text-base"></iconify-icon>
+                    CSV
+                  </button>
+                  <button 
+                    onClick={() => handleExportProReport(activeReport)}
+                    disabled={isGeneratingPro}
+                    className="text-[10px] font-black text-white bg-blue-600 hover:bg-blue-500 flex items-center gap-1 uppercase tracking-widest px-4 py-1.5 rounded-lg shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                  >
+                    {isGeneratingPro ? (
+                      <iconify-icon icon="solar:spinner-linear" className="animate-spin text-base"></iconify-icon>
+                    ) : (
+                      <iconify-icon icon="solar:crown-bold-duotone" className="text-base text-amber-300"></iconify-icon>
+                    )}
+                    Export Pro Report (PDF)
+                  </button>
+                </div>
               </div>
               
               <div className="p-8 space-y-8">
@@ -458,6 +543,63 @@ const BusinessInsightSection = ({ t }) => {
               <button onClick={() => setIsModalOpen(false)} className="flex-1 py-3 bg-zinc-800 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-700 transition-all">Cancel</button>
               <button onClick={handleAddColumn} className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all">Add Column</button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* HIDDEN PDF TEMPLATE */}
+      {proReportHtml && (
+        <div id={`pro-report-temp-${proReportHtml.id}`} className="fixed left-[-9999px] top-0 w-[800px] bg-black p-12 text-white font-['Inter',sans-serif]">
+          <div className="border-b-4 border-blue-600 pb-8 mb-10 flex justify-between items-end">
+            <div>
+              <h1 className="text-4xl font-black uppercase tracking-tighter text-white">Investor Report</h1>
+              <p className="text-blue-500 font-bold uppercase tracking-[0.3em] text-xs mt-2">Tokcer AI Business Intelligence</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-black text-zinc-500 uppercase">Periode Laporan</p>
+              <p className="text-sm font-bold text-white">{proReportHtml.date_start} s/d {proReportHtml.date_end}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 mb-12">
+            <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
+               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Total Gross Revenue</p>
+               <p className="text-3xl font-black text-emerald-400">IDR {proReportHtml.gross_income_idr.toLocaleString()}</p>
+            </div>
+            <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
+               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Subscriber Progress</p>
+               <p className="text-3xl font-black text-blue-400">{proReportHtml.progress_target}% to Target</p>
+            </div>
+          </div>
+
+          <div className="space-y-10">
+            {[1,2,3,4,5,6,7,8,9,10].map(num => (
+              <div key={num} className="page-break-inside-avoid">
+                <div className="flex items-center gap-3 mb-4">
+                   <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-xs font-black text-white">{num}</div>
+                   <h2 className="text-lg font-black uppercase tracking-tight text-white border-b border-zinc-800 flex-1 pb-1">
+                     {num === 1 && "Ringkasan Eksekutif"}
+                     {num === 2 && "Kinerja Keuangan"}
+                     {num === 3 && "Metrik Operasional & Pertumbuhan"}
+                     {num === 4 && "Pengguna & Pelanggan"}
+                     {num === 5 && "Produk & Pengembangan"}
+                     {num === 6 && "Tim & SDM"}
+                     {num === 7 && "Pemasaran & Penjualan"}
+                     {num === 8 && "Pasar, Kompetisi & Risiko"}
+                     {num === 9 && "Penggunaan Dana"}
+                     {num === 10 && "Milestone & Rencana Mendatang"}
+                   </h2>
+                </div>
+                <div className="pl-11 pr-4">
+                  <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                    {proReportHtml.narrative[`section${num}`] || "Menganalisis data..."}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-20 pt-10 border-t border-zinc-800 text-center">
+            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.5em]">Confidential - Generated by Tokcer AI Core</p>
           </div>
         </div>
       )}
