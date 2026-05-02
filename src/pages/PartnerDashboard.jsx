@@ -103,12 +103,12 @@ const PartnerDashboard = () => {
   const fetchData = async (currentUser) => {
     if (!currentUser) return;
     try {
-      const isBypass = currentUser.id === 'admin-bypass';
+      const isBypass = currentUser.email === 'admin@tokcer-ai.com';
       
       // 1. Fetch Partner Profile
       let query = supabase.from('partners').select('*');
       if (isBypass) {
-        query = query.ilike('email', currentUser.email);
+        query = query.eq('email', currentUser.email);
       } else {
         query = query.eq('id', currentUser.id);
       }
