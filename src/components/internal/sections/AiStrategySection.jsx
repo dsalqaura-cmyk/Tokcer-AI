@@ -94,15 +94,9 @@ const AiStrategySection = ({
             <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">AI Credits Management</label>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-[9px] font-bold text-zinc-500 ml-4 mb-2 block uppercase">DeepSeek API Key</label>
-              <input 
-                type="password"
-                className="w-full bg-black/40 border border-zinc-800 focus:border-blue-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono"
-                placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
-                value={aiConfig.deepseek_api_key || ''}
-                onChange={(e) => setAiConfig({...aiConfig, deepseek_api_key: e.target.value})}
-              />
+            {/* API Key hidden per Agreement - using master key from .env */}
+            <div className="flex items-center justify-center bg-zinc-950/20 border border-zinc-800 rounded-2xl p-4">
+              <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Master API Key Active & Secured</span>
             </div>
             <div>
               <label className="text-[9px] font-bold text-zinc-500 ml-4 mb-2 block uppercase">Total Top-up Amount (USD)</label>
