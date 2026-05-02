@@ -9,6 +9,9 @@ const BusinessInsightSection = ({ t }) => {
   const [customColumns, setCustomColumns] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newColumn, setNewColumn] = useState({ name: '', key: '' });
+  const [partnerCSV, setPartnerCSV] = useState(null);
+  const [userNeedsCSV, setUserNeedsCSV] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Prices Mapping (Hardcoded as requested for logic safety)
   const PLAN_PRICES = {
@@ -31,6 +34,44 @@ const BusinessInsightSection = ({ t }) => {
     const saved = localStorage.getItem('tokcer_custom_report_cols');
     if (saved) setCustomColumns(JSON.parse(saved));
   }, []);
+
+  const handleFileUpload = (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target.result;
+        const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+        if (lines.length < 2) throw new Error("File CSV kosong atau tidak valid");
+
+        // Robust CSV split (handles quotes with commas)
+        const splitCSV = (row) => {
+          const regex = /(".*?"|[^",]+)(?=\s*,|\s*$)/g;
+          return (row.match(regex) || []).map(v => v.replace(/^"|"$/g, '').trim());
+        };
+
+        const headers = splitCSV(lines[0]);
+        const data = lines.slice(1).map(line => {
+          const values = splitCSV(line);
+          const obj = {};
+          headers.forEach((h, i) => obj[h] = values[i] || '');
+          return obj;
+        });
+        
+        if (type === 'partner') setPartnerCSV(data);
+        if (type === 'user') setUserNeedsCSV(data);
+        alert(`✅ Berhasil memuat ${data.length} data dari CSV ${type.toUpperCase()}`);
+      } catch (err) {
+        alert("❌ Gagal membaca CSV: " + err.message);
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const handleGenerateReport = async () => {
     setIsGenerating(true);
@@ -60,14 +101,18 @@ const BusinessInsightSection = ({ t }) => {
       const totalPayout = (payouts || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       const netRevenue = grossIncome - totalPayout;
 
-      // 3. AI Analysis
+      // 3. AI Analysis with Dynamic CSV Data
       const prompt = `Analyze this weekly business data for Tokcer AI:
       - Gross Income: IDR ${grossIncome.toLocaleString()}
       - Total MRR: IDR ${totalMrr.toLocaleString()}
       - Active Paid Users: ${activeSubs.pro + activeSubs.elite + activeSubs.ultimate}
-      - Churn Estimate: High/Low based on patterns (simulate for now)
+      
+      DYNAMIC INPUT FROM CSV:
+      - Partner Uploaded Data: ${partnerCSV ? JSON.stringify(partnerCSV.slice(0, 5)) : 'No custom partner data'}
+      - User Needs Data: ${userNeedsCSV ? JSON.stringify(userNeedsCSV.slice(0, 5)) : 'No custom user needs'}
       
       Please provide a summary in JSON format with keys: "wins", "issues", "actions". 
+      Focus specifically on matching "User Needs" from CSV with our current metrics.
       Keep it professional and in Bahasa Indonesia.`;
       
       const { text: aiResult, usage } = await callDeepSeek("You are a Business Intelligence expert for a SaaS platform.", prompt);
@@ -176,9 +221,21 @@ const BusinessInsightSection = ({ t }) => {
             <iconify-icon icon="solar:add-circle-bold-duotone"></iconify-icon>
             Add Column
           </button>
+          <div className="flex items-center gap-2">
+             <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${partnerCSV ? 'bg-emerald-600/10 border-emerald-500 text-emerald-500' : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700'}`}>
+                <iconify-icon icon={partnerCSV ? "solar:check-circle-bold-duotone" : "solar:file-send-bold-duotone"} className="text-base"></iconify-icon>
+                Partner CSV
+                <input type="file" accept=".csv" className="hidden" onChange={(e) => handleFileUpload(e, 'partner')} />
+             </label>
+             <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${userNeedsCSV ? 'bg-emerald-600/10 border-emerald-500 text-emerald-500' : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700'}`}>
+                <iconify-icon icon={userNeedsCSV ? "solar:check-circle-bold-duotone" : "solar:user-speak-bold-duotone"} className="text-base"></iconify-icon>
+                User Needs CSV
+                <input type="file" accept=".csv" className="hidden" onChange={(e) => handleFileUpload(e, 'user')} />
+             </label>
+          </div>
           <button 
             onClick={handleGenerateReport}
-            disabled={isGenerating}
+            disabled={isGenerating || isUploading}
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all"
           >
             {isGenerating ? (
