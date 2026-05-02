@@ -131,9 +131,8 @@ const PartnerDashboard = () => {
       const { data: subs } = await subsQuery.order('created_at', { ascending: false });
       let safeSubs = subs || [];
       
-      // Simulation Mode for Admin (ONLY BLOCKED ON REAL PRODUCTION DOMAIN)
-      const isRealProduction = window.location.hostname === 'tokcer-ai.com';
-      if (isBypass && safeSubs.length === 0 && !isRealProduction) {
+      // Simulation Mode for Admin (Always active for admin@tokcer-ai.com if DB is empty)
+      if (isBypass && safeSubs.length === 0) {
         console.log("🛠️ Admin Simulation Mode Active");
         safeSubs = [
           { id: 'sim-1', shop_name: 'Fashion Hub Jakarta', email: 'fhub@sample.com', status: 'active', plan: 'pro', created_at: new Date(Date.now() - 86400000).toISOString(), commission_amount: 100000 },
@@ -178,7 +177,7 @@ const PartnerDashboard = () => {
           bankName: partner.bank_name || '',
           bankAccount: partner.bank_account || ''
         });
-      } else if (isBypass && !isRealProduction) {
+      } else if (isBypass) {
         // Mock Partner Profile for Admin Simulation
         const mockPartner = {
           id: 'admin-bypass',

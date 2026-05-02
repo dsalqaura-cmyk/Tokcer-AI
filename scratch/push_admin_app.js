@@ -5,22 +5,35 @@ const supabase = createClient('https://gejccutabxtyxsveczvd.supabase.co', 'eyJhb
 
 async function pushToPartnerApps() {
   try {
-    console.log('Pushing Admin application to database...');
-    const { data, error } = await supabase.from('partner_applications').insert([{
-      nama: 'Admin Simulation Account',
-      email: 'admin@tokcer-ai.com',
-      phone: '08123456789',
-      media_link: 'https://tokcer-ai.com',
-      niche: 'Bisnis',
-      followers: '> 100k',
-      promo_methods: ['WA Blast', 'Social Media'],
-      promo_strategy: 'SIMULATION DATA FOR DEMO PURPOSES',
-      status: 'pending'
-    }]);
+    console.log('Pushing Admin application with AGREED status...');
+    
+    // Check if already exists to avoid clutter
+    const { data: existing } = await supabase.from('partner_applications').select('id').eq('email', 'admin@tokcer-ai.com').maybeSingle();
+    
+    if (existing) {
+       console.log('Existing application found. Updating to AGREED...');
+       const { error: updateError } = await supabase.from('partner_applications')
+        .update({ status: 'agreed', agreed_at: new Date().toISOString() })
+        .eq('id', existing.id);
+       if (updateError) throw updateError;
+    } else {
+       const { error } = await supabase.from('partner_applications').insert([{
+        nama: 'Admin Simulation Account',
+        email: 'admin@tokcer-ai.com',
+        whatsapp: '08123456789',
+        media_link: 'https://tokcer-ai.com',
+        niche: 'Bisnis',
+        followers: '> 100k',
+        promo_methods: ['WA Blast', 'Social Media'],
+        promo_strategy: 'SIMULATION DATA FOR DEMO PURPOSES',
+        status: 'agreed',
+        agreed_at: new Date().toISOString()
+      }]);
+      if (error) throw error;
+    }
 
-    if (error) throw error;
-    console.log('✅ Success! Admin application is now in PENDING status.');
-    console.log('Please go to Internal Dashboard -> Approvals and Approve it.');
+    console.log('✅ Success! Admin application is now in AGREED status.');
+    console.log('Go to Dashboard Admin -> Approval Center -> Partner Applications.');
   } catch (err) {
     console.error('Error:', err.message);
   }
