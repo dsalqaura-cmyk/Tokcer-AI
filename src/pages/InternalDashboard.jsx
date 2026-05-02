@@ -205,6 +205,7 @@ const InternalDashboard = () => {
         { key: 'shopee_partner_key', value: aiConfig.shopee_partner_key || '' },
         { key: 'tiktok_app_id', value: aiConfig.tiktok_app_id || '' },
         { key: 'tiktok_app_secret', value: aiConfig.tiktok_app_secret || '' },
+        { key: 'deepseek_api_key', value: aiConfig.deepseek_api_key || '' },
         { key: 'ai_total_topup', value: aiConfig.ai_total_topup || '0' }
       ];
 

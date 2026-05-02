@@ -678,8 +678,12 @@ const Dashboard = () => {
       const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
+      // Fetch dynamic API Key from DB first
+      const { data: aiDbConfig } = await supabase.from('ai_configs').select('value').eq('key', 'deepseek_api_key').maybeSingle();
+      const dynamicApiKey = aiDbConfig?.value;
+
       // 3. Call DeepSeek
-      const { text: result, usage } = await callDeepSeek(fullSystemPrompt, userMessage);
+      const { text: result, usage } = await callDeepSeek(fullSystemPrompt, userMessage, dynamicApiKey);
       
       // Update tokens/credits if applicable (optional based on your credit system)
       // For now we just log it
@@ -769,8 +773,12 @@ const Dashboard = () => {
         "strategy": (strategi eksekusi yang actionable)
       }`;
       
+      // Fetch dynamic API Key from DB first
+      const { data: aiDbConfig } = await supabase.from('ai_configs').select('value').eq('key', 'deepseek_api_key').maybeSingle();
+      const dynamicApiKey = aiDbConfig?.value;
+
       const userQuery = `Analyze this niche/product: "${trendPrompt}" within my business category: ${bizType}`;
-      const { text: result, usage } = await callDeepSeek(systemPrompt, userQuery);
+      const { text: result, usage } = await callDeepSeek(systemPrompt, userQuery, dynamicApiKey);
       setTrendResult(result);
 
       await supabase.from('ai_usage_logs').insert([{
