@@ -179,29 +179,45 @@ const Dashboard = () => {
     };
 
     const handleConnectTikTok = async () => {
-        const canAdd = await checkStoreLimit();
-        if (!canAdd) return;
         try {
-            // 1. Fetch TikTok Config
-            const { data: config } = await supabase
+            // 1. Cek Limit (Skip untuk Admin)
+            if (user?.email !== 'admin@tokcer-ai.com') {
+                const canAdd = await checkStoreLimit();
+                if (!canAdd) {
+                    alert(`Batas toko untuk paket ${profile?.subscription_plan || 'Starter'} telah tercapai.`);
+                    return;
+                }
+            }
+
+            // 2. Ambil Config TikTok dari Database
+            const { data: config, error: configError } = await supabase
                 .from('ai_configs')
-                .select('*')
+                .select('value')
                 .eq('key', 'tiktok_app_id')
                 .maybeSingle();
 
-            if (!config?.value) {
-                alert("⚠️ App ID TikTok belum dikonfigurasi. Hubungi Admin.");
+            if (configError) {
+                console.warn("DB Config Error, using fallback...");
+            }
+
+            const appId = config?.value || import.meta.env.VITE_TIKTOK_APP_ID;
+            
+            if (!appId) {
+                alert("⚠️ App ID TikTok belum dikonfigurasi. Mohon isi di menu Admin.");
                 return;
             }
 
-            // 2. Get Auth URL
-            const authUrl = getTikTokAuthUrl(config.value);
-
-            // 3. Redirect
-            window.location.href = authUrl;
+            // 3. Redirect ke TikTok
+            window.location.href = getTikTokAuthUrl(appId);
         } catch (err) {
             console.error("TikTok Auth Error:", err);
-            alert("Gagal menghubungi TikTok: " + err.message);
+            // Jika database error, gunakan fallback dari .env agar tidak mati total
+            const fallbackId = import.meta.env.VITE_TIKTOK_APP_ID;
+            if (fallbackId) {
+                window.location.href = getTikTokAuthUrl(fallbackId);
+            } else {
+                alert("Gagal menghubungi server: " + err.message);
+            }
         }
     };
 
