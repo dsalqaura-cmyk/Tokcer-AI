@@ -94,7 +94,6 @@ const BusinessInsightSection = ({ t }) => {
   const handleGenerateReport = async () => {
     setIsGenerating(true);
     try {
-      // 1. Fetch Raw Data
       const { data: clients } = await supabase.from('clients').select('*');
       const { data: orders } = await supabase.from('orders').select('*');
       const { data: payouts } = await supabase.from('payouts').select('*').eq('status', 'paid');
@@ -252,63 +251,39 @@ const BusinessInsightSection = ({ t }) => {
     if (!report) return;
     setIsGeneratingPro(true);
     try {
-      // 1. Prepare data for Udin
       const prompt = `Anda adalah Udin, Senior Strategic & Financial Analyst untuk Tokcer AI. 
-      Tugas Anda: Buatlah laporan bisnis mendalam untuk Investor berdasarkan data berikut. 
-      Tuliskan narasi secara PADAT, TAJAM, dan STRATEGIS (Maksimal 2-3 kalimat per poin agar tidak terpotong).
+      Buatlah laporan bisnis profesional mendalam untuk Investor dalam format MARKDOWN (.md) berdasarkan data berikut:
+      - Gross: IDR ${report.gross_income_idr.toLocaleString()}
+      - MRR: IDR ${report.total_mrr_idr.toLocaleString()}
+      - User Aktif: ${report.total_active_paid}
       
-      METRIK UTAMA:
-      - Pendapatan Gross: IDR ${report.gross_income_idr.toLocaleString()}
-      - Total MRR: IDR ${report.total_mrr_idr.toLocaleString()}
-      - Net Revenue: IDR ${report.net_revenue_idr.toLocaleString()}
-      - Progress Target 100M: ${report.progress_target}%
-      - User Aktif (Pro/Elite/Ultimate): ${report.active_subscribers_pro}/${report.active_subscribers_elite}/${report.active_subscribers_ultimate}
+      Laporan HARUS mencakup 10 poin utama:
+      1. Ringkasan Eksekutif, 2. Kinerja Keuangan, 3. Metrik Operasional, 4. Pengguna, 5. Produk, 6. Tim, 7. Pemasaran, 8. Pasar & Risiko, 9. Penggunaan Dana, 10. Milestone.
       
-      Bapak meminta laporan dalam 10 POIN STRATEGIS berikut:
-      1. Ringkasan Eksekutif, 2. Kinerja Keuangan, 3. Metrik Operasional, 4. Pengguna & Pelanggan, 5. Produk & Pengembangan, 6. Tim & SDM, 7. Pemasaran & Penjualan, 8. Pasar & Risiko, 9. Penggunaan Dana, 10. Milestone.
+      Tulis dengan gaya bahasa profesional dan tajam. Jangan gunakan JSON, langsung tulis MARKDOWN.`;
+
+      const { text: aiResult } = await callDeepSeek("You are Udin, Strategic Growth Lead.", prompt, null, 8192);
+
+      // Save to active report for display
+      const updatedReport = { ...report, full_md: aiResult };
+      setActiveReport(updatedReport);
+
+      // Export as .md file
+      const blob = new Blob([aiResult], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Tokcer_Investor_Report_${report.date_end}.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
-      FORMAT RESPON: WAJIB dalam JSON MINIFIED dengan key "section1" sampai "section10". Jangan berikan teks pembuka/penutup, HANYA JSON.`;
-
-      const { text: aiResult } = await callDeepSeek("You are Udin, the Strategic Growth Lead at Tokcer AI.", prompt, null, 8192);
-      
-      // Robust JSON Extraction
-      let cleanJson = aiResult;
-      const jsonMatch = aiResult.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        cleanJson = jsonMatch[0];
-      }
-      
-      const narrative = JSON.parse(cleanJson);
-
-      // 2. Setup visual for PDF (Hidden Div)
-      const reportId = `pro-report-temp-${report.id}`;
-      setProReportHtml({ ...report, narrative });
-
-      // Wait for React to render the hidden template
-      setTimeout(async () => {
-        const element = document.getElementById(reportId);
-        if (!element) {
-          setIsGeneratingPro(false);
-          return;
-        }
-
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`Tokcer_Investor_Report_${report.date_end}.pdf`);
-        setIsGeneratingPro(false);
-        setProReportHtml(null);
-        alert("✅ Investor Report (PDF) berhasil dibuat!");
-      }, 1000);
-
+      setIsGeneratingPro(false);
+      alert("✅ Laporan Investor (.md) berhasil diunduh!");
     } catch (err) {
-      console.error("Pro Export Error:", err);
-      alert("Gagal membuat laporan Pro: " + err.message);
+      console.error("MD Export Error:", err);
+      alert("Gagal membuat laporan .md: " + err.message);
       setIsGeneratingPro(false);
     }
   };
@@ -415,37 +390,49 @@ const BusinessInsightSection = ({ t }) => {
                     ) : (
                       <iconify-icon icon="solar:crown-bold-duotone" className="text-base text-amber-300"></iconify-icon>
                     )}
-                    Export Pro Report (PDF)
+                    Export Pro Report (.md)
                   </button>
                 </div>
               </div>
               
               <div className="p-8 space-y-8">
-                {[
-                  { id: 'fh', title: 'Part 1: Financial Health', data: activeReport.executive_summary?.financial_health, icon: 'solar:wallet-money-bold-duotone', color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
-                  { id: 'sm', title: 'Part 2: Subscriber Movement', data: activeReport.executive_summary?.subscriber_movement, icon: 'solar:users-group-rounded-bold-duotone', color: 'text-blue-500', bg: 'bg-blue-500/5' },
-                  { id: 'pp', title: 'Part 3: Partner Performance', data: activeReport.executive_summary?.partner_performance, icon: 'solar:hand-stars-bold-duotone', color: 'text-purple-500', bg: 'bg-purple-500/5' },
-                  { id: 'of', title: 'Part 4: Organic Funnel', data: activeReport.executive_summary?.organic_funnel, icon: 'solar:graph-bold-duotone', color: 'text-amber-500', bg: 'bg-amber-500/5' },
-                  { id: 'ra', title: 'Part 5: Risk & Alert 🚨', data: activeReport.executive_summary?.risk_alert, icon: 'solar:danger-bold-duotone', color: 'text-rose-500', bg: 'bg-rose-500/5' },
-                  { id: 'sr', title: 'Part 6: Strategic Recommendation', data: activeReport.executive_summary?.strategic_recommendation, icon: 'solar:magic-stick-bold-duotone', color: 'text-indigo-500', bg: 'bg-indigo-500/5' },
-                ].map((section) => (
-                  <div key={section.id} className="animate-in fade-in slide-in-from-left-4 duration-500">
-                    <h4 className={`text-[10px] font-black ${section.color} uppercase tracking-widest mb-3 flex items-center gap-2`}>
-                      <iconify-icon icon={section.icon}></iconify-icon>
-                      {section.title}
-                    </h4>
-                    <div className={`p-4 ${section.bg} border border-white/5 rounded-xl`}>
-                      <ul className="space-y-2">
-                        {Array.isArray(section.data) ? section.data.map((point, idx) => (
-                          <li key={idx} className="flex gap-3 text-xs text-zinc-300 leading-relaxed">
-                            <span className="text-zinc-600 mt-1">•</span>
-                            {point}
-                          </li>
-                        )) : <li className="text-xs text-zinc-500 italic">No data available</li>}
-                      </ul>
-                    </div>
-                  </div>
-                ))}
+                {activeReport.full_md ? (
+                   <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6">
+                      <div className="prose prose-invert max-w-none">
+                         <div className="whitespace-pre-wrap text-sm text-zinc-300 leading-relaxed font-mono">
+                            {activeReport.full_md}
+                         </div>
+                      </div>
+                   </div>
+                ) : (
+                  <>
+                    {[
+                      { id: 'fh', title: 'Part 1: Financial Health', data: activeReport.executive_summary?.financial_health, icon: 'solar:wallet-money-bold-duotone', color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
+                      { id: 'sm', title: 'Part 2: Subscriber Movement', data: activeReport.executive_summary?.subscriber_movement, icon: 'solar:users-group-rounded-bold-duotone', color: 'text-blue-500', bg: 'bg-blue-500/5' },
+                      { id: 'pp', title: 'Part 3: Partner Performance', data: activeReport.executive_summary?.partner_performance, icon: 'solar:hand-stars-bold-duotone', color: 'text-purple-500', bg: 'bg-purple-500/5' },
+                      { id: 'of', title: 'Part 4: Organic Funnel', data: activeReport.executive_summary?.organic_funnel, icon: 'solar:graph-bold-duotone', color: 'text-amber-500', bg: 'bg-amber-500/5' },
+                      { id: 'ra', title: 'Part 5: Risk & Alert 🚨', data: activeReport.executive_summary?.risk_alert, icon: 'solar:danger-bold-duotone', color: 'text-rose-500', bg: 'bg-rose-500/5' },
+                      { id: 'sr', title: 'Part 6: Strategic Recommendation', data: activeReport.executive_summary?.strategic_recommendation, icon: 'solar:magic-stick-bold-duotone', color: 'text-indigo-500', bg: 'bg-indigo-500/5' },
+                    ].map((section) => (
+                      <div key={section.id} className="animate-in fade-in slide-in-from-left-4 duration-500">
+                        <h4 className={`text-[10px] font-black ${section.color} uppercase tracking-widest mb-3 flex items-center gap-2`}>
+                          <iconify-icon icon={section.icon}></iconify-icon>
+                          {section.title}
+                        </h4>
+                        <div className={`p-4 ${section.bg} border border-white/5 rounded-xl`}>
+                          <ul className="space-y-2">
+                            {Array.isArray(section.data) ? section.data.map((point, idx) => (
+                              <li key={idx} className="flex gap-3 text-xs text-zinc-300 leading-relaxed">
+                                <span className="text-zinc-600 mt-1">•</span>
+                                {point}
+                              </li>
+                            )) : <li className="text-xs text-zinc-500 italic">No data available</li>}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
                 
                 <div className="pt-6 border-t border-zinc-800">
                    <div className="flex justify-between items-center mb-3">
