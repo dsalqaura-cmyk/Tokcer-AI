@@ -254,7 +254,8 @@ const BusinessInsightSection = ({ t }) => {
     try {
       // 1. Prepare data for Udin
       const prompt = `Anda adalah Udin, Senior Strategic & Financial Analyst untuk Tokcer AI. 
-      Tugas Anda: Buatlah laporan bisnis profesional mendalam untuk Investor berdasarkan data berikut:
+      Tugas Anda: Buatlah laporan bisnis mendalam untuk Investor berdasarkan data berikut. 
+      Tuliskan narasi secara PADAT, TAJAM, dan STRATEGIS (Maksimal 2-3 kalimat per poin agar tidak terpotong).
       
       METRIK UTAMA:
       - Pendapatan Gross: IDR ${report.gross_income_idr.toLocaleString()}
@@ -264,19 +265,9 @@ const BusinessInsightSection = ({ t }) => {
       - User Aktif (Pro/Elite/Ultimate): ${report.active_subscribers_pro}/${report.active_subscribers_elite}/${report.active_subscribers_ultimate}
       
       Bapak meminta laporan dalam 10 POIN STRATEGIS berikut:
-      1. Ringkasan Eksekutif (Pencapaian & Fokus Investor)
-      2. Kinerja Keuangan (Revenue growth, margins, burn rate estimate, cash balance)
-      3. Metrik Operasional & Pertumbuhan (Churn rate, CAC, LTV estimate)
-      4. Pengguna & Pelanggan (Engagement & Tren Akuisisi)
-      5. Produk & Pengembangan (Roadmap & Feature adoption)
-      6. Tim & SDM (Moral & Recruitment plan)
-      7. Pemasaran & Penjualan (Conversion rate & Channel efficiency)
-      8. Pasar, Kompetisi & Risiko (Industry trends & Competitor move)
-      9. Penggunaan Dana (Realisasi vs Rencana %)
-      10. Pencapaian Milestone & Rencana 3-6 Bulan Ke Depan.
+      1. Ringkasan Eksekutif, 2. Kinerja Keuangan, 3. Metrik Operasional, 4. Pengguna & Pelanggan, 5. Produk & Pengembangan, 6. Tim & SDM, 7. Pemasaran & Penjualan, 8. Pasar & Risiko, 9. Penggunaan Dana, 10. Milestone.
       
-      FORMAT RESPON: WAJIB dalam JSON dengan key "section1" sampai "section10".
-      Tiap section berisi teks narasi yang kuat, cerdas, dan profesional dalam Bahasa Indonesia (Indoglish diperbolehkan).`;
+      FORMAT RESPON: WAJIB dalam JSON MINIFIED dengan key "section1" sampai "section10". Jangan berikan teks pembuka/penutup, HANYA JSON.`;
 
       const { text: aiResult } = await callDeepSeek("You are Udin, the Strategic Growth Lead at Tokcer AI.", prompt, null, 8192);
       
