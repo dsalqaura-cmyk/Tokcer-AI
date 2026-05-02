@@ -12,6 +12,7 @@ const BusinessInsightSection = ({ t }) => {
   const [partnerCSV, setPartnerCSV] = useState(null);
   const [userNeedsCSV, setUserNeedsCSV] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [reportPeriod, setReportPeriod] = useState('weekly'); // weekly | monthly
 
   // Prices Mapping (Hardcoded as requested for logic safety)
   const PLAN_PRICES = {
@@ -47,17 +48,30 @@ const BusinessInsightSection = ({ t }) => {
         const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
         if (lines.length < 2) throw new Error("File CSV kosong atau tidak valid");
 
-        // Robust CSV split (handles quotes with commas)
-        const splitCSV = (row) => {
-          const regex = /(".*?"|[^",]+)(?=\s*,|\s*$)/g;
-          return (row.match(regex) || []).map(v => v.replace(/^"|"$/g, '').trim());
+        const splitCSVLine = (line) => {
+          const result = [];
+          let cur = "";
+          let inQuote = false;
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') inQuote = !inQuote;
+            else if (char === ',' && !inQuote) {
+              result.push(cur.trim());
+              cur = "";
+            } else cur += char;
+          }
+          result.push(cur.trim());
+          return result;
         };
 
-        const headers = splitCSV(lines[0]);
+        const headers = splitCSVLine(lines[0]);
         const data = lines.slice(1).map(line => {
-          const values = splitCSV(line);
+          const values = splitCSVLine(line);
           const obj = {};
-          headers.forEach((h, i) => obj[h] = values[i] || '');
+          headers.forEach((h, i) => {
+            const cleanH = h.trim();
+            if (cleanH) obj[cleanH] = values[i] || '';
+          });
           return obj;
         });
         
@@ -101,44 +115,69 @@ const BusinessInsightSection = ({ t }) => {
       const totalPayout = (payouts || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       const netRevenue = grossIncome - totalPayout;
 
-      // 3. AI Analysis with Dynamic CSV Data
-      const prompt = `Analyze this weekly business data for Tokcer AI:
+      // 3. AI Analysis with Dynamic CSV Data & Executive Summary Requirements
+      const prevReport = reports[0] || null;
+      const targetRevenue = 100000000; // 100M Target
+      const progressToTarget = ((grossIncome / targetRevenue) * 100).toFixed(1);
+
+      const prompt = `Analyze this ${reportPeriod} business data for Tokcer AI. 
+      Target Revenue: IDR 100,000,000/month. Current Progress: ${progressToTarget}%.
+      
+      RAW METRICS:
       - Gross Income: IDR ${grossIncome.toLocaleString()}
       - Total MRR: IDR ${totalMrr.toLocaleString()}
+      - Net Revenue: IDR ${netRevenue.toLocaleString()}
       - Active Paid Users: ${activeSubs.pro + activeSubs.elite + activeSubs.ultimate}
       
       DYNAMIC INPUT FROM CSV:
-      - Partner Uploaded Data: ${partnerCSV ? JSON.stringify(partnerCSV.slice(0, 5)) : 'No custom partner data'}
-      - User Needs Data: ${userNeedsCSV ? JSON.stringify(userNeedsCSV.slice(0, 5)) : 'No custom user needs'}
+      - Partner Data: ${partnerCSV ? JSON.stringify(partnerCSV.slice(0, 5)) : 'No custom partner data'}
+      - User/Market Report Data: ${userNeedsCSV ? JSON.stringify(userNeedsCSV.slice(0, 5)) : 'No custom user needs'}
       
-      Please provide a summary in JSON format with keys: "wins", "issues", "actions". 
-      Focus specifically on matching "User Needs" from CSV with our current metrics.
-      Keep it professional and in Bahasa Indonesia.`;
+      COMPARE WITH PREVIOUS: ${prevReport ? `Prev Income: ${prevReport.gross_income_idr}` : 'First Report'}
+
+      PLEASE PROVIDE EXECUTIVE SUMMARY IN JSON WITH THESE KEYS:
+      "financial_health": (Point List based on Part 1),
+      "subscriber_movement": (Point List based on Part 2),
+      "partner_performance": (Point List based on Part 3),
+      "organic_funnel": (Point List based on Part 4),
+      "risk_alert": (Point List based on Part 5),
+      "strategic_recommendation": (Point List based on Part 6)
       
-      const { text: aiResult, usage } = await callDeepSeek("You are a Business Intelligence expert for a SaaS platform.", prompt);
+      Ensure each section contains 3-5 bullet points. Keep it professional and in Bahasa Indonesia.`;
+      
+      const { text: aiResult, usage } = await callDeepSeek("You are a Senior Business Intelligence expert for Tokcer AI SaaS.", prompt);
       const cleanJson = aiResult.replace(/```json|```/g, '').trim();
 
       // Log AI Usage
       await supabase.from('ai_usage_logs').insert([{
-          user_id: 'admin-bypass', // Dashboard internal use admin id
-          feature: 'weekly_report_analysis',
+          user_id: 'admin-bypass', 
+          feature: 'executive_summary_analysis',
           prompt: prompt,
           response: aiResult,
           input_tokens: usage.prompt_tokens,
           output_tokens: usage.completion_tokens,
           cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
       }]);
-      let aiNotes = { wins: '', issues: '', actions: '' };
+      let aiNotes = { 
+        financial_health: [], 
+        subscriber_movement: [], 
+        partner_performance: [], 
+        organic_funnel: [], 
+        risk_alert: [], 
+        strategic_recommendation: [] 
+      };
       try {
         aiNotes = JSON.parse(cleanJson);
       } catch (e) {
-        aiNotes = { wins: aiResult, issues: 'Analysis complete', actions: 'Review data' };
+        console.error("AI JSON Parse Error:", e);
+        aiNotes = { financial_health: [aiResult], subscriber_movement: [], partner_performance: [], organic_funnel: [], risk_alert: [], strategic_recommendation: [] };
       }
 
       const newReport = {
         id: Date.now(),
-        report_week: `W${Math.ceil(new Date().getDate() / 7)}`,
-        date_start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        report_period: reportPeriod,
+        report_week: reportPeriod === 'weekly' ? `W${Math.ceil(new Date().getDate() / 7)}` : `M${new Date().getMonth() + 1}`,
+        date_start: new Date(Date.now() - (reportPeriod === 'weekly' ? 7 : 30) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         date_end: new Date().toISOString().split('T')[0],
         gross_income_idr: grossIncome,
         total_mrr_idr: totalMrr,
@@ -152,9 +191,8 @@ const BusinessInsightSection = ({ t }) => {
         active_subscribers_elite: activeSubs.elite,
         active_subscribers_ultimate: activeSubs.ultimate,
         total_active_paid: activeSubs.pro + activeSubs.elite + activeSubs.ultimate,
-        wins: aiNotes.wins,
-        issues: aiNotes.issues,
-        actions: aiNotes.actions,
+        progress_target: progressToTarget,
+        executive_summary: aiNotes,
         created_at: new Date().toISOString()
       };
 
@@ -200,11 +238,13 @@ const BusinessInsightSection = ({ t }) => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Tokcer_Weekly_Report_${report.date_end}.csv`);
+    link.setAttribute("download", `Tokcer_${report.report_period}_Report_${report.date_end}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  const filteredReports = reports.filter(r => (r.report_period || 'weekly') === reportPeriod);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -213,23 +253,30 @@ const BusinessInsightSection = ({ t }) => {
           <h2 className="text-2xl font-black text-white tracking-tighter uppercase">Business Insight & Analytics</h2>
           <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1">AI-Powered Financial Reporting System</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1">
           <button 
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-[10px] font-black uppercase tracking-widest border border-zinc-700 transition-all"
+            onClick={() => setReportPeriod('weekly')}
+            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${reportPeriod === 'weekly' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
-            <iconify-icon icon="solar:add-circle-bold-duotone"></iconify-icon>
-            Add Column
+            Weekly
           </button>
+          <button 
+            onClick={() => setReportPeriod('monthly')}
+            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${reportPeriod === 'monthly' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            Monthly
+          </button>
+        </div>
+        <div className="flex gap-3">
           <div className="flex items-center gap-2">
              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${partnerCSV ? 'bg-emerald-600/10 border-emerald-500 text-emerald-500' : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700'}`}>
                 <iconify-icon icon={partnerCSV ? "solar:check-circle-bold-duotone" : "solar:file-send-bold-duotone"} className="text-base"></iconify-icon>
-                Partner CSV
+                Partner Report
                 <input type="file" accept=".csv" className="hidden" onChange={(e) => handleFileUpload(e, 'partner')} />
              </label>
              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${userNeedsCSV ? 'bg-emerald-600/10 border-emerald-500 text-emerald-500' : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700'}`}>
                 <iconify-icon icon={userNeedsCSV ? "solar:check-circle-bold-duotone" : "solar:user-speak-bold-duotone"} className="text-base"></iconify-icon>
-                User Needs CSV
+                User Report
                 <input type="file" accept=".csv" className="hidden" onChange={(e) => handleFileUpload(e, 'user')} />
              </label>
           </div>
@@ -243,7 +290,7 @@ const BusinessInsightSection = ({ t }) => {
             ) : (
               <iconify-icon icon="solar:magic-stick-bold-duotone" className="text-lg"></iconify-icon>
             )}
-            Generate Weekly Report
+            Generate {reportPeriod === 'weekly' ? 'Weekly' : 'Monthly'} Report
           </button>
         </div>
       </header>
@@ -290,32 +337,45 @@ const BusinessInsightSection = ({ t }) => {
                 </button>
               </div>
               <div className="p-6 space-y-6">
-                <div>
-                  <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <iconify-icon icon="solar:star-bold-duotone"></iconify-icon>
-                    Weekly Wins
-                  </h4>
-                  <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-sm text-zinc-300 leading-relaxed italic">
-                    {activeReport.wins}
+              <div className="p-6 space-y-8">
+                {[
+                  { id: 'fh', title: 'Part 1: Financial Health', data: activeReport.executive_summary?.financial_health, icon: 'solar:wallet-money-bold-duotone', color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
+                  { id: 'sm', title: 'Part 2: Subscriber Movement', data: activeReport.executive_summary?.subscriber_movement, icon: 'solar:users-group-rounded-bold-duotone', color: 'text-blue-500', bg: 'bg-blue-500/5' },
+                  { id: 'pp', title: 'Part 3: Partner Performance', data: activeReport.executive_summary?.partner_performance, icon: 'solar:hand-stars-bold-duotone', color: 'text-purple-500', bg: 'bg-purple-500/5' },
+                  { id: 'of', title: 'Part 4: Organic Funnel', data: activeReport.executive_summary?.organic_funnel, icon: 'solar:graph-bold-duotone', color: 'text-amber-500', bg: 'bg-amber-500/5' },
+                  { id: 'ra', title: 'Part 5: Risk & Alert 🚨', data: activeReport.executive_summary?.risk_alert, icon: 'solar:danger-bold-duotone', color: 'text-rose-500', bg: 'bg-rose-500/5' },
+                  { id: 'sr', title: 'Part 6: Strategic Recommendation', data: activeReport.executive_summary?.strategic_recommendation, icon: 'solar:magic-stick-bold-duotone', color: 'text-indigo-500', bg: 'bg-indigo-500/5' },
+                ].map((section) => (
+                  <div key={section.id} className="animate-in fade-in slide-in-from-left-4 duration-500">
+                    <h4 className={`text-[10px] font-black ${section.color} uppercase tracking-widest mb-3 flex items-center gap-2`}>
+                      <iconify-icon icon={section.icon}></iconify-icon>
+                      {section.title}
+                    </h4>
+                    <div className={`p-4 ${section.bg} border border-white/5 rounded-xl`}>
+                      <ul className="space-y-2">
+                        {Array.isArray(section.data) ? section.data.map((point, idx) => (
+                          <li key={idx} className="flex gap-3 text-xs text-zinc-300 leading-relaxed">
+                            <span className="text-zinc-600 mt-1">•</span>
+                            {point}
+                          </li>
+                        )) : <li className="text-xs text-zinc-500 italic">No data available for this section</li>}
+                      </ul>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <iconify-icon icon="solar:danger-bold-duotone"></iconify-icon>
-                    Critical Issues
-                  </h4>
-                  <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-xl text-sm text-zinc-300 leading-relaxed italic">
-                    {activeReport.issues}
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <iconify-icon icon="solar:rocket-bold-duotone"></iconify-icon>
-                    Action Items
-                  </h4>
-                  <div className="p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl text-sm text-zinc-300 leading-relaxed italic">
-                    {activeReport.actions}
-                  </div>
+                ))}
+                
+                {/* Target Progress Bar */}
+                <div className="pt-4 border-t border-zinc-800">
+                   <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Progress to 100M Target</span>
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest">{activeReport.progress_target}%</span>
+                   </div>
+                   <div className="w-full bg-zinc-900 rounded-full h-2 overflow-hidden border border-zinc-800">
+                      <div 
+                        className="bg-gradient-to-r from-blue-600 to-indigo-400 h-full transition-all duration-1000" 
+                        style={{ width: `${Math.min(activeReport.progress_target, 100)}%` }}
+                      ></div>
+                   </div>
                 </div>
               </div>
             </div>
@@ -325,10 +385,10 @@ const BusinessInsightSection = ({ t }) => {
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
               <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                 <iconify-icon icon="solar:history-bold-duotone" className="text-zinc-500"></iconify-icon>
-                Report History
+                {reportPeriod === 'weekly' ? 'Weekly' : 'Monthly'} History
               </h3>
               <div className="space-y-3">
-                {reports.map((r, i) => (
+                {filteredReports.map((r, i) => (
                   <div 
                     key={i} 
                     className={`flex items-center justify-between p-3 border rounded-xl transition-all cursor-pointer group ${activeReport?.id === r.id ? 'bg-blue-600/10 border-blue-500' : 'bg-black border-zinc-800 hover:border-zinc-700'}`} 
