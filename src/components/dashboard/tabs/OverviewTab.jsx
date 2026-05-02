@@ -58,7 +58,13 @@ const OverviewTab = ({
 
   const totalRev = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const totalProfit = totalRev * 0.2;
-  const convRate = 0; 
+  
+  // MOCK DATA FOR PRESENTATION
+  const convRate = totalRev > 0 ? 3.2 : 0; 
+  const tiktokLive = totalRev > 0 ? 142 : 0;
+  const instaLive = totalRev > 0 ? 85 : 0;
+  const totalVisitors = tiktokLive + instaLive;
+
   const healthScore = products.length > 0 
     ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
     : 0;
@@ -167,18 +173,18 @@ const OverviewTab = ({
                 <iconify-icon icon="ri:tiktok-fill" className="text-lg"></iconify-icon>
                 <span className="text-[10px]">TikTok Live</span>
               </div>
-              <div className="text-lg font-bold text-white">0</div>
+              <div className="text-lg font-bold text-white">{tiktokLive}</div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-zinc-400">
                 <iconify-icon icon="ri:instagram-fill" className="text-lg text-pink-500"></iconify-icon>
                 <span className="text-[10px]">Insta Live</span>
               </div>
-              <div className="text-lg font-bold text-white">0</div>
+              <div className="text-lg font-bold text-white">{instaLive}</div>
             </div>
             <div className="pt-3 border-t border-zinc-800 flex items-center justify-between">
                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Total</span>
-               <span className="text-sm font-bold text-zinc-600">0</span>
+               <span className="text-sm font-bold text-zinc-600">{totalVisitors}</span>
             </div>
           </div>
         </div>

@@ -248,15 +248,20 @@ const InternalDashboard = () => {
       return;
     }
 
+    // Peringatan Domain Resend Sandbox
+    if (email.includes('mailinator') || email.includes('example')) {
+      console.log("ℹ️ Mengirim ke email testing/mailinator via Resend Sandbox...");
+    }
+
     try {
-      await fetch('https://api.resend.com/emails', {
+      const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          from: 'Tokcer AI <onboarding@resend.dev>',
+          from: 'Tokcer AI <onboarding@resend.dev>', // Catatan: Ganti ke admin@tokcer-ai.com jika domain sudah verified
           to: [email],
           subject: '🚀 Akun Tokcer AI Anda Telah Aktif!',
           html: `
@@ -267,7 +272,7 @@ const InternalDashboard = () => {
               <div style="background: #fdf2f7; padding: 15px; border-radius: 8px; margin: 20px 0;">
                 <p style="margin: 0;"><b>Link Dashboard:</b> <a href="https://tokcer-ai.com/login">tokcer-ai.com/login</a></p>
                 <p style="margin: 10px 0 0 0;"><b>Username:</b> ${email}</p>
-                <p style="margin: 5px 0 0 0;"><b>Password:</b> (Gunakan password saat registrasi)</p>
+                <p style="margin: 5px 0 0 0;"><b>Password:</b> Tokcer@2026</p>
               </div>
               <p style="font-size: 12px; color: #666;">Jika Anda lupa password, silakan gunakan fitur "Lupa Password" di halaman login.</p>
               <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
@@ -276,9 +281,16 @@ const InternalDashboard = () => {
           `
         })
       });
-      console.log("📧 Welcome email sent to:", email);
+
+      const result = await response.json();
+      if (response.ok) {
+        console.log("📧 Welcome email sent successfully to:", email, "ID:", result.id);
+      } else {
+        console.error("❌ Resend API Error:", result);
+        // Jika error 403, biasanya karena domain belum verified atau kirim ke email yang tidak terdaftar di sandbox
+      }
     } catch (err) {
-      console.error("❌ Failed to send email:", err);
+      console.error("❌ Network error while sending email:", err);
     }
   };
 

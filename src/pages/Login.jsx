@@ -69,7 +69,7 @@ const Login = () => {
     setError(null);
     
     // Handle Admin Total Bypass
-    if (email === 'admin@tokcer-ai.com' && password === 'Dind@2883') {
+    if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
       localStorage.setItem('tokcer_admin_auth', 'true');
       const adminUser = { 
         email: 'admin@tokcer-ai.com', 
