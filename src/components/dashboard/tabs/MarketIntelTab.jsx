@@ -28,7 +28,8 @@ const MarketIntelTab = ({
   }, [viralTopics.length, fetchGlobalMarketTrends]);
 
   const plan = (profile?.subscription_plan || 'starter').toLowerCase();
-  const isLocked = profile && (plan === 'starter' || plan === 'pro');
+  const isBasicLocked = profile && (plan === 'starter' || plan === 'pro');
+  const isUltimateLocked = profile && plan !== 'ultimate'; // POINT 3 & 4: Deep Analysis locked for Elite
 
   return (
     <div className="relative z-10 space-y-6">
@@ -39,8 +40,8 @@ const MarketIntelTab = ({
         </div>
         <div className="relative w-full sm:w-auto">
           <div 
-            onClick={() => !isLocked && setShowPlatformDropdown(!showPlatformDropdown)}
-            className={`text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => !isBasicLocked && setShowPlatformDropdown(!showPlatformDropdown)}
+            className={`text-xs text-zinc-300 flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors cursor-pointer shadow-sm w-full justify-between sm:justify-start ${isBasicLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div className="flex items-center gap-2">
               <iconify-icon icon="solar:filter-linear" className="text-orange-500"></iconify-icon>
@@ -69,8 +70,8 @@ const MarketIntelTab = ({
 
       {/* Content Area with Conditional Lock */}
       <div className="relative space-y-6">
-        {isLocked && (
-          <div className="absolute inset-x-0 -inset-y-4 z-[60] bg-zinc-950/20 backdrop-blur-[6px] rounded-[2rem] flex items-center justify-center border border-zinc-800/50 shadow-2xl overflow-hidden">
+        {isBasicLocked && (
+          <div className="absolute inset-0 z-[60] bg-zinc-950/20 backdrop-blur-[6px] rounded-[2rem] flex items-center justify-center border border-zinc-800/50 shadow-2xl overflow-hidden">
              <div className="text-center p-8 bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-zinc-800 shadow-2xl max-w-sm animate-in zoom-in-95 duration-300">
                 <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
                   <iconify-icon icon="solar:globus-bold-duotone" className="text-4xl text-indigo-500"></iconify-icon>
@@ -87,7 +88,7 @@ const MarketIntelTab = ({
         )}
 
         {/* Radar Trend AI - Sample Data */}
-        <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm ${isLocked ? 'opacity-30' : ''}`}>
+        <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm ${isBasicLocked ? 'opacity-30' : ''}`}>
         <div className="flex items-center gap-3 mb-5">
           <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
             <iconify-icon icon="solar:radar-linear" className="text-white text-xl"></iconify-icon>
@@ -271,8 +272,26 @@ const MarketIntelTab = ({
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm h-full">
+        <div className="space-y-6 relative">
+          {/* ULTIMATE LOCK for Deep Analysis (Point 3 & 4) */}
+          {isUltimateLocked && (
+            <div className="absolute inset-0 z-30 bg-zinc-950/40 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-zinc-800/50 shadow-xl overflow-hidden">
+              <div className="text-center p-6 bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-800 shadow-xl max-w-xs animate-in zoom-in-95 duration-300">
+                <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-orange-500/20">
+                  <iconify-icon icon="solar:crown-bold-duotone" className="text-2xl text-orange-500"></iconify-icon>
+                </div>
+                <h4 className="text-sm font-black text-white uppercase tracking-tight mb-1">Deep Analysis Locked</h4>
+                <p className="text-[10px] text-zinc-400 leading-relaxed mb-4">
+                  Analisis kompetitor mendalam & Price Tracker hanya tersedia untuk member **ULTIMATE**.
+                </p>
+                <button className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg active:scale-95 transition-all">
+                  UPGRADE TO ULTIMATE
+                </button>
+              </div>
+            </div>
+          )}
+          
+          <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm h-full ${isUltimateLocked ? 'opacity-40 grayscale' : ''}`}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
                 <iconify-icon icon="solar:chart-line-up-bold" className="text-indigo-500"></iconify-icon>
@@ -289,21 +308,21 @@ const MarketIntelTab = ({
                 <div className="absolute top-0 right-0 p-2 opacity-5">
                   <iconify-icon icon="solar:graph-bold" className="text-4xl text-indigo-400"></iconify-icon>
                 </div>
-                <p className="text-[11px] text-indigo-300 font-bold mb-1 uppercase tracking-wider">{t('aiSummary')}</p>
+                <p className="text-[11px] text-indigo-300 font-bold mb-1 uppercase tracking-wider">Deep Competitor Insight</p>
                 <p className="text-xs text-zinc-300 leading-relaxed italic">
                   {liveSummary || (lang === 'id' 
-                    ? '"Menganalisis tren pasar terbaru untuk bisnis Anda..." '
-                    : '"Analyzing latest market trends for your business..." ')
+                    ? '"Menganalisis pergerakan harga dan stok kompetitor secara mendalam..." '
+                    : '"Deep analysis of competitor pricing and stock movements..." ')
                   }
                 </p>
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-zinc-500">{t('marketConfidence')}</span>
-                  <span className="text-emerald-500 font-bold">88%</span>
+                  <span className="text-zinc-500">Competitor Price Tracker</span>
+                  <span className="text-emerald-500 font-bold">ACTIVE</span>
                 </div>
                 <div className="w-full bg-zinc-800 rounded-full h-1">
-                  <div className="bg-indigo-500 h-1 rounded-full" style={{ width: '88%' }}></div>
+                  <div className="bg-indigo-500 h-1 rounded-full" style={{ width: '100%' }}></div>
                 </div>
               </div>
             </div>
