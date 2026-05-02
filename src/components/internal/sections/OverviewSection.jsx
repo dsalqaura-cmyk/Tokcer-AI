@@ -11,12 +11,26 @@ const OverviewSection = ({
   globalStats = { totalRevenue: 0, totalOrders: 0, activeUsers: 0, activePartners: 0 }
 }) => {
   // Calculate Tier Counts for Legend
-  const tierCounts = {
-    Platinum: adminPartners.filter(p => p.tier?.toLowerCase() === 'platinum').length,
-    Gold: adminPartners.filter(p => p.tier?.toLowerCase() === 'gold').length,
-    Silver: adminPartners.filter(p => p.tier?.toLowerCase() === 'silver').length,
-    Bronze: adminPartners.filter(p => p.tier?.toLowerCase() === 'bronze' || !p.tier).length,
-  };
+  // Calculate Tier Counts for Legend (Dynamic based on Omzet if tier is null)
+  const tierCounts = adminPartners.reduce((acc, p) => {
+    let currentTier = p.tier?.toLowerCase();
+    
+    // Auto-assign tier based on Omzet if not set
+    if (!currentTier) {
+      const omzet = Number(p.total_omzet || 0);
+      if (omzet >= 50000000) currentTier = 'platinum';
+      else if (omzet >= 25000000) currentTier = 'gold';
+      else if (omzet >= 10000000) currentTier = 'silver';
+      else currentTier = 'bronze';
+    }
+
+    if (currentTier === 'platinum') acc.Platinum++;
+    else if (currentTier === 'gold') acc.Gold++;
+    else if (currentTier === 'silver') acc.Silver++;
+    else acc.Bronze++;
+    
+    return acc;
+  }, { Platinum: 0, Gold: 0, Silver: 0, Bronze: 0 });
 
   const getRelativeTime = (date) => {
     if (!date) return '-';
