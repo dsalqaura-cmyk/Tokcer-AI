@@ -37,6 +37,8 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
     }
 
     // 2. Send via Resend API
+    console.log(`📨 Mencoba kirim email ke: ${to} menggunakan domain tokcer-ai.com...`);
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -44,7 +46,7 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        from: 'Tokcer AI <onboarding@resend.dev>', // Update to verified domain in production
+        from: 'Tokcer AI <onboarding@tokcer-ai.com>', // Pakai domain yang sudah verified
         to: Array.isArray(to) ? to : [to],
         subject: subject,
         html: html
@@ -54,10 +56,11 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
     const result = await response.json();
     
     if (!response.ok) {
-      console.error("❌ Resend API Error:", result);
+      console.error("❌ Resend API Error Details:", result);
       return { success: false, error: result };
     }
 
+    console.log("✅ Email Berhasil Terkirim! ID:", result.id);
     return { success: true, id: result.id };
   } catch (err) {
     console.error("❌ Email Sending failed:", err);
