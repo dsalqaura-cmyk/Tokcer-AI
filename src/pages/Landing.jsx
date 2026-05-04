@@ -38,6 +38,7 @@ const Landing = () => {
   }, []);
 
   return (
+    <div className="bg-black min-h-screen text-white font-['Inter',sans-serif] selection:bg-orange-500/30 selection:text-orange-200 overflow-x-hidden">
       {/* Premium Background System */}
       <div className="fixed inset-0 -z-10 bg-black overflow-hidden pointer-events-none">
         {/* Modern Grid */}
