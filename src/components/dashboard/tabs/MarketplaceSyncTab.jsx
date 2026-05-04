@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
+const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok, connectedStores = [] }) => {
   const platforms = [
     { 
       id: 'tiktok', 
@@ -8,7 +8,7 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
       icon: 'ri:tiktok-fill', 
       color: 'text-white', 
       bg: 'bg-zinc-800', 
-      status: 'Ready to Connect',
+      status: connectedStores.some(s => s.platform === 'tiktok') ? 'Connected' : 'Ready to Connect',
       desc: 'Sync orders, products, and analytics from TikTok Shop Seller Center.'
     },
     { 
@@ -17,7 +17,7 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
       icon: 'simple-icons:shopee', 
       color: 'text-orange-500', 
       bg: 'bg-orange-500/10', 
-      status: 'Ready to Connect',
+      status: connectedStores.some(s => s.platform === 'shopee') ? 'Connected' : 'Ready to Connect',
       desc: 'Connect your Shopee store to automate order management.'
     }
   ];
@@ -37,7 +37,9 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
                 <iconify-icon icon={p.icon} className={`text-2xl ${p.color}`}></iconify-icon>
               </div>
               <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                p.status === 'Ready to Connect' ? 'text-orange-500 border-orange-500/20 bg-orange-500/5' : 'text-zinc-500 border-zinc-800 bg-zinc-800/50'
+                p.status === 'Ready to Connect' 
+                  ? 'text-orange-500 border-orange-500/20 bg-orange-500/5' 
+                  : 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5'
               }`}>
                 {p.status}
               </span>
@@ -46,26 +48,40 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok }) => {
             <h3 className="text-lg font-bold text-white mb-2">{p.name}</h3>
             <p className="text-xs text-zinc-500 leading-relaxed mb-6">{p.desc}</p>
             
-            <button 
-              disabled={p.status === 'Coming Soon'}
-              onClick={() => {
-                if (p.id === 'shopee') {
-                  onConnectShopee();
-                } else if (p.id === 'tiktok') {
-                  onConnectTikTok();
-                } else {
-                  alert(`Redirecting to ${p.name} Authorization Center...`);
-                }
-              }}
-              className={`w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                p.status === 'Ready to Connect' 
-                  ? 'bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-600/20' 
-                  : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-              }`}
-            >
-              <iconify-icon icon="solar:link-bold" className="text-lg"></iconify-icon>
-              Connect Now
-            </button>
+            {p.status === 'Ready to Connect' ? (
+              <button 
+                onClick={() => {
+                  if (p.id === 'shopee') {
+                    onConnectShopee();
+                  } else if (p.id === 'tiktok') {
+                    onConnectTikTok();
+                  }
+                }}
+                className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-600/20"
+              >
+                <iconify-icon icon="solar:link-bold" className="text-lg"></iconify-icon>
+                Connect Now
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">Connected Stores</div>
+                {connectedStores.filter(s => s.platform === p.id).map(store => (
+                  <div key={store.id} className="flex items-center justify-between p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                      <span className="text-xs font-medium text-white">{store.shop_name}</span>
+                    </div>
+                    <span className="text-[9px] text-zinc-500 uppercase">{store.shop_id}</span>
+                  </div>
+                ))}
+                <button 
+                  onClick={() => p.id === 'tiktok' ? onConnectTikTok() : onConnectShopee()}
+                  className="w-full py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-400 border border-zinc-800 hover:bg-zinc-800 transition-colors"
+                >
+                  + Add More Store
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>

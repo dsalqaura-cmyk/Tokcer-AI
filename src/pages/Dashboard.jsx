@@ -83,6 +83,7 @@ const Dashboard = () => {
   // Health Insight States
   const [healthInsight, setHealthInsight] = useState(null);
   const [isAnalyzingHealth, setIsAnalyzingHealth] = useState(false);
+  const [marketplaceConnections, setMarketplaceConnections] = useState([]);
 
   const t = (key) => dashboardTranslations[lang][key] || key;
   const navigate = useNavigate();
@@ -218,6 +219,17 @@ const Dashboard = () => {
             } else {
                 alert("Gagal menghubungi server: " + err.message);
             }
+        }
+    };
+
+    const fetchMarketplaceConnections = async (userId) => {
+        if (!userId) return;
+        const { data, error } = await supabase
+            .from('marketplace_connections')
+            .select('*')
+            .eq('user_id', userId);
+        if (!error && data) {
+            setMarketplaceConnections(data);
         }
     };
 
@@ -427,6 +439,7 @@ const Dashboard = () => {
             });
             setTimeFilter('Semua');
             fetchOperationalData(session.user.id, session.user);
+            fetchMarketplaceConnections(session.user.id);
             return; // EXIT EARLY - DO NOT LET DB OVERWRITE ADMIN
         }
 
@@ -450,6 +463,7 @@ const Dashboard = () => {
             await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
         }
         fetchOperationalData(session.user.id, session.user);
+        fetchMarketplaceConnections(session.user.id);
       } else if (isAdmin) {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);
@@ -465,6 +479,7 @@ const Dashboard = () => {
         // Pastikan filter waktu default adalah 'Semua' agar data lama muncul
         setTimeFilter('Semua');
         fetchOperationalData('admin-bypass', adminUser);
+        fetchMarketplaceConnections('admin-bypass');
       }
 
       // Handle Shopee Callback Params
@@ -1154,6 +1169,7 @@ const Dashboard = () => {
             lang={lang}
             onConnectShopee={handleConnectShopee}
             onConnectTikTok={handleConnectTikTok}
+            connectedStores={marketplaceConnections}
           />
         );
       default:
