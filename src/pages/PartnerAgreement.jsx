@@ -5,7 +5,6 @@ import { supabase } from '../supabase.js';
 const PartnerAgreement = () => {
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('id');
-  const applicationEmail = searchParams.get('email');
   
   const [partnerData, setPartnerData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,42 +12,27 @@ const PartnerAgreement = () => {
   const [agreed, setAgreed] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [refCode, setRefCode] = useState('');
-  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     const fetchPartner = async () => {
-      if (!applicationId && !applicationEmail) {
+      if (!applicationId) {
         setLoading(false);
         return;
       }
-      
-      let query = supabase.from('partner_applications').select('*');
-      
-      if (applicationId) {
-        query = query.eq('id', applicationId);
-      } else if (applicationEmail) {
-        query = query.eq('email', applicationEmail);
-      }
-
-      const { data, error } = await query.single();
+      const { data, error } = await supabase
+        .from('partner_applications')
+        .select('*')
+        .eq('id', applicationId)
+        .single();
       
       if (data) setPartnerData(data);
       setLoading(false);
     };
     fetchPartner();
-  }, [applicationId, applicationEmail]);
-
-  useEffect(() => {
-    if (isSuccess && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (isSuccess && countdown === 0) {
-      window.location.href = '/login';
-    }
-  }, [isSuccess, countdown]);
+  }, [applicationId]);
 
   const handleSubmit = async () => {
-    if (!agreed || !partnerData?.id) return;
+    if (!agreed || !applicationId) return;
     
     setIsSubmitting(true);
     try {
@@ -58,7 +42,7 @@ const PartnerAgreement = () => {
           status: 'agreed',
           agreed_at: new Date().toISOString()
         })
-        .eq('id', partnerData.id);
+        .eq('id', applicationId);
       
       if (error) throw error;
 
@@ -177,7 +161,6 @@ const PartnerAgreement = () => {
           <h2 className="font-['Barlow_Condensed',sans-serif] font-black text-4xl mb-3">Welcome, <span className="text-[#F5A300]">Partner!</span></h2>
           <p className="text-sm text-zinc-400 max-w-md leading-relaxed">Agreement kamu sudah tercatat. Partner link & Partner Portal akan dikirim ke WhatsApp kamu dalam beberapa menit.</p>
           <div className="font-['Barlow_Condensed',sans-serif] font-bold text-sm tracking-widest text-[#F5A300] bg-[rgba(245,163,0,0.08)] border border-[rgba(245,163,0,0.2)] px-4 py-2 rounded-lg mt-6 uppercase">REF: {refCode}</div>
-          <div className="mt-8 text-zinc-500 text-xs font-mono">Redirecting to login in {countdown}s...</div>
           <p className="text-[10px] text-zinc-600 mt-6 italic">Timestamp & data kamu sudah disimpan secara aman.</p>
         </div>
       )}
@@ -189,7 +172,7 @@ const PartnerAgreement = () => {
         <div className="hero text-center mb-16">
           <div className="inline-block font-['Barlow_Condensed',sans-serif] font-bold text-[11px] tracking-[0.2em] uppercase text-[#F5A300] bg-[rgba(245,163,0,0.08)] border border-[rgba(245,163,0,0.2)] px-3 py-1.5 rounded mb-5">Langkah Terakhir</div>
           <h1 className="font-['Barlow_Condensed',sans-serif] font-black text-4xl md:text-5xl lg:text-[52px] leading-[1.05] tracking-tight mb-4">Baca & Setujui<br /><span className="text-[#F5A300]">Skema Komisi</span></h1>
-          <p className="text-[15px] text-zinc-400 leading-relaxed max-w-lg mx-auto">Baca seluruh skema komisi di bawah ini. Setelah kamu klik <em>\"Saya Setuju\"</em>, partner link dan Partner Portal kamu langsung aktif.</p>
+          <p className="text-[15px] text-zinc-400 leading-relaxed max-w-lg mx-auto">Baca seluruh skema komisi di bawah ini. Setelah kamu klik <em>"Saya Setuju"</em>, partner link dan Partner Portal kamu langsung aktif.</p>
         </div>
 
         {/* IDENTITY BOX (DYNAMIC) */}
@@ -384,7 +367,7 @@ const PartnerAgreement = () => {
           <button 
             onClick={handleSubmit}
             disabled={!agreed || isSubmitting}
-            className="group relative flex items-center justify-center gap-3 w-full py-5 bg-[#F5A300] disabled:bg-[#222222] text-[#0A0A0A] disabled:text-zinc-600 font-['Barlow_Condensed',sans-serif] font-black text-xl tracking-widest uppercase rounded-xl transition-all duration-300 disabled:cursor-not-allowed hover:bg-[#FFB800] hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(245,163,0,0.3)] active:translate-y-0 shadow-lg"
+            className="group relative flex items-center justify-center gap-3 w-full py-5 bg-[#F5A300] disabled:bg-[#222222] text-[#0A0A0A] disabled:text-zinc-600 font-['Barlow_Condensed',sans-serif] font-black text-xl tracking-widest uppercase rounded-xl transition-all duration-300 disabled:cursor-not-allowed hover:bg-[#FFB800] hover:-translate-y-1 hover:shadow-[0_8px_32_rgba(245,163,0,0.3)] active:translate-y-0 shadow-lg"
           >
             {isSubmitting ? (
                <span className="flex items-center gap-2">
