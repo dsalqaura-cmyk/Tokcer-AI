@@ -596,6 +596,9 @@ const InternalDashboard = () => {
       case 'gold': return 'bg-amber-900/30 text-amber-400 border border-amber-500/20';
       case 'silver': return 'bg-zinc-700 text-zinc-300 border border-zinc-600';
       case 'bronze': return 'bg-orange-900/30 text-orange-400 border border-orange-500/20';
+      case 'ultimate': return 'bg-orange-500/20 text-orange-500 border border-orange-500/30';
+      case 'elite': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+      case 'pro': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
       default: return 'bg-zinc-800 text-zinc-500';
     }
   };
