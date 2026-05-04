@@ -12,6 +12,17 @@ const PartnerAgreement = () => {
   const [agreed, setAgreed] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [refCode, setRefCode] = useState('');
+  const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    let timer;
+    if (isSuccess && countdown > 0) {
+      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
+    } else if (isSuccess && countdown === 0) {
+      window.location.href = 'https://staging.tokcer-ai.com';
+    }
+    return () => clearInterval(timer);
+  }, [isSuccess, countdown]);
 
   useEffect(() => {
     const fetchPartner = async () => {
