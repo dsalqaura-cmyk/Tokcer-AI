@@ -1,46 +1,51 @@
-# 🧠 Skill Map: Tokcer AI Project Expert
+# 📜 TOKCER AI: STAGING RULES & WORKFLOW (KITAB SUCI UCUP)
 
-Dokumen ini berisi instruksi khusus dan pemahaman mendalam untuk menangani ekosistem Tokcer AI (Website, Partner Dashboard, User Dashboard, & Internal Dashboard).
-
----
-
-## 1. Konteks Ekosistem
-Tokcer AI adalah platform optimasi e-commerce berbasis AI.
-- **Frontend**: React (Vite) + TailwindCSS.
-- **Backend**: Supabase (Auth, DB, Storage).
-- **AI Engine**: DeepSeek-V3 API.
-- **Email Engine**: Resend API.
+File ini adalah PANDUAN MUTLAK yang wajib dibaca oleh Ucup (Antigravity) sebelum melakukan perubahan apapun. Pelanggaran terhadap file ini adalah kesalahan fatal.
 
 ---
 
-## 2. Aturan Emas Pengembangan (Golden Rules)
-1. **Defensive Coding**: Selalu gunakan fallback data (misal: `data || []`) dan defensive conversion (misal: `String(user.id)`) untuk mencegah "Blank Screen" jika data null.
-2. **UUID Safety**: Saat testing dengan akun `admin-bypass`, pastikan pengiriman `user_id` ke database adalah `null` agar tidak terjadi error sintaks UUID.
-3. **Storage Cleanliness**: Nama file untuk upload (bukti bayar) wajib difilter menggunakan Regex agar tidak mengandung karakter spesial atau spasi yang bisa merusak link URL.
-4. **Layout Aesthetics**: Tokcer AI harus terlihat **Premium**. Gunakan gradien orange-amber, efek glassmorphism (backdrop-blur), dan font 'Inter'. Navigasi menu dashboard harus selalu presisi di tengah (Centered).
+## 🛡️ WORKFLOW PATEN (ALUR KERJA)
+
+### 1. Jalur User (Klien)
+*   **Register**: `pending` -> `User Modal` (Landing Page).
+*   **Payment**: User bayar & upload bukti (Opsional).
+*   **Approval**: Admin cek Dashboard Internal -> Klik **Approve**.
+*   **Active**: Status jadi `active` -> Robot kirim email akses.
+
+### 2. Jalur Partner (RESIKO TINGGI)
+1.  **Register**: `pending` -> `Partner Modal` (Landing Page).
+2.  **Robot 1**: Database Trigger `send_agreement_email` nembak email pendaftaran.
+3.  **Signing**: Partner klik link -> Halaman `PartnerAgreement.jsx` -> Klik "Saya Setuju".
+4.  **Agreed State**: Status berubah jadi `agreed`. Muncul di Dashboard Bapak (Tab Approval).
+5.  **Success Screen**: Partner melihat overlay "Welcome, Partner!" (REF Code).
+6.  **Auto-Redirect**: Setelah 5 detik di layar sukses, Partner DILEMPAR ke `https://staging.tokcer-ai.com`.
+7.  **Admin Action**: Bapak klik **Approve** di Dashboard Internal.
+8.  **Robot 2**: Database Trigger `fn_send_partner_welcome_email` nembak email berisi Password (`Tokcer@2026`).
 
 ---
 
-## 3. Logika Bisnis Kritis
-- **Paket Starter**: Selalu gratis (Tanpa tulisan "Selamanya").
-- **Paket Ultimate**: 
-  - Registrasi Website: Durasi Bulanan.
-  - Registrasi via Partner: Durasi 60 Hari (Diproses otomatis saat Approval).
-- **Approval Flow**: Aktivasi akun wajib memanggil `rpc_activate_account` di database dan kemudian men-trigger email via Resend.
+## 🏮 ATURAN CODING (STRICT RULES)
+
+1.  **DILARANG SOK IDE**: Jangan menambah redirect, timer, atau flow baru tanpa izin tertulis dari Bapak.
+2.  **LINK PATEN**: 
+    *   Gunakan `https://staging.tokcer-ai.com/partner-agreement?id=...` (TANPA PAGAR `#`).
+    *   Jika landing page butuh `#`, konfirmasi dulu.
+3.  **VISUAL PREMIUM**:
+    *   Gunakan Logo PNG: `https://dashboardstaging.tokcer-ai.com/logo.png`.
+    *   Hapus semua teks WhatsApp, ganti dengan Email.
+4.  **DATABASE TRIGGERS**:
+    *   `send_agreement_email`: Handle email pendaftaran (Logo PNG + Link Staging).
+    *   `fn_send_partner_welcome_email`: Handle email aktivasi/password (HANYA saat status = 'active').
 
 ---
 
-## 4. Konfigurasi Kunci (Env & DB)
-- **API Keys**: Disimpan di tabel `ai_configs` (key: `system_prompt`, `resend_api_key`, `rag_knowledge_base`).
-- **Authorization**: Mengambil data `ai_configs` hanya bisa dilakukan oleh profil dengan role `admin`.
-- **Marketplace Sync**: Logika sinkronisasi toko berada di `Dashboard.jsx` menggunakan fungsi `autoConnectStores`.
+## 🗣️ KOMUNIKASI (GOLDEN RULE)
+
+*   **TANYA DULU BARU JALAN**: Jika ada keraguan sedikitpun soal domain atau alur, WAJIB konfirmasi ke Bapak.
+*   **FOKUS ISSUE**: Jangan memperbaiki hal yang tidak rusak. Fokus pada apa yang Bapak perintahkan.
+*   **NO HALLUCINATION**: Jangan menebak-nebak domain atau password. Baca file `.env` atau tanya Bapak.
 
 ---
 
-## 5. Troubleshooting Cepat
-- **Data Tidak Muncul di Approval**: Cek relasi Foreign Key antara `clients` dan `partners`. Jika putus, jalankan SQL `ADD CONSTRAINT`.
-- **Profil Blank**: Cek apakah props `user` dan `partner` terkirim dengan benar ke komponen `ProfileTab`.
-- **Register Error**: Pastikan kolom `business_type`, `platforms`, dan `plan` di tabel `clients` sudah ada dan sesuai tipe datanya.
-
----
-**Instruksi ini bersifat permanen untuk membantu Antigravity AI bekerja lebih efisien di proyek Tokcer AI.**
+**DITETAPKAN PADA: 2026-05-04**
+*Ucup berjanji akan mematuhi Kitab Suci ini demi kelancaran Tokcer AI.* 🫡🚀🛡️
