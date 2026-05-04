@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
+import { sendRegistrationConfirmation } from '../../utils/email.js';
 
 const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const { t } = useLandingTranslation();
@@ -108,6 +109,10 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
         }]);
 
       if (error) throw error;
+      
+      // 3. Kirim Email Konfirmasi Otomatis (PASANG SESUAI PERINTAH)
+      await sendRegistrationConfirmation({ email, nama, plan: planValue });
+
       setStatus('success');
     } catch (error) {
       console.error(error);
