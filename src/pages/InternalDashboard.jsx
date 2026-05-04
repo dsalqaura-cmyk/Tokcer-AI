@@ -301,7 +301,7 @@ const InternalDashboard = () => {
               <p>Pendaftaran Anda untuk paket <b>${plan.toUpperCase()}</b> (${cycle || 'Monthly'}) telah disetujui.</p>
               <p>Sekarang Anda sudah bisa mengakses seluruh fitur Tokcer AI untuk melejitkan performa toko Anda.</p>
               <div style="background: #fdf2f7; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 0;"><b>Link Dashboard:</b> <a href="https://tokcer-ai.com/login">tokcer-ai.com/login</a></p>
+                <p style="margin: 0;"><b>Link Dashboard:</b> <a href="https://staging.tokcer-ai.com/login">staging.tokcer-ai.com/login</a></p>
                 <p style="margin: 10px 0 0 0;"><b>Username:</b> ${email}</p>
                 <p style="margin: 5px 0 0 0;"><b>Password:</b> Tokcer@2026</p>
               </div>
