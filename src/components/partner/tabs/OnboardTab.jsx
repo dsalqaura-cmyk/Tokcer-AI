@@ -60,12 +60,36 @@ const OnboardTab = ({
                   onChange={(e) => setForm({...form, package: e.target.value})}
                   className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white transition-all outline-none"
                 >
-                  <option value="starter">{t('planStarter')}</option>
-                  <option value="pro">{t('planPro')}</option>
-                  <option value="elite">{t('planElite')}</option>
-                  <option value="ultimate">{t('planUltimate')}</option>
+                  <option value="starter">Starter Edition (Early Stage)</option>
+                  <optgroup label="Monthly Plans (Bulanan)">
+                    <option value="pro_monthly">Pro Edition (Rp 499.000/bln)</option>
+                    <option value="elite_monthly">Elite Edition (Rp 999.000/bln)</option>
+                    <option value="ultimate_monthly">Ultimate Edition (Rp 1.499.000/bln)</option>
+                  </optgroup>
+                  <optgroup label="Yearly Plans (Tahunan - Save 1 Month)">
+                    <option value="pro_yearly">Pro Edition (Rp 5.489.000/thn)</option>
+                    <option value="elite_yearly">Elite Edition (Rp 10.989.000/thn)</option>
+                    <option value="ultimate_yearly">Ultimate Edition (Rp 16.489.000/thn)</option>
+                  </optgroup>
                 </select>
                 <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></iconify-icon>
+              </div>
+              <div className="flex items-center gap-2 px-1 pt-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
+                  Total Bayar: <span className="text-white">
+                    {(() => {
+                      if (form.package.includes('starter')) return 'Gratis';
+                      if (form.package === 'pro_monthly') return 'Rp 499.000';
+                      if (form.package === 'pro_yearly') return 'Rp 5.489.000';
+                      if (form.package === 'elite_monthly') return 'Rp 999.000';
+                      if (form.package === 'elite_yearly') return 'Rp 10.989.000';
+                      if (form.package === 'ultimate_monthly') return 'Rp 1.499.000';
+                      if (form.package === 'ultimate_yearly') return 'Rp 16.489.000';
+                      return '-';
+                    })()}
+                  </span>
+                </span>
               </div>
             </div>
           </div>

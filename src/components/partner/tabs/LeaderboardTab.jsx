@@ -40,9 +40,30 @@ const LeaderboardTab = ({
         
         {/* Countdown */}
         <div className="border-t border-orange-500/20 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs font-bold text-zinc-300">
-            <iconify-icon icon="solar:calendar-linear" className="text-orange-500 mr-1"></iconify-icon>
-            {t('weekCurrent')}
+          <div className="relative group">
+            <button className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-100 bg-black/40 hover:bg-black/60 px-4 py-2 rounded-xl border border-zinc-800 transition-all">
+              <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon>
+              <span>{t('weekCurrent')}</span>
+              <iconify-icon icon="solar:alt-arrow-down-bold" className="text-[10px] text-zinc-500"></iconify-icon>
+            </button>
+            
+            {/* Dropdown Menu Overlay */}
+            <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 overflow-hidden">
+              <div className="p-1.5 flex flex-col">
+                <button className="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 rounded-xl text-left transition-colors">
+                  <iconify-icon icon="solar:calendar-date-bold-duotone" className="text-base"></iconify-icon>
+                  {t('weekCurrent')}
+                </button>
+                <button className="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-100 hover:bg-white/5 rounded-xl text-left transition-colors">
+                  <iconify-icon icon="solar:calendar-minimalistic-bold-duotone" className="text-base"></iconify-icon>
+                  Bulan Ini (26 - 25)
+                </button>
+                <button className="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-100 hover:bg-white/5 rounded-xl text-left transition-colors">
+                  <iconify-icon icon="solar:globus-bold-duotone" className="text-base"></iconify-icon>
+                  Semua Waktu (All-Time)
+                </button>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mr-1">{lang === 'id' ? 'Berakhir:' : 'Ends in:'}</span>

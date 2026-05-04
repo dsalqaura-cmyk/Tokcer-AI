@@ -219,15 +219,30 @@ const PartnerDashboard = () => {
 
       const { data: { publicUrl } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
 
+      const rawPackage = onboardForm.package;
+      let finalPlan = rawPackage;
+      let billingCycle = 'Monthly';
+
+      if (rawPackage.includes('_')) {
+        const [plan, cycle] = rawPackage.split('_');
+        finalPlan = plan;
+        billingCycle = cycle.charAt(0).toUpperCase() + cycle.slice(1);
+      } else if (rawPackage === 'starter') {
+        finalPlan = 'starter';
+        billingCycle = 'Monthly';
+      }
+
       const { error: insertError } = await supabase.from('clients').insert([{
         partner_id: user.id === 'admin-bypass' ? null : user.id,
         shop_name: onboardForm.shopName,
         email: onboardForm.email,
         whatsapp: onboardForm.whatsapp,
-        plan: onboardForm.package,
+        plan: finalPlan,
+        billing_cycle: billingCycle,
         payment_method: onboardForm.paymentMethod,
         payment_proof_url: publicUrl,
-        status: 'pending'
+        status: 'pending',
+        ref: partnerData.full_name || 'Partner'
       }]);
 
       if (insertError) throw insertError;
