@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck } from 'lucide-react';
 import { supabase } from '../../supabase';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 import { sendRegistrationConfirmation } from '../../utils/email.js';
@@ -143,8 +142,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
         
         {status === 'success' ? (
           <div className="bg-orange-500/10 border border-orange-500/50 rounded-xl p-6 text-center animate-in zoom-in duration-300">
-            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="text-white w-6 h-6" />
+            <div className="w-12 h-12 bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <iconify-icon icon="solar:shield-check-bold" className="text-2xl"></iconify-icon>
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Pendaftaran Terkirim! (VERSI TERBARU)</h3>
             <p className="text-zinc-400 text-sm leading-relaxed mb-6">
