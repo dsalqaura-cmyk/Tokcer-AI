@@ -247,19 +247,30 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                     >
                       {(() => {
                         const currentPlan = dbPlans.find(p => p.id === formPlan);
-                        if (!currentPlan || currentPlan.id === 'starter') {
+                        
+                        // FALLBACK PRICES (Jika DB Belum Load)
+                        const defaultPrices = {
+                          starter: { m: 0, y: 0 },
+                          pro: { m: 499000, y: 5489000 },
+                          elite: { m: 999000, y: 10989000 },
+                          ultimate: { m: 1499000, y: 16489000 }
+                        };
+
+                        const priceM = currentPlan?.price_monthly || defaultPrices[formPlan]?.m || 0;
+                        const priceY = currentPlan?.price_yearly || defaultPrices[formPlan]?.y || (priceM * 11);
+
+                        if (formPlan === 'starter') {
                           return (
                             <>
-                              <option value="Monthly">Bulanan (Monthly)</option>
-                              <option value="Yearly">Tahunan (Yearly)</option>
+                              <option value="Monthly">Gratis (Free)</option>
                             </>
                           );
                         }
-                        const price = currentPlan.price_monthly;
+
                         return (
                           <>
-                            <option value="Monthly">Bulanan (Rp {price.toLocaleString('id-ID')})</option>
-                            <option value="Yearly">Tahunan (Rp {(currentPlan.price_yearly || price * 11).toLocaleString('id-ID')})</option>
+                            <option value="Monthly">Bulanan (Rp {priceM.toLocaleString('id-ID')})</option>
+                            <option value="Yearly">Tahunan (Rp {priceY.toLocaleString('id-ID')})</option>
                           </>
                         );
                       })()}
@@ -369,7 +380,19 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                
                {(() => {
                   const currentPlan = dbPlans.find(p => p.id === formPlan);
-                  if (!currentPlan || currentPlan.id === 'starter') {
+                  
+                  // FALLBACK PRICES (Jika DB Belum Load)
+                  const defaultPrices = {
+                    starter: { m: 0, y: 0 },
+                    pro: { m: 499000, y: 5489000 },
+                    elite: { m: 999000, y: 10989000 },
+                    ultimate: { m: 1499000, y: 16489000 }
+                  };
+
+                  const priceM = currentPlan?.price_monthly || defaultPrices[formPlan]?.m || 0;
+                  const priceY = currentPlan?.price_yearly || defaultPrices[formPlan]?.y || (priceM * 11);
+
+                  if (formPlan === 'starter') {
                      return (
                         <div className="flex justify-between items-center text-xs">
                            <span className="text-zinc-500 font-medium">Total Tagihan:</span>
@@ -379,9 +402,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                   }
 
                   const isYearly = billingCycle === 'Yearly';
-                  const monthlyPrice = currentPlan.price_monthly;
-                  const yearlyPrice = currentPlan.price_yearly || (monthlyPrice * 11);
-                  const totalPrice = isYearly ? yearlyPrice : monthlyPrice;
+                  const totalPrice = isYearly ? priceY : priceM;
 
                   return (
                      <>
@@ -391,11 +412,11 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                               <div className="flex gap-4">
                                  <div className="flex flex-col">
                                     <span className="text-zinc-500 text-[10px]">Bulanan</span>
-                                    <span className="text-zinc-300 font-semibold">Rp {monthlyPrice.toLocaleString('id-ID')}</span>
+                                    <span className="text-zinc-300 font-semibold">Rp {priceM.toLocaleString('id-ID')}</span>
                                  </div>
                                  <div className="flex flex-col border-l border-zinc-800 pl-4">
                                     <span className="text-zinc-500 text-[10px]">Tahunan</span>
-                                    <span className="text-orange-400 font-semibold">Rp {yearlyPrice.toLocaleString('id-ID')} <span className="text-[9px] text-green-500">(Hemat!)</span></span>
+                                    <span className="text-orange-400 font-semibold">Rp {priceY.toLocaleString('id-ID')} <span className="text-[9px] text-green-500">(Hemat!)</span></span>
                                  </div>
                               </div>
                            </div>
