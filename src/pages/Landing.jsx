@@ -38,11 +38,19 @@ const Landing = () => {
   }, []);
 
   return (
-    <div className="bg-black min-h-screen text-white font-['Inter',sans-serif] selection:bg-orange-500/30 selection:text-orange-200">
-      {/* Background Elements */}
-      <div className="fixed inset-0 -z-10 h-[100vh] w-full bg-black bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
-      <div className="fixed top-[-10%] left-[-10%] -z-10 w-[40%] h-[40%] rounded-full bg-orange-600/20 blur-[100px] pointer-events-none"></div>
-      <div className="fixed top-[-10%] right-[-10%] -z-10 w-[40%] h-[40%] rounded-full bg-amber-500/10 blur-[100px] pointer-events-none"></div>
+      {/* Premium Background System */}
+      <div className="fixed inset-0 -z-10 bg-black overflow-hidden pointer-events-none">
+        {/* Modern Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4.5rem_4.5rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_0%,#000_60%,transparent_100%)] opacity-20"></div>
+        
+        {/* Dynamic Aura Glows */}
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-orange-600/30 blur-[120px] animate-pulse duration-[8000ms]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/20 blur-[100px] animate-pulse duration-[10000ms]"></div>
+        <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] rounded-full bg-emerald-500/10 blur-[120px] animate-pulse duration-[12000ms]"></div>
+        
+        {/* Grain Overlay for Texture */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      </div>
 
       <Navbar 
         onOpenPartner={() => setIsPartnerOpen(true)} 
