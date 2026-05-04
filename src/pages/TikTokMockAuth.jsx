@@ -6,9 +6,10 @@ const TikTokMockAuth = () => {
   const navigate = useNavigate();
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [step, setStep] = useState('info'); // 'info', 'scanning', 'result'
+  const [step, setStep] = useState('login'); // 'login', 'info', 'scanning', 'result'
   const [discoveredShop, setDiscoveredShop] = useState(null);
   const [user, setUser] = useState(null);
+  const [loginData, setLoginData] = useState({ identifier: '', password: '' });
 
   useEffect(() => {
     const getUser = async () => {
@@ -19,6 +20,15 @@ const TikTokMockAuth = () => {
     };
     getUser();
   }, []);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setIsAuthorizing(true);
+    setTimeout(() => {
+      setIsAuthorizing(false);
+      setStep('info');
+    }, 1500);
+  };
 
   const startScanning = () => {
     setStep('scanning');
@@ -77,13 +87,15 @@ const TikTokMockAuth = () => {
           </div>
           
           <h1 className="text-2xl font-bold text-center text-zinc-900 mb-2">
+            {step === 'login' && "Log in to TikTok Shop"}
             {step === 'info' && "Authorize Tokcer AI"}
             {step === 'scanning' && "Connecting..."}
             {step === 'result' && !isSuccess && "Confirm Connection"}
             {isSuccess && "Sync Successful!"}
           </h1>
-          <p className="text-sm text-center text-zinc-500">
-             {step === 'info' && "TikTok Shop Seller Center"}
+          <p className="text-sm text-center text-zinc-500 px-4">
+             {step === 'login' && "Manage your shop and synchronize data with Tokcer AI."}
+             {step === 'info' && "TikTok Shop Seller Center Request"}
              {step === 'scanning' && "Fetching shop information from TikTok..."}
              {step === 'result' && !isSuccess && "We found an authorized shop linked to your account."}
              {isSuccess && "Redirecting to your dashboard..."}
@@ -91,7 +103,55 @@ const TikTokMockAuth = () => {
         </div>
 
         {/* Content Area */}
-        <div className="p-8 min-h-[300px] flex flex-col">
+        <div className="p-8 min-h-[350px] flex flex-col">
+          {step === 'login' && (
+             <form onSubmit={handleLogin} className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-5">
+                <div>
+                   <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-2">Phone / Email / Username</label>
+                   <input 
+                      type="text" 
+                      required
+                      value={loginData.identifier}
+                      onChange={(e) => setLoginData({...loginData, identifier: e.target.value})}
+                      placeholder="Enter your TikTok Seller credentials"
+                      className="w-full p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20 focus:border-[#FE2C55] transition-all"
+                   />
+                </div>
+                <div>
+                   <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-2">Password</label>
+                   <input 
+                      type="password" 
+                      required
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                      placeholder="••••••••"
+                      className="w-full p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20 focus:border-[#FE2C55] transition-all"
+                   />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                   <button type="button" className="text-xs text-zinc-500 hover:text-black transition-colors font-medium">Forgot password?</button>
+                   <button type="button" className="text-xs text-[#FE2C55] hover:underline font-bold">Log in with code</button>
+                </div>
+                <button 
+                  type="submit"
+                  disabled={isAuthorizing}
+                  className="w-full py-4 bg-[#FE2C55] hover:bg-[#E11D48] text-white rounded-xl font-bold text-sm shadow-lg shadow-[#FE2C55]/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                >
+                  {isAuthorizing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Logging in...</span>
+                    </>
+                  ) : (
+                    <span>Log in</span>
+                  )}
+                </button>
+                <div className="text-center">
+                   <p className="text-xs text-zinc-400">Don't have an account? <span className="text-[#FE2C55] font-bold cursor-pointer hover:underline">Sign up</span></p>
+                </div>
+             </form>
+          )}
+
           {step === 'info' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <p className="text-sm text-zinc-600 mb-6 leading-relaxed">
