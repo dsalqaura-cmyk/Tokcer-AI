@@ -50,7 +50,7 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        from: 'Tokcer AI <onboarding@tokcer-ai.com>', // Sekarang pakai domain Bapak yang sudah verified
+        from: 'Tokcer AI <onboarding@tokcer-ai.com>', 
         to: Array.isArray(to) ? to : [to],
         subject: subject,
         html: html
