@@ -40,8 +40,8 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
       return { success: true, mock: true };
     }
 
-    // 2. Send via Resend API
-    console.log(`📨 Mencoba kirim email ke: ${to} menggunakan domain tokcer-ai.com...`);
+    // 2. Send via Resend API (REPLICATING InternalDashboard.jsx logic)
+    console.log(`📨 Mengirim email via Resend...`);
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -50,7 +50,7 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        from: 'Tokcer AI <onboarding@tokcer-ai.com>', // Pakai domain yang sudah verified
+        from: 'Tokcer AI <onboarding@resend.dev>', // Mengikuti kodingan yang sudah jalan di Partner
         to: Array.isArray(to) ? to : [to],
         subject: subject,
         html: html
@@ -59,14 +59,13 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
 
     const result = await response.json();
     
-    if (!response.ok) {
+    if (response.ok) {
+      console.log("✅ Email Berhasil Terkirim! ID:", result.id);
+      return { success: true, id: result.id };
+    } else {
       console.error("❌ Resend API Error Details:", result);
       return { success: false, error: result };
     }
-
-    console.log("✅ Email Berhasil Terkirim! ID:", result.id);
-    alert("✅ Email Konfirmasi Terkirim! ID: " + result.id);
-    return { success: true, id: result.id };
   } catch (err) {
     console.error("❌ Email Sending failed:", err);
     return { success: false, error: err.message };
