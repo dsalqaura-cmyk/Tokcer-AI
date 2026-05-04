@@ -208,8 +208,12 @@ const Dashboard = () => {
                 return;
             }
 
-            // 3. Redirect ke TikTok
-            window.location.href = getTikTokAuthUrl(appId);
+            // 3. Redirect (Bypass ke Mock Page kalau ID-nya mock/placeholder)
+            if (appId.includes('mock') || appId.includes('6db7a')) {
+                navigate('/tiktok-auth-mock');
+            } else {
+                window.location.href = getTikTokAuthUrl(appId);
+            }
         } catch (err) {
             console.error("TikTok Auth Error:", err);
             // Jika database error, gunakan fallback dari .env agar tidak mati total

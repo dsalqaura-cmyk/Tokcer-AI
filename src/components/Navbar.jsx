@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase.js';
 import logo from '../assets/logo.png';
 import { useLandingTranslation } from '../hooks/useLandingTranslation.js';
 
@@ -9,9 +10,53 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
   const navigate = useNavigate();
   const { lang, toggleLang, t } = useLandingTranslation();
 
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [storeCount, setStoreCount] = useState(0);
+
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+        
+        // Fetch Profile
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        
+        if (prof) setProfile(prof);
+
+        // Fetch Store Count
+        const { count } = await supabase
+          .from('marketplace_connections')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', session.user.id);
+        
+        setStoreCount(count || 0);
+      }
+    };
+    fetchUserData();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(session.user);
+        fetchUserData();
+      } else {
+        setUser(null);
+        setProfile(null);
+        setStoreCount(0);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -62,9 +107,36 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
                 EN
               </button>
             </div>
-            <button onClick={() => navigate('/login')} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors uppercase tracking-widest px-4">{t('navLogin')}</button>
-            <button onClick={onOpenPartner} className="bg-yellow-500 text-black px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-yellow-400 hover:bg-yellow-400 transition-all active:scale-95">{t('navPartner')}</button>
-            <button onClick={onOpenWaitlist} className="bg-orange-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-orange-500 hover:bg-orange-500 transition-all active:scale-95">{t('navWaitlist')}</button>
+            {user ? (
+              <div className="flex items-center gap-3">
+                {/* Stats Badge */}
+                <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-full text-[10px] font-bold">
+                  <div className="flex items-center gap-1.5 text-orange-400">
+                    <iconify-icon icon="solar:magic-stick-3-bold" className="text-sm"></iconify-icon>
+                    <span>{profile?.tokens || 0}</span>
+                  </div>
+                  <div className="w-px h-3 bg-zinc-800"></div>
+                  <div className="flex items-center gap-1.5 text-blue-400">
+                    <iconify-icon icon="solar:shop-bold" className="text-sm"></iconify-icon>
+                    <span>{storeCount} {t('navStores') || 'Stores'}</span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => navigate('/dashboard')} 
+                  className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-orange-900/20 border border-orange-500/50 hover:scale-105 transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <iconify-icon icon="solar:widget-bold-duotone" className="text-lg"></iconify-icon>
+                  {t('navDashboard') || 'Dashboard'}
+                </button>
+              </div>
+            ) : (
+              <>
+                <button onClick={() => navigate('/login')} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors uppercase tracking-widest px-4">{t('navLogin')}</button>
+                <button onClick={onOpenPartner} className="bg-yellow-500 text-black px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-yellow-400 hover:bg-yellow-400 transition-all active:scale-95">{t('navPartner')}</button>
+                <button onClick={onOpenWaitlist} className="bg-orange-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-orange-500 hover:bg-orange-500 transition-all active:scale-95">{t('navWaitlist')}</button>
+              </>
+            )}
           </div>
 
           <button onClick={toggleMobileMenu} className="lg:hidden flex items-center gap-2 text-zinc-300 hover:text-white p-2 focus:outline-none" aria-label="Toggle menu">

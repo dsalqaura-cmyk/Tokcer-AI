@@ -12,6 +12,8 @@ const translations = {
     navPartner: "Become a Partner",
     navWaitlist: "Daftar Sekarang",
     navContact: "Contact Us",
+    navDashboard: "Dashboard",
+    navStores: "Toko",
 
     // Hero
     heroBadge: "Cara Baru Kelola Toko Online",
@@ -133,6 +135,8 @@ const translations = {
     navPartner: "Become a Partner",
     navWaitlist: "Register",
     navContact: "Contact Us",
+    navDashboard: "Dashboard",
+    navStores: "Stores",
 
     // Hero
     heroBadge: "New Way to Manage Online Stores",

@@ -8,6 +8,7 @@ import PartnerDashboard from './pages/PartnerDashboard.jsx';
 import InternalDashboard from './pages/InternalDashboard.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import PartnerAgreement from './pages/PartnerAgreement.jsx';
+import TikTokMockAuth from './pages/TikTokMockAuth.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -112,6 +113,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route path="/tiktok-auth-mock" element={<TikTokMockAuth />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
