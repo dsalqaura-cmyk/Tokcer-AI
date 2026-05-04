@@ -69,6 +69,31 @@ const InternalDashboard = () => {
     return () => window.removeEventListener('lang-change', handleLangChange);
   }, []);
 
+  // TAMBAHAN UCUP: Ambil semua data otomatis pas halaman dibuka
+  useEffect(() => {
+    const loadAllData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([
+          fetchClients(),
+          fetchPartners(),
+          fetchAllUsers(),
+          fetchGlobalStats(),
+          fetchTickets(),
+          fetchPartnerApps(),
+          fetchAiConfig(),
+          fetchAiHistory(),
+          fetchAiLogs()
+        ]);
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadAllData();
+  }, []);
+
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from('clients')
