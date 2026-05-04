@@ -27,7 +27,11 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
         apiKey = generalConfig?.value;
     }
 
-    apiKey = apiKey || import.meta.env.VITE_RESEND_API_KEY;
+    if (!apiKey) {
+      console.error("❌ Resend API Key TIDAK DITEMUKAN di database (ai_configs).");
+      alert("Error: API Key Resend tidak ditemukan di database!");
+      return { success: false, error: "Missing API Key" };
+    }
 
     if (!apiKey || apiKey.includes('mock')) {
       console.warn("⚠️ Resend API Key not configured or using mock key. Email simulation only.");
@@ -61,6 +65,7 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
     }
 
     console.log("✅ Email Berhasil Terkirim! ID:", result.id);
+    // alert("✅ Email Konfirmasi Terkirim ke: " + to);
     return { success: true, id: result.id };
   } catch (err) {
     console.error("❌ Email Sending failed:", err);
