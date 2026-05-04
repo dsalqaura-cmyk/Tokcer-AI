@@ -39,9 +39,9 @@ const PartnerDashboard = () => {
     bankName: '',
     bankAccount: ''
   });
-  const [supportForm, setSupportForm] = useState({
-    description: ''
-  });
+  const [supportActiveTab, setSupportActiveTab] = useState('report');
+  const [bugForm, setBugForm] = useState({ category: 'bug', description: '', screenshot: null });
+  const [ideaForm, setIdeaForm] = useState({ content: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [countdown, setCountdown] = useState('');
@@ -272,7 +272,7 @@ const PartnerDashboard = () => {
     }
   };
 
-  const handleSupportSubmit = async (e) => {
+  const handleBugSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
@@ -280,13 +280,38 @@ const PartnerDashboard = () => {
 
       const { error } = await supabase.from('support_tickets').insert([{
         user_id: user.id === 'admin-bypass' ? null : user.id,
-        type: 'bug',
-        description: supportForm.description,
-        status: 'open'
+        type: bugForm.category || 'bug',
+        description: bugForm.description,
+        status: 'open',
+        metadata: { source: 'partner_dashboard' }
       }]);
+
       if (error) throw error;
-      alert("Laporan terkirim! Tim kami akan segera menindaklanjuti.");
-      setSupportForm({ description: '' });
+      alert("Laporan bug terkirim! Tim teknis kami akan segera memeriksa.");
+      setBugForm({ category: 'bug', description: '', screenshot: null });
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleIdeaSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (!user?.id) throw new Error("Sesi berakhir.");
+
+      const { error } = await supabase.from('partner_ideas').insert([{
+        partner_id: user.id === 'admin-bypass' ? null : user.id,
+        title: 'Saran Fitur Baru',
+        content: ideaForm.content,
+        status: 'draft'
+      }]);
+
+      if (error) throw error;
+      alert("Ide brilian Anda telah kami catat! Terima kasih atas masukannya.");
+      setIdeaForm({ content: '' });
     } catch (err) {
       alert(err.message);
     } finally {
@@ -314,7 +339,19 @@ const PartnerDashboard = () => {
       case 'subscribers': return <SubscribersTab {...commonProps} subscribers={subscribers} />;
       case 'leaderboard': return <LeaderboardTab {...commonProps} data={leaderboardData} countdown={countdown} />;
       case 'payment': return <PaymentTab {...commonProps} partnerData={partnerData} />;
-      case 'support': return <SupportTab {...commonProps} form={supportForm} setForm={setSupportForm} onSubmit={handleSupportSubmit} />;
+      case 'support': return (
+        <SupportTab 
+          {...commonProps} 
+          supportTab={supportActiveTab} 
+          setSupportTab={setSupportActiveTab}
+          supportForm={bugForm}
+          setSupportForm={setBugForm}
+          ideaForm={ideaForm}
+          setIdeaForm={setIdeaForm}
+          handleSupportSubmit={handleBugSubmit}
+          handleIdeaSubmit={handleIdeaSubmit}
+        />
+      );
       case 'academy': return <AcademyTab {...commonProps} />;
       case 'profile': return (
         <ProfileTab 
