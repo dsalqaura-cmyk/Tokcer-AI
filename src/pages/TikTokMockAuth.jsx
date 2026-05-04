@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase.js';
+import tokcerLogo from '../assets/logo.png';
 
 const TikTokMockAuth = () => {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ const TikTokMockAuth = () => {
         {/* Header Branding */}
         <div className="p-8 border-b border-zinc-100 bg-white">
           <div className="flex items-center justify-center gap-6 mb-8">
-            <img src="/logo.png" alt="Tokcer AI" className="h-12 w-auto" />
+            <img src={tokcerLogo} alt="Tokcer AI" className="h-12 w-auto" />
             <div className="flex flex-col items-center gap-1">
               <div className="w-10 h-[1px] bg-zinc-200"></div>
               <iconify-icon icon="solar:link-bold" className="text-xl text-zinc-300"></iconify-icon>
