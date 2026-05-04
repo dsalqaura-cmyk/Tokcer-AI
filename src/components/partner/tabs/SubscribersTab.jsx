@@ -8,7 +8,6 @@ const SubscribersTab = ({
 }) => {
   const safeSubs = subscribers || [];
   const activeSubs = safeSubs.filter(s => s.status === 'active' || s.status === 'paid');
-  const activeCount = activeSubs.length;
   const cancelledCount = safeSubs.filter(s => s.status === 'cancelled' || s.status === 'returned').length;
   
   // 🏮 OFFICIAL COMMISSION RATES (A — REVENUE SHARE)
@@ -18,10 +17,37 @@ const SubscribersTab = ({
     ultimate: { starter: 249700, bronze: 249700, silver: 299600, gold: 374600, platinum: 449500 }
   };
 
-  // 🏆 ANNUAL PLAN BONUSES (B.3 — PERFORMANCE BONUS)
+  // 🏆 ANNUAL PLAN BONUSES (B.3 — PERFORMANCE BONUS - ONE TIME ONLY)
   const ANNUAL_BONUSES = { pro: 100000, elite: 250000, ultimate: 500000 };
 
-  // 🛡️ TIER IDENTIFICATION (A.2 — KRITERIA TIER DUAL-REQUIREMENT)
+  // 📅 CALCULATION PERIOD LOGIC (RULE #4: 26th - 25th)
+  const getPeriod = () => {
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth();
+    const year = now.getFullYear();
+    
+    let start, end;
+    if (day >= 26) {
+      start = new Date(year, month, 26, 0, 0, 0);
+      end = new Date(year, month + 1, 25, 23, 59, 59);
+    } else {
+      start = new Date(year, month - 1, 26, 0, 0, 0);
+      end = new Date(year, month, 25, 23, 59, 59);
+    }
+    return { start, end };
+  };
+
+  const period = getPeriod();
+  const isNewInPeriod = (dateStr) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return d >= period.start && d <= period.end;
+  };
+
+  // 🛡️ TIER IDENTIFICATION (A.2 — KRITERIA TIER)
+  // Based on current active count for the evaluated month
+  const activeCount = activeSubs.length;
   const eliteCount = activeSubs.filter(s => ['elite', 'ultimate'].includes(s.plan?.toLowerCase())).length;
 
   let currentTier = 'starter';
@@ -30,33 +56,42 @@ const SubscribersTab = ({
   else if (activeCount >= 5 && eliteCount >= 2) currentTier = 'silver';
   else if (activeCount >= 3) currentTier = 'bronze';
 
-  // 📊 COMMISSION CALCULATION LOGIC
+  // 📊 COMMISSION CALCULATION LOGIC (RULES #4, #5, #6)
   const calculateItemCommission = (sub) => {
     if (sub.status !== 'active' && sub.status !== 'paid') return 0;
     const plan = sub.plan?.toLowerCase() || 'starter';
     if (plan === 'starter') return 0;
 
     const baseRate = COMMISSION_RATES[plan]?.[currentTier] || 0;
+    const isNew = isNewInPeriod(sub.created_at);
     
-    // Yearly Logic: 11x Base + Annual Bonus (Matches Admin Logic)
+    // Yearly Logic: Only paid in the closing month (Rule #6)
     if (sub.billing_cycle === 'Yearly') {
-      const annualBonus = ANNUAL_BONUSES[plan] || 0;
-      return (baseRate * 11) + annualBonus;
+      if (isNew) {
+        const annualBonus = ANNUAL_BONUSES[plan] || 0;
+        return (baseRate * 11) + annualBonus;
+      }
+      return 0; // Already paid upfront in closing month
     }
 
-    return baseRate;
+    return baseRate; // Monthly recurring
   };
 
-  // 💰 TOTALS
-  const totalRecurringRevenue = activeSubs.reduce((acc, curr) => acc + calculateItemCommission(curr), 0);
+  // 💰 TOTALS (MTD PACE)
+  const totalCommissionMTD = activeSubs.reduce((acc, curr) => acc + calculateItemCommission(curr), 0);
 
-  // 🏆 MILESTONE CALCULATION (B.2 — VOLUME MILESTONE)
+  // 🏆 MILESTONE CALCULATION (RULE #5: Monthly always counts, Annual only in closing month)
+  const milestoneUnits = activeSubs.filter(s => {
+    if (s.billing_cycle === 'Yearly') return isNewInPeriod(s.created_at);
+    return true; // Monthly counts every month
+  }).length;
+
   let volumeMilestone = 0;
-  if (activeCount >= 15) volumeMilestone = 750000;
-  else if (activeCount >= 10) volumeMilestone = 350000;
-  else if (activeCount >= 5) volumeMilestone = 150000;
+  if (milestoneUnits >= 15) volumeMilestone = 750000;
+  else if (milestoneUnits >= 10) volumeMilestone = 350000;
+  else if (milestoneUnits >= 5) volumeMilestone = 150000;
 
-  const bonusProgress = Math.min(100, (activeCount / 5) * 100);
+  const bonusProgress = Math.min(100, (milestoneUnits / 5) * 100);
 
   const getPlanBadge = (plan) => {
     switch(plan?.toLowerCase()) {
@@ -92,7 +127,7 @@ const SubscribersTab = ({
           <div className="flex justify-between items-start mb-3">
             <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{t('activeUser')}</div>
             <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
-              currentTier === 'platinum' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+              currentTier === 'platinum' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.3)]' :
               currentTier === 'gold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
               currentTier === 'silver' ? 'bg-zinc-100/10 text-zinc-100 border-zinc-100/20' :
               'bg-zinc-800 text-zinc-500 border-zinc-700'
@@ -109,25 +144,28 @@ const SubscribersTab = ({
         </div>
 
         <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl border-l-emerald-500/50">
-          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('commission')} (MTD)</div>
-          <div className="text-3xl font-black text-emerald-400 font-mono tracking-tighter">{formatCurrency(totalRecurringRevenue)}</div>
+          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">
+            {t('commission')} 
+            <span className="text-[8px] text-zinc-500 ml-2">(26 - 25)</span>
+          </div>
+          <div className="text-3xl font-black text-emerald-400 font-mono tracking-tighter">{formatCurrency(totalCommissionMTD)}</div>
         </div>
 
-        <div className={`relative group overflow-hidden backdrop-blur-md border p-5 rounded-2xl transition-all duration-500 ${activeCount >= 5 ? 'bg-emerald-600/10 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-zinc-900/40 border-zinc-800/50 grayscale'}`}>
+        <div className={`relative group overflow-hidden backdrop-blur-md border p-5 rounded-2xl transition-all duration-500 ${milestoneUnits >= 5 ? 'bg-emerald-600/10 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-zinc-900/40 border-zinc-800/50 grayscale'}`}>
           <div className="flex justify-between items-start mb-3">
-            <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${activeCount >= 5 ? 'text-emerald-500' : 'text-zinc-500'}`}>{t('performanceBonus')}</div>
-            <iconify-icon icon={activeCount >= 5 ? "solar:lock-unlock-bold-duotone" : "solar:lock-bold-duotone"} className={activeCount >= 5 ? "text-emerald-500" : "text-zinc-500"}></iconify-icon>
+            <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${milestoneUnits >= 5 ? 'text-emerald-500' : 'text-zinc-500'}`}>{t('performanceBonus')}</div>
+            <iconify-icon icon={milestoneUnits >= 5 ? "solar:lock-unlock-bold-duotone" : "solar:lock-bold-duotone"} className={milestoneUnits >= 5 ? "text-emerald-500" : "text-zinc-500"}></iconify-icon>
           </div>
           <div className="text-3xl font-black text-white font-mono tracking-tighter mb-4">{formatCurrency(volumeMilestone)}</div>
           
           <div className="space-y-2">
             <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-zinc-500">
-              <span>{activeCount >= 5 ? 'Bonus Unlocked' : 'Unlock Progress'}</span>
-              <span>{activeCount}/5 Units</span>
+              <span>{milestoneUnits >= 5 ? 'Bonus Unlocked' : 'Unlock Progress'}</span>
+              <span>{milestoneUnits}/5 Units</span>
             </div>
             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
               <div 
-                className={`h-full transition-all duration-1000 ${activeCount >= 5 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`}
+                className={`h-full transition-all duration-1000 ${milestoneUnits >= 5 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`}
                 style={{ width: `${bonusProgress}%` }}
               ></div>
             </div>
@@ -162,6 +200,9 @@ const SubscribersTab = ({
               <tbody className="text-sm">
                 {safeSubs.map((s, idx) => {
                   const currentComm = calculateItemCommission(s);
+                  const isNew = isNewInPeriod(s.created_at);
+                  const isYearly = s.billing_cycle === 'Yearly';
+
                   return (
                     <tr key={s.id} className={`group border-b border-zinc-900/50 hover:bg-white/[0.01] transition-all duration-300 ${idx === safeSubs.length - 1 ? 'border-none' : ''}`}>
                       <td className="px-4 sm:px-8 py-4 sm:py-6">
@@ -180,8 +221,10 @@ const SubscribersTab = ({
                           <span className={`px-2 sm:px-3 py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest border shadow-sm w-fit ${getPlanBadge(s.plan)}`}>
                             {s.plan}
                           </span>
-                          {s.billing_cycle === 'Yearly' && (
-                            <span className="text-[7px] font-black text-orange-500 uppercase tracking-tighter ml-1">Annual 💎</span>
+                          {isYearly && (
+                            <span className={`text-[7px] font-black uppercase tracking-tighter ml-1 ${isNew ? 'text-orange-500' : 'text-zinc-600'}`}>
+                              {isNew ? 'Annual Bonus 💎' : 'Upfront Paid'}
+                            </span>
                           )}
                         </div>
                       </td>
@@ -204,8 +247,8 @@ const SubscribersTab = ({
                           {getRelativeTime(s.created_at)}
                         </span>
                       </td>
-                      <td className="px-4 sm:px-8 py-4 sm:py-6 text-right font-mono font-black text-zinc-100 text-[10px] sm:text-sm group-hover:text-emerald-300 transition-colors">
-                        {formatCurrency(currentComm)}
+                      <td className={`px-4 sm:px-8 py-4 sm:py-6 text-right font-mono font-black text-[10px] sm:text-sm group-hover:text-emerald-300 transition-colors ${currentComm === 0 ? 'text-zinc-600' : 'text-zinc-100'}`}>
+                        {currentComm === 0 && isYearly && !isNew ? 'PROCESSED' : formatCurrency(currentComm)}
                       </td>
                     </tr>
                   );
@@ -220,5 +263,6 @@ const SubscribersTab = ({
 };
 
 export default SubscribersTab;
+
 
 
