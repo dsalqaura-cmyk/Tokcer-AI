@@ -15,6 +15,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [formPlan, setFormPlan] = useState(selectedPlan || 'starter');
   const [dbPlans, setDbPlans] = useState([]);
   const [affiliateId, setAffiliateId] = useState(localStorage.getItem('tokcer_affiliate_id') || '');
+  const [billingCycle, setBillingCycle] = useState('Monthly');
 
   // Ambil daftar paket dari Database (BIAR LIVE)
   useEffect(() => {
@@ -216,7 +217,9 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                 >
                   {dbPlans.length > 0 ? (
                     dbPlans.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id} value={p.id}>
+                        {p.name} {p.price_monthly > 0 ? `— Rp ${p.price_monthly.toLocaleString('id-ID')}` : '— GRATIS'}
+                      </option>
                     ))
                   ) : (
                     <>
@@ -238,6 +241,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                     <select 
                       name="billing_cycle"
                       required
+                      value={billingCycle}
+                      onChange={(e) => setBillingCycle(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
                     >
                       {(() => {
@@ -351,6 +356,57 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                   );
                 })}
               </div>
+            </div>
+
+            {/* RINGKASAN PEMBAYARAN - UPDATE PATEN */}
+            <div className="p-4 rounded-2xl bg-orange-500/5 border border-orange-500/20 space-y-3">
+               <div className="flex justify-between items-center text-xs">
+                  <span className="text-zinc-500 font-medium">Paket Terpilih:</span>
+                  <span className="text-white font-bold uppercase tracking-wider">
+                     {dbPlans.find(p => p.id === formPlan)?.name || formPlan}
+                  </span>
+               </div>
+               
+               {(() => {
+                  const currentPlan = dbPlans.find(p => p.id === formPlan);
+                  if (!currentPlan || currentPlan.id === 'starter') {
+                     return (
+                        <div className="flex justify-between items-center text-xs">
+                           <span className="text-zinc-500 font-medium">Total Tagihan:</span>
+                           <span className="text-green-500 font-black">GRATIS (FREE)</span>
+                        </div>
+                     );
+                  }
+
+                  const isYearly = billingCycle === 'Yearly';
+                  const monthlyPrice = currentPlan.price_monthly;
+                  const yearlyPrice = currentPlan.price_yearly || (monthlyPrice * 11);
+                  const totalPrice = isYearly ? yearlyPrice : monthlyPrice;
+
+                  return (
+                     <>
+                        <div className="flex justify-between items-start text-xs border-t border-zinc-800 pt-3">
+                           <div className="space-y-1">
+                              <span className="text-zinc-500 font-medium block text-[9px] uppercase tracking-widest">Opsi Siklus</span>
+                              <div className="flex gap-4">
+                                 <div className="flex flex-col">
+                                    <span className="text-zinc-500 text-[10px]">Bulanan</span>
+                                    <span className="text-zinc-300 font-semibold">Rp {monthlyPrice.toLocaleString('id-ID')}</span>
+                                 </div>
+                                 <div className="flex flex-col border-l border-zinc-800 pl-4">
+                                    <span className="text-zinc-500 text-[10px]">Tahunan</span>
+                                    <span className="text-orange-400 font-semibold">Rp {yearlyPrice.toLocaleString('id-ID')} <span className="text-[9px] text-green-500">(Hemat!)</span></span>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t border-zinc-800">
+                           <span className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Total Transfer</span>
+                           <span className="text-orange-500 text-xl font-black">Rp {totalPrice.toLocaleString('id-ID')}</span>
+                        </div>
+                     </>
+                  );
+               })()}
             </div>
             
 
