@@ -110,8 +110,11 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
       if (error) throw error;
       
-      // 3. Kirim Email Konfirmasi Otomatis (PASANG SESUAI PERINTAH)
-      await sendRegistrationConfirmation({ email, nama, plan: planValue });
+      // 3. Kirim Email Konfirmasi Otomatis (MANDATORY SUCCESS CHECK)
+      const emailResult = await sendRegistrationConfirmation({ email, nama, plan: planValue });
+      if (!emailResult || !emailResult.success) {
+        throw new Error(emailResult?.error || "Gagal mengirim email konfirmasi.");
+      }
 
       setStatus('success');
     } catch (error) {

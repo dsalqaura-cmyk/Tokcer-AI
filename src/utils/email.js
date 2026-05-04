@@ -27,17 +27,9 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
         apiKey = generalConfig?.value;
     }
 
-    if (!apiKey) {
-      console.error("❌ Resend API Key TIDAK DITEMUKAN di database (ai_configs).");
-      alert("Error: API Key Resend tidak ditemukan di database!");
-      return { success: false, error: "Missing API Key" };
-    }
-
-    if (!apiKey || apiKey.includes('mock')) {
-      console.warn("⚠️ Resend API Key not configured or using mock key. Email simulation only.");
-      console.log("📨 Mock Email to:", to);
-      console.log("Subject:", subject);
-      return { success: true, mock: true };
+    if (!apiKey || apiKey === '' || apiKey.includes('your_resend') || apiKey.includes('mock')) {
+      console.error("❌ Resend API Key tidak ditemukan atau tidak valid di database (ai_configs).");
+      throw new Error("Sistem gagal mengirim email karena API Key Resend tidak ditemukan di database (ai_configs).");
     }
 
     // 2. Send via Resend API (REPLICATING InternalDashboard.jsx logic)
@@ -64,7 +56,7 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
       return { success: true, id: result.id };
     } else {
       console.error("❌ Resend API Error Details:", result);
-      return { success: false, error: result };
+      throw new Error(`Resend Error: ${result.message || result.error || 'Gagal mengirim email'}`);
     }
   } catch (err) {
     console.error("❌ Email Sending failed:", err);
