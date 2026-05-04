@@ -65,7 +65,7 @@ export const sendEmail = async ({ to, subject, html, isPartner = false }) => {
     }
 
     console.log("✅ Email Berhasil Terkirim! ID:", result.id);
-    // alert("✅ Email Konfirmasi Terkirim ke: " + to);
+    alert("✅ Email Konfirmasi Terkirim! ID: " + result.id);
     return { success: true, id: result.id };
   } catch (err) {
     console.error("❌ Email Sending failed:", err);
