@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
+import { sendRegistrationConfirmation } from '../../utils/email.js';
 
 const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const { t } = useLandingTranslation();
@@ -108,6 +109,20 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
         }]);
 
       if (error) throw error;
+      
+      // DEBUG: Alert status sebelum kirim
+      console.log("🔍 Email logic triggered for:", email);
+
+      // 2. Kirim Email Konfirmasi Otomatis (WAITED for Debug)
+      const emailRes = await sendRegistrationConfirmation({ email, nama, plan: planValue });
+      
+      // BRUTE FORCE ALERT: Munculin status aslinya
+      alert(`DEBUG INFO:\nEmail Res Success: ${emailRes.success}\nError: ${JSON.stringify(emailRes.error || 'none')}`);
+
+      if (!emailRes.success) {
+        throw new Error("Pendaftaran tersimpan, tapi Gagal Kirim Email: " + (emailRes.error?.message || JSON.stringify(emailRes.error)));
+      }
+
       setStatus('success');
     } catch (error) {
       console.error(error);
