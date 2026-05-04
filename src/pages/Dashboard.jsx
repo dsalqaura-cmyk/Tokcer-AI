@@ -208,8 +208,8 @@ const Dashboard = () => {
                 return;
             }
 
-            // 3. Redirect (Bypass ke Mock Page kalau ID-nya mock/placeholder)
-            if (appId.includes('mock') || appId.includes('6db7a')) {
+            // 3. Redirect (Bypass ke Mock Page kalau ID-nya mock/placeholder atau ID fallback staging)
+            if (appId.includes('mock') || appId.includes('6db7a') || appId.includes('6js3f')) {
                 navigate('/tiktok-auth-mock');
             } else {
                 window.location.href = getTikTokAuthUrl(appId);
