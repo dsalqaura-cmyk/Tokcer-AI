@@ -147,7 +147,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             <div className="w-12 h-12 bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <iconify-icon icon="solar:letter-opened-bold" className="text-2xl"></iconify-icon>
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">Pendaftaran Terkirim!</h4>
+            <h4 className="text-lg font-semibold text-white mb-2">Pendaftaran Terkirim! (VERSI TERBARU 14:45)</h4>
             <p className="text-sm text-zinc-400">Data Anda sedang dalam proses verifikasi oleh tim Tokcer AI. Detail akun dan instruksi login akan kami kirimkan ke email Anda segera.</p>
             <button 
               onClick={onClose}
