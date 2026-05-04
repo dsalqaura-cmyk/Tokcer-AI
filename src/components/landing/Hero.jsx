@@ -36,7 +36,7 @@ const Hero = () => {
           {t('heroDesc')}
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+        {/* <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
            <button className="px-8 py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-orange-600/20 transition-all hover:scale-105 active:scale-95">
               Mulai Sekarang — Gratis
            </button>
@@ -44,7 +44,7 @@ const Hero = () => {
               <iconify-icon icon="solar:play-circle-bold" className="text-xl text-orange-500"></iconify-icon>
               Lihat Demo Video
            </button>
-        </div>
+        </div> */}
       </div>
 
       <div id="dashboard" className="max-w-6xl mx-auto relative group z-10">
