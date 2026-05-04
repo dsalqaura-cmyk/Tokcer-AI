@@ -4,6 +4,8 @@ import { supabase } from '../supabase.js';
 
 const TikTokMockAuth = () => {
   const navigate = useNavigate();
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState('info'); // 'info', 'scanning', 'result'
   const [discoveredShop, setDiscoveredShop] = useState(null);
   const [user, setUser] = useState(null);
@@ -204,20 +206,6 @@ const TikTokMockAuth = () => {
         <div className="p-6 bg-zinc-50 border-t border-zinc-100 text-center">
           <p className="text-[10px] text-zinc-400">
             Secure authorization powered by Tokcer AI & TikTok Shop Open Platform.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default TikTokMockAuth;
-
-        {/* Footer */}
-        <div className="p-6 bg-zinc-50 border-t border-zinc-100 text-center">
-          <p className="text-[10px] text-zinc-400">
-            By clicking Authorize, you agree to TikTok Shop's Terms of Service and Tokcer AI's Privacy Policy. 
-            You can revoke this access at any time from your TikTok Shop Seller Center.
           </p>
         </div>
       </div>
