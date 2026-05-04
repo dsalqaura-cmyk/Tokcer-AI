@@ -13,12 +13,22 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [paymentProof, setPaymentProof] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [formPlan, setFormPlan] = useState(selectedPlan || 'starter');
+  const [dbPlans, setDbPlans] = useState([]);
   const [affiliateId, setAffiliateId] = useState(localStorage.getItem('tokcer_affiliate_id') || '');
+
+  // Ambil daftar paket dari Database (BIAR LIVE)
+  useEffect(() => {
+    const fetchPlans = async () => {
+      const { data } = await supabase.from('pricing_plans').select('*');
+      if (data) setDbPlans(data);
+    };
+    fetchPlans();
+  }, []);
 
   // Sync formPlan when selectedPlan prop changes (e.g., user clicks from Pricing card)
   useEffect(() => {
     if (selectedPlan) {
-      setFormPlan(selectedPlan);
+      setFormPlan(typeof selectedPlan === 'string' ? selectedPlan : (selectedPlan?.id || 'starter'));
     }
   }, [selectedPlan]);
 
@@ -51,8 +61,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     const affiliate_id = formData.get('affiliate_id');
     const business_type = formData.get('business_type');
     const billing_cycle = formData.get('billing_cycle') || 'Monthly';
-    const planValue = typeof selectedPlan === 'string' ? selectedPlan : (selectedPlan?.id || 'starter');
-    const cycleValue = typeof selectedPlan === 'object' && selectedPlan?.billingCycle ? selectedPlan.billingCycle : 'Yearly';
+    const planValue = formPlan || 'starter'; // Gunakan formPlan karena sudah di-sync dengan selectedPlan
     console.log("📝 Registering with plan:", planValue, "Cycle:", billing_cycle); // Log untuk debug
     
     // Validations
@@ -205,10 +214,18 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                   onChange={(e) => setFormPlan(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
                 >
-                  <option value="starter">Starter Edition</option>
-                  <option value="pro">Pro Edition</option>
-                  <option value="elite">Elite Edition</option>
-                  <option value="ultimate">Ultimate Edition</option>
+                  {dbPlans.length > 0 ? (
+                    dbPlans.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="starter">Starter Edition</option>
+                      <option value="pro">Pro Edition</option>
+                      <option value="elite">Elite Edition</option>
+                      <option value="ultimate">Ultimate Edition</option>
+                    </>
+                  )}
                 </select>
               </div>
             )}
@@ -224,13 +241,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                       className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none"
                     >
                       {(() => {
-                        const prices = {
-                          pro: 499000,
-                          elite: 999000,
-                          ultimate: 1999000
-                        };
-                        const price = prices[formPlan];
-                        if (!price) {
+                        const currentPlan = dbPlans.find(p => p.id === formPlan);
+                        if (!currentPlan || currentPlan.id === 'starter') {
                           return (
                             <>
                               <option value="Monthly">Bulanan (Monthly)</option>
@@ -238,10 +250,11 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                             </>
                           );
                         }
+                        const price = currentPlan.price_monthly;
                         return (
                           <>
                             <option value="Monthly">Bulanan (Rp {price.toLocaleString('id-ID')})</option>
-                            <option value="Yearly">Tahunan (Rp {(price * 11).toLocaleString('id-ID')})</option>
+                            <option value="Yearly">Tahunan (Rp {(currentPlan.price_yearly || price * 11).toLocaleString('id-ID')})</option>
                           </>
                         );
                       })()}
