@@ -66,8 +66,8 @@ const ApprovalSection = ({
                   </td>
                   <td className="p-4 border-y border-zinc-800/50">
                     <div className="flex flex-col items-start gap-1">
-                      <span className={`${getTierBadgeClass(activeAppTab === 'new-partner' ? 'bronze' : (item.tier || item.plan))} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>
-                        {activeAppTab === 'new-partner' ? 'Bronze' : (item.tier || item.plan)}
+                      <span className={`${getTierBadgeClass(activeAppTab === 'new-partner' ? 'bronze' : (item.plan || item.tier || 'starter'))} text-[9px] font-black px-3 py-1 rounded-lg uppercase border border-white/5`}>
+                        {activeAppTab === 'new-partner' ? 'Bronze' : (item.plan || item.tier || 'Starter')}
                       </span>
                       {item.billing_cycle && (
                         <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest pl-1">{item.billing_cycle}</span>
