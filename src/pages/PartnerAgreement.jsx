@@ -159,7 +159,7 @@ const PartnerAgreement = () => {
         <div className="fixed inset-0 bg-[rgba(10,10,10,0.95)] z-[100] flex flex-col items-center justify-center text-center p-10 animate-in fade-in duration-500">
           <div className="w-20 h-20 bg-[rgba(34,197,94,0.1)] border-2 border-[#22C55E] rounded-full flex items-center justify-center text-4xl mb-6 scale-in duration-500">✓</div>
           <h2 className="font-['Barlow_Condensed',sans-serif] font-black text-4xl mb-3">Welcome, <span className="text-[#F5A300]">Partner!</span></h2>
-          <p className="text-sm text-zinc-400 max-w-md leading-relaxed">Agreement kamu sudah tercatat. Partner link & Partner Portal akan dikirim ke WhatsApp kamu dalam beberapa menit.</p>
+          <p className="text-sm text-zinc-400 max-w-md leading-relaxed">Agreement kamu sudah tercatat. Partner link & Partner Portal akan dikirim ke Email kamu dalam beberapa menit.</p>
           <div className="font-['Barlow_Condensed',sans-serif] font-bold text-sm tracking-widest text-[#F5A300] bg-[rgba(245,163,0,0.08)] border border-[rgba(245,163,0,0.2)] px-4 py-2 rounded-lg mt-6 uppercase">REF: {refCode}</div>
           <p className="text-[10px] text-zinc-600 mt-6 italic">Timestamp & data kamu sudah disimpan secara aman.</p>
         </div>
