@@ -5,7 +5,17 @@ Dokumen ini adalah referensi utama untuk seluruh pengembang AI (Antigravity/Ucup
 
 ---
 
-### 1. 🛡️ ATURAN HARAM (CRITICAL RULES)
+### 🏮 DAFTAR LINK RESMI (OFFICIAL LINKS)
+- **User Landing (Staging)**: `https://staging.tokcer-ai.com`
+- **User Login (Staging)**: `https://staging.tokcer-ai.com/login`
+- **Admin Dashboard (Staging)**: `https://dashboardstaging.tokcer-ai.com`
+- **User Landing (Production)**: `https://tokcer-ai.com`
+- **Admin Dashboard (Production)**: `https://dashboard.tokcer-ai.com`
+- **Official Logo Asset**: `https://dashboardstaging.tokcer-ai.com/logo.png`
+
+---
+
+### 🛡️ ATURAN HARAM (CRITICAL RULES)
 - **Logo Integrity**: SELALU gunakan URL `https://dashboardstaging.tokcer-ai.com/logo.png`. Jangan ganti ke teks atau URL lain.
 - **Visual Aesthetic**: Tema WAJIB **Premium Dark Mode** (Zinc-900, Black, Orange-600). Jangan gunakan warna-warna basic (Red, Blue, Green murni).
 - **Hardcoded Links**: Jangan hardcode link login di dalam file `.jsx` jika berhubungan dengan email. Gunakan Database Trigger SQL agar link tetap konsisten (`staging.tokcer-ai.com/login`).
