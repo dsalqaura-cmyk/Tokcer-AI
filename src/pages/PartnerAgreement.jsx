@@ -241,10 +241,10 @@ const PartnerAgreement = () => {
                   </tr>
                   <tr className="hover:bg-[rgba(245,163,0,0.03)] transition-colors">
                     <td className="px-4 py-3 font-semibold text-white">Ultimate</td>
-                    <td className="px-4 py-3 text-zinc-400">Rp 200K</td>
-                    <td className="px-4 py-3 text-zinc-400">Rp 300K</td>
-                    <td className="px-4 py-3 text-zinc-400">Rp 400K</td>
-                    <td className="px-4 py-3 text-[#F5A300] font-bold">Rp 500K</td>
+                    <td className="px-4 py-3 text-zinc-400">Rp 249.7K</td>
+                    <td className="px-4 py-3 text-zinc-400">Rp 299.6K</td>
+                    <td className="px-4 py-3 text-zinc-400">Rp 374.6K</td>
+                    <td className="px-4 py-3 text-[#F5A300] font-bold">Rp 449.5K</td>
                   </tr>
                 </tbody>
               </table>

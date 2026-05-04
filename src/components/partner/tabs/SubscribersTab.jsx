@@ -7,20 +7,56 @@ const SubscribersTab = ({
   formatCurrency 
 }) => {
   const safeSubs = subscribers || [];
-  const activeCount = safeSubs.filter(s => s.status === 'active' || s.status === 'paid').length;
+  const activeSubs = safeSubs.filter(s => s.status === 'active' || s.status === 'paid');
+  const activeCount = activeSubs.length;
   const cancelledCount = safeSubs.filter(s => s.status === 'cancelled' || s.status === 'returned').length;
   
-  // LOGIC: Performance bonus only runs when there are at least 5 closings (Non-Starter)
-  const nonStarterActiveCount = safeSubs.filter(s => 
-    (s.status === 'active' || s.status === 'paid') && 
-    s.plan?.toLowerCase() !== 'starter'
-  ).length;
+  // 🏮 OFFICIAL COMMISSION RATES (A — REVENUE SHARE)
+  const COMMISSION_RATES = {
+    pro: { starter: 100000, bronze: 100000, silver: 100000, gold: 100000, platinum: 100000 },
+    elite: { starter: 119600, bronze: 119600, silver: 149600, gold: 179500, platinum: 199400 },
+    ultimate: { starter: 249700, bronze: 249700, silver: 299600, gold: 374600, platinum: 449500 }
+  };
 
-  const totalCommission = nonStarterActiveCount >= 5 
-    ? safeSubs.reduce((acc, curr) => acc + (Number(curr.commission_amount) || 0), 0)
-    : 0;
+  // 🏆 ANNUAL PLAN BONUSES (B.3 — PERFORMANCE BONUS)
+  const ANNUAL_BONUSES = { pro: 100000, elite: 250000, ultimate: 500000 };
 
-  const bonusProgress = Math.min(100, (nonStarterActiveCount / 5) * 100);
+  // 🛡️ TIER IDENTIFICATION (A.2 — KRITERIA TIER DUAL-REQUIREMENT)
+  const eliteCount = activeSubs.filter(s => ['elite', 'ultimate'].includes(s.plan?.toLowerCase())).length;
+
+  let currentTier = 'starter';
+  if (activeCount >= 15 && eliteCount >= 5) currentTier = 'platinum';
+  else if (activeCount >= 8 && eliteCount >= 2) currentTier = 'gold';
+  else if (activeCount >= 5 && eliteCount >= 2) currentTier = 'silver';
+  else if (activeCount >= 3) currentTier = 'bronze';
+
+  // 📊 COMMISSION CALCULATION LOGIC
+  const calculateItemCommission = (sub) => {
+    if (sub.status !== 'active' && sub.status !== 'paid') return 0;
+    const plan = sub.plan?.toLowerCase() || 'starter';
+    if (plan === 'starter') return 0;
+
+    const baseRate = COMMISSION_RATES[plan]?.[currentTier] || 0;
+    
+    // Yearly Logic: 11x Base + Annual Bonus (Matches Admin Logic)
+    if (sub.billing_cycle === 'Yearly') {
+      const annualBonus = ANNUAL_BONUSES[plan] || 0;
+      return (baseRate * 11) + annualBonus;
+    }
+
+    return baseRate;
+  };
+
+  // 💰 TOTALS
+  const totalRecurringRevenue = activeSubs.reduce((acc, curr) => acc + calculateItemCommission(curr), 0);
+
+  // 🏆 MILESTONE CALCULATION (B.2 — VOLUME MILESTONE)
+  let volumeMilestone = 0;
+  if (activeCount >= 15) volumeMilestone = 750000;
+  else if (activeCount >= 10) volumeMilestone = 350000;
+  else if (activeCount >= 5) volumeMilestone = 150000;
+
+  const bonusProgress = Math.min(100, (activeCount / 5) * 100);
 
   const getPlanBadge = (plan) => {
     switch(plan?.toLowerCase()) {
@@ -45,34 +81,53 @@ const SubscribersTab = ({
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+      {/* 🚀 Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl">
           <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('totalSubs')}</div>
           <div className="text-3xl font-black text-white font-mono tracking-tighter">{safeSubs.length}</div>
         </div>
-        <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl">
-          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('activeUser')}</div>
-          <div className="text-3xl font-black text-white font-mono tracking-tighter">{activeCount}</div>
-        </div>
-        <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl border-l-rose-500/50">
-          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('cancelled')}</div>
-          <div className="text-3xl font-black text-rose-500 font-mono tracking-tighter">{cancelledCount}</div>
-        </div>
-        <div className={`relative group overflow-hidden backdrop-blur-md border p-5 rounded-2xl transition-all duration-500 ${nonStarterActiveCount >= 5 ? 'bg-emerald-600/10 border-emerald-500/20' : 'bg-zinc-900/40 border-zinc-800/50 grayscale'}`}>
+        
+        <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl border-l-orange-500/50">
           <div className="flex justify-between items-start mb-3">
-            <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${nonStarterActiveCount >= 5 ? 'text-emerald-500' : 'text-zinc-500'}`}>{t('performanceBonus')}</div>
-            <iconify-icon icon={nonStarterActiveCount >= 5 ? "solar:lock-unlock-bold-duotone" : "solar:lock-bold-duotone"} className={nonStarterActiveCount >= 5 ? "text-emerald-500" : "text-zinc-500"}></iconify-icon>
+            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{t('activeUser')}</div>
+            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
+              currentTier === 'platinum' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+              currentTier === 'gold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+              currentTier === 'silver' ? 'bg-zinc-100/10 text-zinc-100 border-zinc-100/20' :
+              'bg-zinc-800 text-zinc-500 border-zinc-700'
+            }`}>
+              {currentTier}
+            </span>
           </div>
-          <div className="text-3xl font-black text-white font-mono tracking-tighter mb-4">{formatCurrency(totalCommission)}</div>
+          <div className="flex items-baseline gap-2">
+            <div className="text-3xl font-black text-white font-mono tracking-tighter">{activeCount}</div>
+            <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">
+              {eliteCount} Elite/Ult
+            </div>
+          </div>
+        </div>
+
+        <div className="relative group overflow-hidden bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-5 rounded-2xl border-l-emerald-500/50">
+          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{t('commission')} (MTD)</div>
+          <div className="text-3xl font-black text-emerald-400 font-mono tracking-tighter">{formatCurrency(totalRecurringRevenue)}</div>
+        </div>
+
+        <div className={`relative group overflow-hidden backdrop-blur-md border p-5 rounded-2xl transition-all duration-500 ${activeCount >= 5 ? 'bg-emerald-600/10 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-zinc-900/40 border-zinc-800/50 grayscale'}`}>
+          <div className="flex justify-between items-start mb-3">
+            <div className={`text-[10px] font-black uppercase tracking-[0.2em] ${activeCount >= 5 ? 'text-emerald-500' : 'text-zinc-500'}`}>{t('performanceBonus')}</div>
+            <iconify-icon icon={activeCount >= 5 ? "solar:lock-unlock-bold-duotone" : "solar:lock-bold-duotone"} className={activeCount >= 5 ? "text-emerald-500" : "text-zinc-500"}></iconify-icon>
+          </div>
+          <div className="text-3xl font-black text-white font-mono tracking-tighter mb-4">{formatCurrency(volumeMilestone)}</div>
           
           <div className="space-y-2">
             <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-zinc-500">
-              <span>{nonStarterActiveCount >= 5 ? 'Bonus Unlocked' : 'Unlock Progress'}</span>
-              <span>{nonStarterActiveCount}/5 Units</span>
+              <span>{activeCount >= 5 ? 'Bonus Unlocked' : 'Unlock Progress'}</span>
+              <span>{activeCount}/5 Units</span>
             </div>
             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
               <div 
-                className={`h-full transition-all duration-1000 ${nonStarterActiveCount >= 5 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`}
+                className={`h-full transition-all duration-1000 ${activeCount >= 5 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`}
                 style={{ width: `${bonusProgress}%` }}
               ></div>
             </div>
@@ -80,6 +135,7 @@ const SubscribersTab = ({
         </div>
       </div>
 
+      {/* 📊 Customer List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
@@ -104,48 +160,56 @@ const SubscribersTab = ({
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {safeSubs.map((s, idx) => (
-                  <tr key={s.id} className={`group border-b border-zinc-900/50 hover:bg-white/[0.01] transition-all duration-300 ${idx === safeSubs.length - 1 ? 'border-none' : ''}`}>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-100 font-black text-[10px] sm:text-xs border border-zinc-700 group-hover:border-orange-500/50 transition-colors">
-                          {s.shop_name?.charAt(0) || '?'}
+                {safeSubs.map((s, idx) => {
+                  const currentComm = calculateItemCommission(s);
+                  return (
+                    <tr key={s.id} className={`group border-b border-zinc-900/50 hover:bg-white/[0.01] transition-all duration-300 ${idx === safeSubs.length - 1 ? 'border-none' : ''}`}>
+                      <td className="px-4 sm:px-8 py-4 sm:py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-100 font-black text-[10px] sm:text-xs border border-zinc-700 group-hover:border-orange-500/50 transition-colors">
+                            {s.shop_name?.charAt(0) || '?'}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-zinc-100 text-xs sm:text-sm truncate group-hover:text-white transition-colors">{s.shop_name}</span>
+                            <span className="text-[8px] sm:text-[10px] text-zinc-400 font-medium truncate">{s.email}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-bold text-zinc-100 text-xs sm:text-sm truncate group-hover:text-white transition-colors">{s.shop_name}</span>
-                          <span className="text-[8px] sm:text-[10px] text-zinc-400 font-medium truncate">{s.email}</span>
+                      </td>
+                      <td className="px-4 sm:px-8 py-4 sm:py-6">
+                        <div className="flex flex-col gap-1">
+                          <span className={`px-2 sm:px-3 py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest border shadow-sm w-fit ${getPlanBadge(s.plan)}`}>
+                            {s.plan}
+                          </span>
+                          {s.billing_cycle === 'Yearly' && (
+                            <span className="text-[7px] font-black text-orange-500 uppercase tracking-tighter ml-1">Annual 💎</span>
+                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6">
-                      <span className={`px-2 sm:px-3 py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest border shadow-sm ${getPlanBadge(s.plan)}`}>
-                        {s.plan}
-                      </span>
-                    </td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6">
-                      <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${
-                        s.status === 'active' || s.status === 'paid'
-                          ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
-                          : s.status === 'pending'
-                          ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-                          : s.status === 'warning'
-                          ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
-                          : 'text-zinc-500 bg-zinc-800 border-zinc-700'
-                      }`}>
-                        <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' || s.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                        {t('status' + s.status.charAt(0).toUpperCase() + s.status.slice(1))}
-                      </span>
-                    </td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6">
-                      <span className={`text-[10px] sm:text-xs font-bold ${getRelativeTime(s.created_at) === (lang === 'id' ? 'baru saja' : 'just now') ? 'text-emerald-400' : 'text-zinc-400'}`}>
-                        {getRelativeTime(s.created_at)}
-                      </span>
-                    </td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-right font-mono font-black text-zinc-100 text-[10px] sm:text-sm group-hover:text-emerald-300 transition-colors">
-                      {formatCurrency(s.commission_amount)}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 sm:px-8 py-4 sm:py-6">
+                        <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${
+                          s.status === 'active' || s.status === 'paid'
+                            ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
+                            : s.status === 'pending'
+                            ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                            : s.status === 'warning'
+                            ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+                            : 'text-zinc-500 bg-zinc-800 border-zinc-700'
+                        }`}>
+                          <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' || s.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                          {t('status' + s.status.charAt(0).toUpperCase() + s.status.slice(1))}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-8 py-4 sm:py-6">
+                        <span className={`text-[10px] sm:text-xs font-bold ${getRelativeTime(s.created_at) === (lang === 'id' ? 'baru saja' : 'just now') ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                          {getRelativeTime(s.created_at)}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-8 py-4 sm:py-6 text-right font-mono font-black text-zinc-100 text-[10px] sm:text-sm group-hover:text-emerald-300 transition-colors">
+                        {formatCurrency(currentComm)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -156,3 +220,5 @@ const SubscribersTab = ({
 };
 
 export default SubscribersTab;
+
+
