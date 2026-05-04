@@ -51,7 +51,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     const affiliate_id = formData.get('affiliate_id');
     const business_type = formData.get('business_type');
     const billing_cycle = formData.get('billing_cycle') || 'Monthly';
-    const planValue = selectedPlan || formPlan || 'starter';
+    const planValue = typeof selectedPlan === 'string' ? selectedPlan : (selectedPlan?.id || 'starter');
+    const cycleValue = typeof selectedPlan === 'object' && selectedPlan?.billingCycle ? selectedPlan.billingCycle : 'Yearly';
     console.log("📝 Registering with plan:", planValue, "Cycle:", billing_cycle); // Log untuk debug
     
     // Validations
