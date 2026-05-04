@@ -441,29 +441,55 @@ const InternalDashboard = () => {
         }
 
         if (targetPartnerId) {
-          // Tabel Komisi Berdasarkan Partner Agreement v3
+          // 🏮 DYNAMIC TIER CALCULATION (Real-time from DB)
+          const { count: activeCount } = await supabase
+            .from('clients')
+            .select('*', { count: 'exact', head: true })
+            .eq('ref', client.ref) // or partner_id
+            .eq('status', 'active');
+            
+          const { count: eliteCount } = await supabase
+            .from('clients')
+            .select('*', { count: 'exact', head: true })
+            .eq('ref', client.ref)
+            .eq('status', 'active')
+            .in('plan', ['elite', 'ultimate']);
+
+          let partnerTier = 'starter';
+          if (activeCount >= 15 && eliteCount >= 5) partnerTier = 'platinum';
+          else if (activeCount >= 8 && eliteCount >= 2) partnerTier = 'gold';
+          else if (activeCount >= 5 && eliteCount >= 2) partnerTier = 'silver';
+          else if (activeCount >= 3) partnerTier = 'bronze';
+
+          // 💰 Commission Table (Synced with Partner Dashboard & Image)
           const commissionTable = {
-            bronze: { pro: 100000, elite: 119600, ultimate: 200000 },
-            silver: { pro: 100000, elite: 149600, ultimate: 300000 },
-            gold: { pro: 100000, elite: 179500, ultimate: 400000 },
-            platinum: { pro: 100000, elite: 199400, ultimate: 500000 }
+            starter: { pro: 100000, elite: 119600, ultimate: 249700 },
+            bronze: { pro: 100000, elite: 119600, ultimate: 249700 },
+            silver: { pro: 100000, elite: 149600, ultimate: 299600 },
+            gold: { pro: 100000, elite: 179500, ultimate: 374600 },
+            platinum: { pro: 100000, elite: 199400, ultimate: 449500 }
           };
+
+          const annualBonuses = { pro: 100000, elite: 250000, ultimate: 500000 };
           
-          // Jika tier belum ada/starter, fallback ke bronze
-          const selectedTier = commissionTable[partnerTier] ? partnerTier : 'bronze';
           const planKey = client.plan.toLowerCase();
+          const selectedTier = commissionTable[partnerTier] || commissionTable.bronze;
           
-          let commission = commissionTable[selectedTier][planKey] || 0;
+          let commission = selectedTier[planKey] || 0;
           
-          // Jika yearly, komisi dikalikan 11 sesuai harga pembayaran
+          // Jika yearly, komisi dikalikan 11 + Bonus Annual (Rule #6)
           if (client.billing_cycle === 'Yearly') {
-            commission = commission * 11;
+            const bonus = annualBonuses[planKey] || 0;
+            commission = (commission * 11) + bonus;
           }
 
           const { data: partnerData } = await supabase.from('partners').select('total_omzet').eq('id', targetPartnerId).maybeSingle();
           if (partnerData) {
             const currentOmzet = partnerData.total_omzet || 0;
-            await supabase.from('partners').update({ total_omzet: currentOmzet + commission }).eq('id', targetPartnerId);
+            await supabase.from('partners').update({ 
+              total_omzet: currentOmzet + commission,
+              tier: partnerTier // Sync tier back to DB
+            }).eq('id', targetPartnerId);
           }
         }
       }
