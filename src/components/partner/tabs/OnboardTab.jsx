@@ -64,12 +64,12 @@ const OnboardTab = ({
                   <optgroup label="Monthly Plans (Bulanan)">
                     <option value="pro_monthly">Pro Edition (Rp 499.000/bln)</option>
                     <option value="elite_monthly">Elite Edition (Rp 999.000/bln)</option>
-                    <option value="ultimate_monthly">Ultimate Edition (Rp 1.499.000/bln)</option>
+                    <option value="ultimate_monthly">Ultimate Edition (Rp 1.999.000/bln)</option>
                   </optgroup>
                   <optgroup label="Yearly Plans (Tahunan - Save 1 Month)">
                     <option value="pro_yearly">Pro Edition (Rp 5.489.000/thn)</option>
                     <option value="elite_yearly">Elite Edition (Rp 10.989.000/thn)</option>
-                    <option value="ultimate_yearly">Ultimate Edition (Rp 16.489.000/thn)</option>
+                    <option value="ultimate_yearly">Ultimate Edition (Rp 21.989.000/thn)</option>
                   </optgroup>
                 </select>
                 <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></iconify-icon>
@@ -84,8 +84,8 @@ const OnboardTab = ({
                       if (form.package === 'pro_yearly') return 'Rp 5.489.000';
                       if (form.package === 'elite_monthly') return 'Rp 999.000';
                       if (form.package === 'elite_yearly') return 'Rp 10.989.000';
-                      if (form.package === 'ultimate_monthly') return 'Rp 1.499.000';
-                      if (form.package === 'ultimate_yearly') return 'Rp 16.489.000';
+                      if (form.package === 'ultimate_monthly') return 'Rp 1.999.000';
+                      if (form.package === 'ultimate_yearly') return 'Rp 21.989.000';
                       return '-';
                     })()}
                   </span>

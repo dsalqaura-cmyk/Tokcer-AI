@@ -253,7 +253,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                           starter: { m: 0, y: 0 },
                           pro: { m: 499000, y: 5489000 },
                           elite: { m: 999000, y: 10989000 },
-                          ultimate: { m: 1499000, y: 16489000 }
+                          ultimate: { m: 1999000, y: 21989000 }
                         };
 
                         const priceM = currentPlan?.price_monthly || defaultPrices[formPlan]?.m || 0;
