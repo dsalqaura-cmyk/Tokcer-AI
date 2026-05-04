@@ -81,7 +81,7 @@ const TikTokMockAuth = () => {
         {/* Header Branding */}
         <div className="p-10 border-b border-zinc-800 bg-black/40">
           <div className="flex items-center justify-center gap-8 mb-10">
-            <div className="bg-white p-2 rounded-xl shadow-lg">
+            <div className="flex items-center">
               <img src={tokcerLogo} alt="Tokcer AI" className="h-10 w-auto" />
             </div>
             <div className="flex flex-col items-center gap-1 opacity-40">
