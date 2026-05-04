@@ -97,9 +97,15 @@ const InternalDashboard = () => {
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from('clients')
-      .select('id, shop_name, email, status, plan, tier, pic, ref, billing_cycle, payment_method, payment_proof_url, created_at, partners(full_name)')
+      .select('*')
       .order('created_at', { ascending: false });
-    if (!error) setAdminClients(data || []);
+      
+    if (error) {
+      console.error("❌ Gagal narik data Clients:", error);
+      // alert("Error Database: " + error.message);
+    } else {
+      setAdminClients(data || []);
+    }
   };
 
   const fetchPartners = async () => {
