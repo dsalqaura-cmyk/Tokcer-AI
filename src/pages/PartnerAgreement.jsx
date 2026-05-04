@@ -5,6 +5,7 @@ import { supabase } from '../supabase.js';
 const PartnerAgreement = () => {
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('id');
+  const applicationEmail = searchParams.get('email');
   
   const [partnerData, setPartnerData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,27 +13,42 @@ const PartnerAgreement = () => {
   const [agreed, setAgreed] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [refCode, setRefCode] = useState('');
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     const fetchPartner = async () => {
-      if (!applicationId) {
+      if (!applicationId && !applicationEmail) {
         setLoading(false);
         return;
       }
-      const { data, error } = await supabase
-        .from('partner_applications')
-        .select('*')
-        .eq('id', applicationId)
-        .single();
+      
+      let query = supabase.from('partner_applications').select('*');
+      
+      if (applicationId) {
+        query = query.eq('id', applicationId);
+      } else if (applicationEmail) {
+        query = query.eq('email', applicationEmail);
+      }
+
+      const { data, error } = await query.single();
       
       if (data) setPartnerData(data);
       setLoading(false);
     };
     fetchPartner();
-  }, [applicationId]);
+  }, [applicationId, applicationEmail]);
+
+  useEffect(() => {
+    if (isSuccess && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (isSuccess && countdown === 0) {
+      window.location.href = '/login';
+    }
+  }, [isSuccess, countdown]);
 
   const handleSubmit = async () => {
-    if (!agreed || !applicationId) return;
+    if (!agreed || !partnerData?.id) return;
     
     setIsSubmitting(true);
     try {
@@ -42,7 +58,7 @@ const PartnerAgreement = () => {
           status: 'agreed',
           agreed_at: new Date().toISOString()
         })
-        .eq('id', applicationId);
+        .eq('id', partnerData.id);
       
       if (error) throw error;
 
@@ -161,6 +177,7 @@ const PartnerAgreement = () => {
           <h2 className="font-['Barlow_Condensed',sans-serif] font-black text-4xl mb-3">Welcome, <span className="text-[#F5A300]">Partner!</span></h2>
           <p className="text-sm text-zinc-400 max-w-md leading-relaxed">Agreement kamu sudah tercatat. Partner link & Partner Portal akan dikirim ke WhatsApp kamu dalam beberapa menit.</p>
           <div className="font-['Barlow_Condensed',sans-serif] font-bold text-sm tracking-widest text-[#F5A300] bg-[rgba(245,163,0,0.08)] border border-[rgba(245,163,0,0.2)] px-4 py-2 rounded-lg mt-6 uppercase">REF: {refCode}</div>
+          <div className="mt-8 text-zinc-500 text-xs font-mono">Redirecting to login in {countdown}s...</div>
           <p className="text-[10px] text-zinc-600 mt-6 italic">Timestamp & data kamu sudah disimpan secara aman.</p>
         </div>
       )}
