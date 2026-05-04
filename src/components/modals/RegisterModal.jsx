@@ -110,19 +110,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
       if (error) throw error;
       
-      // DEBUG: Alert status sebelum kirim
-      console.log("🔍 Email logic triggered for:", email);
-
-      // 2. Kirim Email Konfirmasi Otomatis (WAITED for Debug)
-      const emailRes = await sendRegistrationConfirmation({ email, nama, plan: planValue });
-      
-      // BRUTE FORCE ALERT: Munculin status aslinya
-      alert(`DEBUG INFO:\nEmail Res Success: ${emailRes.success}\nError: ${JSON.stringify(emailRes.error || 'none')}`);
-
-      if (!emailRes.success) {
-        throw new Error("Pendaftaran tersimpan, tapi Gagal Kirim Email: " + (emailRes.error?.message || JSON.stringify(emailRes.error)));
-      }
-
+      // Email sekarang dikirim otomatis oleh DATABASE TRIGGER (Server-side)
+      // Jadi tidak butuh fetch dari frontend lagi (Anti-CORS)
       setStatus('success');
     } catch (error) {
       console.error(error);
