@@ -31,7 +31,7 @@ BEGIN
           'html', '
             <div style="font-family: ''Inter'', sans-serif; max-width: 600px; margin: auto; padding: 40px; background-color: #0a0a0a; border-radius: 24px; color: #ffffff; border: 1px solid #1f2937;">
               <div style="text-align: center; margin-bottom: 40px;">
-                <h1 style="color: #ea580c; margin: 0; font-size: 28px; letter-spacing: -0.025em;">Tokcer AI</h1>
+                <img src="https://dashboardstaging.tokcer-ai.com/logo.png" alt="Tokcer AI" style="height: 48px; margin-bottom: 12px;">
                 <p style="color: #9ca3af; font-size: 14px;">Elevate Your Marketplace Performance</p>
               </div>
               
@@ -106,7 +106,7 @@ BEGIN
           'html', '
             <div style="font-family: ''Inter'', sans-serif; max-width: 600px; margin: auto; padding: 40px; background-color: #0a0a0a; border-radius: 24px; color: #ffffff; border: 1px solid #1f2937;">
               <div style="text-align: center; margin-bottom: 40px;">
-                <h1 style="color: #ea580c; margin: 0; font-size: 28px; letter-spacing: -0.025em;">Tokcer AI</h1>
+                <img src="https://dashboardstaging.tokcer-ai.com/logo.png" alt="Tokcer AI" style="height: 48px; margin-bottom: 12px;">
                 <p style="color: #9ca3af; font-size: 14px;">Partner Excellence Program</p>
               </div>
               

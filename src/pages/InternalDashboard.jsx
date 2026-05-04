@@ -297,6 +297,9 @@ const InternalDashboard = () => {
           subject: '🚀 Akun Tokcer AI Anda Telah Aktif!',
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <img src="https://dashboardstaging.tokcer-ai.com/logo.png" alt="Tokcer AI" style="height: 40px;">
+              </div>
               <h2 style="color: #f97316;">Selamat, ${name}!</h2>
               <p>Pendaftaran Anda untuk paket <b>${plan.toUpperCase()}</b> (${cycle || 'Monthly'}) telah disetujui.</p>
               <p>Sekarang Anda sudah bisa mengakses seluruh fitur Tokcer AI untuk melejitkan performa toko Anda.</p>
