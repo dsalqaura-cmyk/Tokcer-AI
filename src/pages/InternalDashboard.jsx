@@ -381,8 +381,8 @@ const InternalDashboard = () => {
         }]);
       }
 
-      // KIRIM EMAIL OTOMATIS
-      await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate', 'Yearly');
+      // EMAIL OTOMATIS (Ditangani oleh Database Trigger)
+      // await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate', 'Yearly');
 
       alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif dan data partner terbuat di database.`);
       setShowApproveModal(false);
@@ -465,8 +465,8 @@ const InternalDashboard = () => {
         }
       }
 
-      // KIRIM EMAIL OTOMATIS
-      await sendWelcomeEmail(client.email, client.shop_name, client.plan || 'starter', client.billing_cycle || 'Monthly');
+      // EMAIL OTOMATIS (Sekarang ditangani oleh Database Trigger tr_send_welcome_email)
+      // await sendWelcomeEmail(client.email, client.shop_name, client.plan || 'starter', client.billing_cycle || 'Monthly');
 
       alert(data.message || "User berhasil diaktifkan!");
       await fetchClients();
