@@ -172,8 +172,8 @@ const InternalDashboard = () => {
     const { data, error } = await supabase
       .from('partner_applications')
       .select('*')
-      .eq('status', 'agreed')
-      .order('agreed_at', { ascending: false });
+      .filter('status', 'in', '("pending", "agreed")')
+      .order('created_at', { ascending: false });
     
     if (!error) setPartnerApps(data || []);
   };
