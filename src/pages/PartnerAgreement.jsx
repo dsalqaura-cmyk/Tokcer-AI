@@ -61,7 +61,7 @@ const PartnerAgreement = () => {
       setRefCode(`TKC-AGR-${tsShort}`);
       setIsSuccess(true);
     } catch (err) {
-      alert("Gagal memproses persetujuan. Silakan coba lagi.");
+      alert("Gagal memproses persetujuan: " + (err.message || "Error tidak diketahui"));
       console.error(err);
     } finally {
       setIsSubmitting(false);
