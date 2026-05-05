@@ -38,13 +38,21 @@ const HppCalculator = () => {
     useEffect(() => {
         const init = async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            const isAdminAuth = localStorage.getItem('tokcer_admin_auth') === 'true';
+
+            if (!session && !isAdminAuth) {
                 navigate('/login');
                 return;
             }
-            setUser(session.user);
-            const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-            setProfile(prof);
+            
+            if (session) {
+                setUser(session.user);
+                const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+                setProfile(prof);
+            } else if (isAdminAuth) {
+                // Mock admin profile for calculator logic
+                setProfile({ subscription_plan: 'ultimate', tokens: 999999 });
+            }
 
             const { data: fees } = await supabase.from('platform_fees').select('*');
             setPlatformFees(fees || []);
