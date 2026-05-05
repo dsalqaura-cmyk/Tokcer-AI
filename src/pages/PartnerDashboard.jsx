@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase.js';
+import { supabase } from '../lib/supabase.js';
 import PartnerHeader from '../components/partner/PartnerHeader.jsx';
 import PartnerSidebar from '../components/partner/PartnerSidebar.jsx';
 import OnboardTab from '../components/partner/tabs/OnboardTab.jsx';
@@ -104,44 +104,19 @@ const PartnerDashboard = () => {
       if (!currentUser) return;
       try {
         setLoading(true);
-        // 1. Fetch Partner Profile
-        const { data: partner } = await supabase
-          .from('partners')
-          .select('*')
-          .eq('id', currentUser.id)
-          .maybeSingle();
         
-        // 2. Fetch Clients (Subscribers)
-        const { data: subs } = await supabase
-          .from('clients')
-          .select('*')
-          .eq('partner_id', currentUser.id)
-          .order('created_at', { ascending: false });
-          
-        const currentSubs = subs || [];
-        setSubscribers(currentSubs);
-
-        // 3. Calculate Stats
-        const activeCount = currentSubs.filter(s => s.status === 'active').length;
-        const cancelledCount = currentSubs.filter(s => s.status === 'cancelled').length;
-
-        // 3.5 Fetch Payouts
-        const { data: payoutsData } = await supabase
-          .from('payouts')
-          .select('*')
-          .eq('partner_id', currentUser.id)
-          .order('created_at', { ascending: false });
-          
-        const mappedPayouts = (payoutsData || []).map(p => ({
-          ...p,
-          period: p.period || new Date(p.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-        }));
+        const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
+        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
+        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
 
         if (partner) {
           setPartnerData({
             ...partner,
-            activeUsers: activeCount,
-            paymentHistory: mappedPayouts
+            activeUsers: (subs || []).filter(s => s.status === 'active').length,
+            paymentHistory: (payoutsData || []).map(p => ({
+              ...p,
+              period: p.period || new Date(p.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+            }))
           });
           setProfileForm({
             fullName: partner.full_name || '',
@@ -151,13 +126,10 @@ const PartnerDashboard = () => {
           });
         }
 
-        // 4. Fetch Leaderboard
-        const { data: leaders } = await supabase.from('partners')
-          .select('full_name, total_omzet')
-          .not('full_name', 'is', null)
-          .order('total_omzet', { ascending: false })
-          .limit(10);
+        setSubscribers(subs || []);
+        const { data: leaders } = await supabase.from('partners').select('full_name, total_omzet, tier').not('full_name', 'is', null).order('total_omzet', { ascending: false }).limit(10);
         setLeaderboardData(leaders || []);
+
       } catch (err) {
         console.error("Fetch Data Error:", err);
       } finally {
@@ -166,23 +138,27 @@ const PartnerDashboard = () => {
     };
 
   useEffect(() => {
+    let partnerSubscription = null;
     const init = async () => {
       setLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
         
-        if (session) {
-          setUser(session.user);
-          await fetchData(session.user);
-        } else if (isAdmin) {
-          // Pintu Rahasia Admin: Masuk tanpa sesi Supabase tapi tetap pakai ID aslinya
-          const adminUser = { 
-            email: 'admin@tokcer-ai.com', 
-            id: '81c19c28-9614-4a6d-b2f2-b8244c0ced29' 
-          };
-          setUser(adminUser);
-          await fetchData(adminUser);
+        const targetUser = session?.user || (isAdmin ? { email: 'admin@tokcer-ai.com', id: '81c19c28-9614-4a6d-b2f2-b8244c0ced29' } : null);
+        
+        if (targetUser) {
+          setUser(targetUser);
+          await fetchData(targetUser);
+          
+          // 🏮 REAL-TIME SUBSCRIPTION (Section 3 Action Plan)
+          partnerSubscription = supabase
+            .channel(`partner_${targetUser.id}`)
+            .on('postgres_changes', 
+              { event: '*', schema: 'public', table: 'partners', filter: `id=eq.${targetUser.id}` }, 
+              (payload) => setPartnerData(prev => ({ ...prev, ...payload.new }))
+            )
+            .subscribe();
         } else {
           navigate('/login');
         }
@@ -195,7 +171,10 @@ const PartnerDashboard = () => {
     init();
 
     const timer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      if (partnerSubscription) supabase.removeChannel(partnerSubscription);
+    };
   }, []);
 
 

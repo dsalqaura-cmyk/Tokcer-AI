@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { supabase } from '../supabase.js';
+import { supabase } from '../lib/supabase.js';
 
 const PartnerAgreement = () => {
   const [searchParams] = useSearchParams();

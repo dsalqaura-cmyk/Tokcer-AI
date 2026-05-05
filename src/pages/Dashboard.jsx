@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase.js';
-import { callDeepSeek } from '../utils/ai.js';
+import { supabase } from '../lib/supabase.js';
+import { callAiEngine } from '../utils/ai.js';
 import ProductModal from '../components/modals/ProductModal.jsx';
 import logo from '../assets/logo.png';
 import Sidebar from '../components/dashboard/Sidebar.jsx';
@@ -348,7 +348,17 @@ const Dashboard = () => {
     };
 
     const fetchAnalyticsInsight = async () => {
-        if (!user || analyticsInsight || isAnalyzingAnalytics) return;
+        if (!user || isAnalyzingAnalytics) return;
+
+        const today = new Date().toISOString().split('T')[0];
+        const cacheKey = `tokcer_cache_analytics_${user.id}_${today}`;
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (cachedData) {
+            setAnalyticsInsight(JSON.parse(cachedData));
+            return;
+        }
+
         setIsAnalyzingAnalytics(true);
         try {
             const bizType = profile?.business_type || 'E-commerce';
@@ -373,10 +383,11 @@ const Dashboard = () => {
 
             const userPrompt = `Generate analytics insight for my shop selling ${bizType}. I have ${recentOrdersCount} recent orders and these products: ${productNames}.`;
             
-            const result = await callDeepSeek(systemPrompt, userPrompt);
+            const result = await callAiEngine(systemPrompt, userPrompt, null, 2048, 0.5);
             const cleanJson = result.replace(/```json|```/g, '').trim();
             const data = JSON.parse(cleanJson);
             setAnalyticsInsight(data);
+            localStorage.setItem(cacheKey, JSON.stringify(data));
         } catch (err) {
             console.error("Analytics Analysis Error:", err);
             // Fallback empty data to prevent crash
@@ -392,7 +403,17 @@ const Dashboard = () => {
     };
 
     const fetchHealthInsight = async (metrics) => {
-        if (!user || healthInsight || isAnalyzingHealth) return;
+        if (!user || isAnalyzingHealth) return;
+
+        const today = new Date().toISOString().split('T')[0];
+        const cacheKey = `tokcer_cache_health_${user.id}_${today}`;
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (cachedData) {
+            setHealthInsight(JSON.parse(cachedData));
+            return;
+        }
+
         setIsAnalyzingHealth(true);
         try {
             const systemPrompt = `You are an E-commerce Operational Expert. 
@@ -403,10 +424,12 @@ const Dashboard = () => {
 
             const userPrompt = `Provide health recommendations for my shop based on current metrics.`;
             
-            const result = await callDeepSeek(systemPrompt, userPrompt);
+            const result = await callAiEngine(systemPrompt, userPrompt, null, 2048, 0.5);
             const cleanJson = result.replace(/```json|```/g, '').trim();
             const data = JSON.parse(cleanJson);
-            setHealthInsight(data.recommendations || []);
+            const recommendations = data.recommendations || [];
+            setHealthInsight(recommendations);
+            localStorage.setItem(cacheKey, JSON.stringify(recommendations));
         } catch (err) {
             console.error("Health Analysis Error:", err);
             setHealthInsight([
@@ -528,17 +551,20 @@ const Dashboard = () => {
     }
 
     try {
-        const newTokens = currentTokens - 1;
-        const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
-        await supabase.from('profiles').update(updateData).eq('id', user.id);
-        setProfile({ ...profile, tokens: newTokens });
+        const { data, error } = await supabase.rpc('rpc_deduct_token', {
+            p_user_id: user.id,
+            p_feature: `daily_access_${feature}`,
+            p_amount: 1
+        });
+
+        if (error || !data.success) {
+            alert(data?.message || "⚠️ Kredit AI Anda tidak cukup.");
+            setActiveMenu('tab-dash');
+            return false;
+        }
+
+        setProfile(prev => ({ ...prev, tokens: data.new_balance }));
         localStorage.setItem(storageKey, 'paid');
-        
-        await supabase.from('ai_usage_logs').insert([{
-            user_id: user.id,
-            feature: `daily_access_${feature}`,
-            tokens_used: 1
-        }]);
         return true;
     } catch (err) {
         console.error("Charge Daily Error:", err);
@@ -556,17 +582,20 @@ const Dashboard = () => {
             if (allowed) fetchGlobalMarketTrends();
         });
     } else if (activeMenu === 'tab-health') {
-        // Calculate basic metrics for AI prompt
-        const safeOrders = Array.isArray(orders) ? orders : [];
-        const total = safeOrders.length || 1;
-        const cancelled = safeOrders.filter(o => o.status === 'cancelled' || o.status === 'returned').length;
-        const returnRate = ((cancelled / total) * 100).toFixed(1) + '%';
-        
-        fetchHealthInsight({
-            chat: '98%',
-            ship: '1.2 Days',
-            return: returnRate,
-            rating: '4.9/5.0'
+        chargeDailyCredit('analytics').then(allowed => {
+            if (allowed) {
+                const safeOrders = Array.isArray(orders) ? orders : [];
+                const total = safeOrders.length || 1;
+                const cancelled = safeOrders.filter(o => o.status === 'cancelled' || o.status === 'returned').length;
+                const returnRate = ((cancelled / total) * 100).toFixed(1) + '%';
+                
+                fetchHealthInsight({
+                    chat: '98%',
+                    ship: '1.2 Days',
+                    return: returnRate,
+                    rating: '4.9/5.0'
+                });
+            }
         });
     }
   }, [activeMenu, products, orders, healthPlatform, timeFilter]);
@@ -713,8 +742,8 @@ const Dashboard = () => {
       const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
-      // 3. Call DeepSeek (using master API key from .env automatically)
-      const { text: result, usage } = await callDeepSeek(fullSystemPrompt, userMessage);
+      // 3. Call Intelligence Engine (using master API key from .env automatically)
+      const { text: result, usage } = await callAiEngine(fullSystemPrompt, userMessage, null, 2048, 0.8);
       
       // Update tokens/credits if applicable (optional based on your credit system)
       // For now we just log it
@@ -735,11 +764,18 @@ const Dashboard = () => {
         const isNewTopic = !lastPrompt || lastPrompt.trim().toLowerCase() !== aiPrompt.trim().toLowerCase();
 
         if (isNewTopic) {
-            const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
-            const newTokens = currentTokens - 1;
-            const updateData = profile.tokens !== undefined ? { tokens: newTokens } : { ai_credits_remaining: newTokens };
-            await supabase.from('profiles').update(updateData).eq('id', user.id);
-            setProfile({ ...profile, tokens: newTokens });
+            const { data: deductData, error: deductError } = await supabase.rpc('rpc_deduct_token', {
+                p_user_id: user.id,
+                p_feature: 'content_generator',
+                p_amount: 1
+            });
+
+            if (deductError || !deductData.success) {
+                setAiResult("⚠️ Maaf, sisa token AI Anda habis.");
+                return;
+            }
+
+            setProfile(prev => ({ ...prev, tokens: deductData.new_balance }));
             localStorage.setItem('tokcer_last_prompt', aiPrompt);
         }
 
@@ -765,18 +801,26 @@ const Dashboard = () => {
         if (!checkPlanPermission('market_intel')) return;
 
         setIsTrendAnalyzing(true);
-
-    // 1. Check Credits (Bypass for Admin)
-    const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
-    if (!isAdmin && (!profile || (profile.tokens || 0) < 1)) {
-      setTrendResult("⚠️ Maaf, sisa token AI Anda habis.");
-      return;
-    }
-
-    setIsTrendAnalyzing(true);
-    setTrendResult('');
+        setTrendResult('');
 
     try {
+      // 1. Hardened Token Deduction (RPC)
+      const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+      if (!isAdmin) {
+          const { data: deductData, error: deductError } = await supabase.rpc('rpc_deduct_token', {
+              p_user_id: user.id,
+              p_feature: 'market_intel_analysis',
+              p_amount: 1
+          });
+
+          if (deductError || !deductData.success) {
+              setTrendResult(deductData?.message || "⚠️ Maaf, sisa token AI Anda habis.");
+              setIsTrendAnalyzing(false);
+              return;
+          }
+          setProfile(prev => ({ ...prev, tokens: deductData.new_balance }));
+      }
+
       // 2. Fetch RAG Config for Analyst
       const { data: config } = await supabase
         .from('ai_configs')
@@ -786,32 +830,16 @@ const Dashboard = () => {
 
       const bizType = profile?.business_type || 'General E-commerce';
       
-      const systemPrompt = config?.system_prompt || `You are an elite Market Research Analyst for the Indonesian e-commerce market. 
-      Your expertise is specifically targeted for a business in the "${bizType}" category.
-
-      CORE RULES:
-      1. ALWAYS respond in BAHASA INDONESIA or a mix of Indoglish that is trendy and professional.
-      2. ONLY provide analysis if the user's request is RELEVANT to the "${bizType}" niche.
-      3. If the user asks about categories outside "${bizType}", you MUST politely refuse in Bahasa Indonesia, explaining that their account is specialized for their current business category.
-      4. Provide insights on: viral potential, competitor pricing, and supply-chain risks.
+      const systemPrompt = config?.system_prompt || `You are an elite Market Research Analyst for the Indonesian e-commerce market...`;
       
-      Format your response as a JSON object: 
-      {
-        "trend": (detil tren pasar dalam Bahasa Indonesia), 
-        "demo": (profil target audiens), 
-        "top5": (5 produk potensial dalam ${bizType}), 
-        "risk": (risiko bisnis),
-        "strategy": (strategi eksekusi yang actionable)
-      }`;
-      
-      // 3. Call DeepSeek (using master API key from .env automatically)
+      // 3. Call Intelligence Engine (using master API key from .env automatically)
       const userQuery = `Analyze this niche/product: "${trendPrompt}" within my business category: ${bizType}`;
-      const { text: result, usage } = await callDeepSeek(systemPrompt, userQuery);
+      const { text: result, usage } = await callAiEngine(systemPrompt, userQuery, null, 2048, 0.5);
       setTrendResult(result);
 
       await supabase.from('ai_usage_logs').insert([{
           user_id: user.id,
-          feature: 'market_intel_analysis',
+          feature: 'market_intel_analysis_complete',
           prompt: userQuery,
           response: result,
           input_tokens: usage.prompt_tokens,
@@ -834,15 +862,25 @@ const Dashboard = () => {
   };
 
   const fetchGlobalMarketTrends = async () => {
-    if (viralTopics.length > 0 || isFetchingTrends) return;
+    if (isFetchingTrends) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const cacheKey = `tokcer_cache_global_trends_${user.id}_${today}`;
+    const cachedData = localStorage.getItem(cacheKey);
+
+    if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        setViralTopics(parsed.topics || []);
+        setLiveSummary(parsed.summary || '');
+        return;
+    }
+
     setIsFetchingTrends(true);
     try {
       const bizType = profile?.business_type || 'General E-commerce';
-      const systemPrompt = `You are a Market Trend Scout for the Indonesian market. Provide 3 viral topics and a short live summary for the "${bizType}" category in Indonesia. 
-      ALWAYS provide the topics and summary in BAHASA INDONESIA (Indoglish is okay).
-      Format: JSON object with keys: "topics" (array of {topic, platform, trend_percent, color_class}), "summary" (string).`;
+      const systemPrompt = `You are a Market Trend Scout for the Indonesian market...`;
       
-      const { text: result, usage } = await callDeepSeek(systemPrompt, "Fetch current viral trends for " + bizType);
+      const { text: result, usage } = await callAiEngine(systemPrompt, "Fetch current viral trends for " + bizType, null, 2048, 0.5);
       
       // We don't necessarily need to log every background trend fetch to save space, 
       // but if you want to track cost:
@@ -860,6 +898,10 @@ const Dashboard = () => {
       
       if (data.topics) setViralTopics(data.topics);
       if (data.summary) setLiveSummary(data.summary);
+
+      const today = new Date().toISOString().split('T')[0];
+      const cacheKey = `tokcer_cache_global_trends_${user.id}_${today}`;
+      localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (e) {
       console.error("Fetch Trends Error:", e);
       // Fallback

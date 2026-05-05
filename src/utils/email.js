@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase } from '../lib/supabase';
 
 /**
  * Utility to send emails via Resend API

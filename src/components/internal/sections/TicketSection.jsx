@@ -1,5 +1,5 @@
 import React from 'react';
-import { supabase } from '../../../supabase.js';
+import { supabase } from '../../../lib/supabase.js';
 
 const TicketSection = ({ 
   t, 

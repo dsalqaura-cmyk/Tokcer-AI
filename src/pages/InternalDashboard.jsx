@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
-import { supabase } from '../supabase.js';
+import { supabase } from '../lib/supabase.js';
 
 // Components
 import InternalSidebar from '../components/internal/InternalSidebar.jsx';
@@ -236,7 +236,7 @@ const InternalDashboard = () => {
         { key: 'shopee_partner_key', value: aiConfig.shopee_partner_key || '' },
         { key: 'tiktok_app_id', value: aiConfig.tiktok_app_id || '' },
         { key: 'tiktok_app_secret', value: aiConfig.tiktok_app_secret || '' },
-        { key: 'deepseek_api_key', value: aiConfig.deepseek_api_key || '' },
+        { key: 'ai_api_key', value: aiConfig.deepseek_api_key || '' },
         { key: 'ai_total_topup', value: aiConfig.ai_total_topup || '0' }
       ];
 
@@ -255,7 +255,10 @@ const InternalDashboard = () => {
           if (histError) console.error("History Insert Error:", histError);
         }
 
-        const { error } = await supabase.from('ai_configs').upsert(item, { onConflict: 'key' });
+        const { error } = await supabase.from('ai_configs').upsert({
+          ...item,
+          key: item.key === 'ai_api_key' ? 'deepseek_api_key' : item.key
+        }, { onConflict: 'key' });
         if (error) throw error;
       }
       
@@ -333,59 +336,17 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      // KHUSUS PARTNER: Selalu Ultimate
+      // 🏮 CENTRALIZED PARTNER ACTIVATION (Blueprint Section 4.A.3)
+      // All logic (Auth, Profile, Partner Record, Strategy Sync, and Emails) is now handled by this single RPC.
       const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
         p_email: selectedPartnerApp.email,
         p_application_id: selectedPartnerApp.id,
         p_full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
-        p_plan: 'ultimate'
+        p_plan: 'ultimate',
+        p_role: 'partner'
       });
 
       if (rpcError) throw rpcError;
-
-      // 1. CARI ID USER YANG SEBENARNYA (Agar tidak salah alamat)
-      console.log("🔍 Finding real User ID for email:", selectedPartnerApp.email);
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', selectedPartnerApp.email)
-        .single();
-      
-      const realId = userData?.id || data?.user_id || selectedPartnerApp.id;
-
-      // 2. UPSERT PARTNER RECORD (Pakai ID yang sudah benar)
-      console.log("🛠️ Syncing partner record in DB with ID:", realId);
-      const { error: pError } = await supabase.from('partners').upsert([{
-        id: realId, 
-        email: selectedPartnerApp.email,
-        full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
-        whatsapp: selectedPartnerApp.whatsapp,
-        status: 'active'
-      }]);
-      
-      if (pError) console.error("Partner Sync Error:", pError.message);
-
-      // 3. PASTIKAN ROLE DI PROFILES ADALAH PARTNER
-      await supabase.from('profiles').upsert([{
-        id: realId,
-        full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
-        email: selectedPartnerApp.email,
-        role: 'partner'
-      }]);
-
-      // 4. PINDAHKAN IDE/STRATEGI KE TABEL IDE (Agar tidak kosong)
-      if (selectedPartnerApp.promo_strategy) {
-        console.log("💡 Recording partner ideas...");
-        await supabase.from('partner_ideas').upsert([{
-          partner_id: realId,
-          title: 'Strategi Awal Pendaftaran',
-          content: selectedPartnerApp.promo_strategy,
-          status: 'draft'
-        }]);
-      }
-
-      // EMAIL OTOMATIS (Ditangani oleh Database Trigger)
-      // await sendWelcomeEmail(selectedPartnerApp.email, selectedPartnerApp.nama || selectedPartnerApp.shop_name, 'ultimate', 'Yearly');
 
       alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif dan data partner terbuat di database.`);
       setShowApproveModal(false);
@@ -413,7 +374,8 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      // KHUSUS USER/CLIENT: Sesuai tier yang dipilih
+      // 🏮 CENTRALIZED ACTIVATION (Blueprint Section 4.A.3)
+      // All logic (Auth, Profile, Partner Omzet, Tiers, and Emails) is now handled by this single RPC.
       const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
         p_email: client.email,
         p_application_id: client.id,
@@ -422,80 +384,6 @@ const InternalDashboard = () => {
       });
 
       if (rpcError) throw rpcError;
-
-      // UPDATE SALDO PARTNER OTOMATIS
-      if (client.plan && client.plan !== 'starter') {
-        // Cari partner berdasarkan partner_id atau ref terlebih dahulu untuk mengetahui Tier-nya
-        let targetPartnerId = client.partner_id;
-        let partnerTier = 'bronze'; // default
-
-        if (!targetPartnerId && client.ref && client.ref !== 'Direct Web') {
-          const { data: refPartner } = await supabase.from('partners').select('id, tier').eq('ref_code', client.ref).maybeSingle();
-          if (refPartner) {
-            targetPartnerId = refPartner.id;
-            if (refPartner.tier) partnerTier = refPartner.tier.toLowerCase();
-          }
-        } else if (targetPartnerId) {
-          const { data: existPartner } = await supabase.from('partners').select('tier').eq('id', targetPartnerId).maybeSingle();
-          if (existPartner && existPartner.tier) partnerTier = existPartner.tier.toLowerCase();
-        }
-
-        if (targetPartnerId) {
-          // 🏮 DYNAMIC TIER CALCULATION (Real-time from DB)
-          const { count: activeCount } = await supabase
-            .from('clients')
-            .select('*', { count: 'exact', head: true })
-            .eq('ref', client.ref) // or partner_id
-            .eq('status', 'active');
-            
-          const { count: eliteCount } = await supabase
-            .from('clients')
-            .select('*', { count: 'exact', head: true })
-            .eq('ref', client.ref)
-            .eq('status', 'active')
-            .in('plan', ['elite', 'ultimate']);
-
-          let partnerTier = 'starter';
-          if (activeCount >= 15 && eliteCount >= 5) partnerTier = 'platinum';
-          else if (activeCount >= 8 && eliteCount >= 2) partnerTier = 'gold';
-          else if (activeCount >= 5 && eliteCount >= 2) partnerTier = 'silver';
-          else if (activeCount >= 3) partnerTier = 'bronze';
-
-          // 💰 Commission Table (Synced with Partner Dashboard & Image)
-          const commissionTable = {
-            starter: { pro: 100000, elite: 119600, ultimate: 249700 },
-            bronze: { pro: 100000, elite: 119600, ultimate: 249700 },
-            silver: { pro: 100000, elite: 149600, ultimate: 299600 },
-            gold: { pro: 100000, elite: 179500, ultimate: 374600 },
-            platinum: { pro: 100000, elite: 199400, ultimate: 449500 }
-          };
-
-          const annualBonuses = { pro: 100000, elite: 250000, ultimate: 500000 };
-          
-          const planKey = client.plan.toLowerCase();
-          const selectedTier = commissionTable[partnerTier] || commissionTable.bronze;
-          
-          let commission = selectedTier[planKey] || 0;
-          
-          // Jika yearly, komisi dikalikan 11 + Bonus Annual (Rule #6)
-          if (client.billing_cycle === 'Yearly') {
-            const bonus = annualBonuses[planKey] || 0;
-            commission = (commission * 11) + bonus;
-          }
-
-          const { data: partnerData } = await supabase.from('partners').select('total_omzet').eq('id', targetPartnerId).maybeSingle();
-          if (partnerData) {
-            const currentOmzet = partnerData.total_omzet || 0;
-            await supabase.from('partners').update({ 
-              total_omzet: currentOmzet + commission,
-              tier: partnerTier // Sync tier back to DB
-            }).eq('id', targetPartnerId);
-          }
-        }
-      }
-
-      // EMAIL OTOMATIS (Sekarang ditangani oleh Database Trigger tr_send_welcome_email)
-      // await sendWelcomeEmail(client.email, client.shop_name, client.plan || 'starter', client.billing_cycle || 'Monthly');
 
       alert(data.message || "User berhasil diaktifkan!");
       await fetchClients();

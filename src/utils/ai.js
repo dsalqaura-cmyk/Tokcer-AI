@@ -1,23 +1,23 @@
-export const callDeepSeek = async (systemPrompt, userMessage, customApiKey = null, maxTokens = 2048) => {
+export const callAiEngine = async (systemPrompt, userMessage, customApiKey = null, maxTokens = 2048, temperature = 0.8) => {
   const apiKey = customApiKey || import.meta.env.VITE_DEEPSEEK_API_KEY;
   
   if (!apiKey || apiKey === 'your_deepseek_api_key_here') {
-    throw new Error('API Key AI Generator belum dikonfigurasi. Silakan isi VITE_DEEPSEEK_API_KEY di file .env Anda.');
+    throw new Error('API Key Intelligence belum dikonfigurasi. Silakan hubungi Admin sistem.');
   }
 
-  const res = await fetch('https://api.deepseek.com/chat/completions', {
+  const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json', 
       'Authorization': `Bearer ${apiKey}` 
     },
     body: JSON.stringify({
-      model: 'deepseek-chat',
+      model: 'deepseek-v4-flash',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      temperature: 0.8,
+      temperature: temperature,
       max_tokens: maxTokens,
     })
   });

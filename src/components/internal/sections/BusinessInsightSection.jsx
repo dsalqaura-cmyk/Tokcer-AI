@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../supabase';
-import { callDeepSeek } from '../../../utils/ai';
+import { supabase } from '../../../lib/supabase';
+import { callAiEngine } from '../../../utils/ai';
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -148,7 +148,7 @@ const BusinessInsightSection = ({ t }) => {
       
       Ensure each section contains 3-5 bullet points. Keep it professional and in Bahasa Indonesia.`;
       
-      const { text: aiResult, usage } = await callDeepSeek("You are a Senior Business Intelligence expert for Tokcer AI SaaS.", prompt);
+      const { text: aiResult, usage } = await callAiEngine("You are a Senior Business Intelligence expert for Tokcer AI SaaS.", prompt, null, 2048, 0.5);
       const cleanJson = aiResult.replace(/```json|```/g, '').trim();
 
       // Log AI Usage
@@ -262,7 +262,7 @@ const BusinessInsightSection = ({ t }) => {
       
       Tulis dengan gaya bahasa profesional dan tajam. Jangan gunakan JSON, langsung tulis MARKDOWN.`;
 
-      const { text: aiResult } = await callDeepSeek("You are Udin, Strategic Growth Lead.", prompt, null, 8192);
+      const { text: aiResult } = await callAiEngine("You are Udin, Strategic Growth Lead.", prompt, null, 8192, 0.5);
 
       // Save to active report for display
       const updatedReport = { ...report, full_md: aiResult };

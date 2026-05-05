@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabase';
+import { supabase } from '../../lib/supabase';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
 const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
