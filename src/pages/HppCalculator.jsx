@@ -137,14 +137,31 @@ const HppCalculator = () => {
         else alert("SKU Saved Successfully!");
     };
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        localStorage.removeItem('tokcer_admin_auth');
+        navigate('/login');
+    };
+
     if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
     return (
         <div className="flex h-screen bg-[#050505] text-white font-['Inter',sans-serif] overflow-hidden">
-            <Sidebar activeSection="tab-calculator" setActiveSection={() => navigate('/dashboard')} />
+            <Sidebar 
+                t={t}
+                activeMenu="tab-calculator"
+                setActiveMenu={(menu) => navigate('/dashboard')}
+                isSidebarOpen={false}
+                setIsSidebarOpen={() => {}}
+                lang={lang}
+                setLang={() => {}}
+                profile={profile}
+                user={user}
+                handleLogout={handleLogout}
+            />
             
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                <Header t={t} activeSection="HPP & Margin Calculator" />
+                <Header setIsSidebarOpen={() => {}} t={t} activeSection="HPP & Margin Calculator" />
                 
                 <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="max-w-6xl mx-auto space-y-8">
