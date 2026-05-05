@@ -16,7 +16,6 @@ serve(async (req) => {
     const body = await req.json()
     const { order_id, transaction_status, fraud_status, payment_type, customer_details } = body
 
-    // 1. Dapatkan data transaksi
     const { data: trx, error: trxError } = await supabaseClient
       .from('transactions')
       .select('*')
@@ -25,20 +24,15 @@ serve(async (req) => {
 
     if (trxError || !trx) return new Response(JSON.stringify({ status: 'ok' }), { status: 200 })
 
-    // 2. Logic Lunas
     if (transaction_status === 'settlement' || transaction_status === 'capture') {
       if (fraud_status === 'accept' || !fraud_status) {
         
         let targetUserId = trx.user_id;
         const email = customer_details?.email || trx.raw_notification?.user_data?.email;
         const nama = customer_details?.first_name || customer_details?.full_name || trx.raw_notification?.user_data?.nama || 'User Tokcer';
-        
-        // Generate a random password
         const generatedPassword = `Tokcer@${Math.floor(1000 + Math.random() * 9000)}`;
 
         if (!targetUserId && email) {
-            console.log(`🐣 PROFESSIONAL CREATE: Creating account for ${email}`);
-
             const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
                 email: email,
                 password: generatedPassword,
@@ -52,9 +46,7 @@ serve(async (req) => {
             } else {
                 targetUserId = newUser.user?.id;
                 
-                // SEND PROFESSIONAL WELCOME EMAIL WITH THE WORKING SENDER ADDRESS
                 if (RESEND_API_KEY) {
-                    console.log("✉️ Sending professional welcome email via Resend...");
                     await fetch('https://api.resend.com/emails', {
                         method: 'POST',
                         headers: {
@@ -62,32 +54,76 @@ serve(async (req) => {
                             'Authorization': `Bearer ${RESEND_API_KEY}`
                         },
                         body: JSON.stringify({
-                            from: 'Tokcer AI <onboarding@tokcer-ai.com>', // ALAMAT SAKTI YANG TERVERIFIKASI
+                            from: 'Tokcer AI <onboarding@tokcer-ai.com>',
                             to: [email],
-                            subject: '🏮 Akun Tokcer AI Anda Telah Aktif!',
+                            subject: '🏮 Selamat Datang di Tokcer AI - Akun Anda Telah Aktif!',
                             html: `
-                                <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e5e7eb; padding: 40px; border-radius: 20px; background: #fff;">
-                                    <div style="text-align: center; margin-bottom: 30px;">
-                                        <h1 style="color: #ff5722; margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -1px;">TOKC <span style="color: #333;">ER</span></h1>
-                                        <p style="color: #666; font-size: 14px;">Marketplace Solution for Smart Sellers</p>
-                                    </div>
-                                    <h2 style="color: #111; font-size: 20px;">Selamat Datang, ${nama}!</h2>
-                                    <p style="color: #444; line-height: 1.6; font-size: 15px;">
-                                        Pembayaran Anda telah kami terima dengan sukses. Akun Tokcer AI Anda sekarang sudah aktif dengan paket <strong style="text-transform: uppercase; color: #ff5722;">${trx.plan_name}</strong>.
-                                    </p>
-                                    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; margin: 30px 0; border: 1px solid #f1f5f9;">
-                                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Detail Login Anda:</p>
-                                        <p style="margin: 5px 0; color: #475569; font-size: 15px;">Email: <strong>${email}</strong></p>
-                                        <p style="margin: 5px 0; color: #475569; font-size: 15px;">Password: <strong style="color: #ff5722;">${generatedPassword}</strong></p>
-                                    </div>
-                                    <div style="text-align: center; margin: 35px 0;">
-                                        <a href="https://staging.tokcer-ai.com/login" style="background: #ff5722; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(255,87,34,0.3);">Masuk ke Dashboard</a>
-                                    </div>
-                                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-                                    <p style="color: #94a3b8; font-size: 12px; text-align: center; line-height: 1.5;">
-                                        &copy; 2026 Tokcer AI. Jika Anda tidak merasa melakukan pendaftaran ini, silakan abaikan email ini.
-                                    </p>
-                                </div>
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+                                </head>
+                                <body style="margin: 0; padding: 0; background-color: #000; font-family: 'Inter', sans-serif;">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #000; padding: 40px 20px;">
+                                        <tr>
+                                            <td align="center">
+                                                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                                                    <!-- Header dengan Logo Asli -->
+                                                    <tr>
+                                                        <td align="center" style="padding: 40px 0 20px 0;">
+                                                            <img src="https://staging.tokcer-ai.com/logo.png" alt="Tokcer AI" style="width: 180px; display: block;">
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                    <!-- Body -->
+                                                    <tr>
+                                                        <td style="padding: 20px 40px;">
+                                                            <h2 style="color: #fff; font-size: 24px; font-weight: 900; margin-bottom: 10px; text-align: center;">Selamat Datang, ${nama}!</h2>
+                                                            <p style="color: #a1a1aa; font-size: 15px; line-height: 1.6; text-align: center; margin-bottom: 30px;">
+                                                                Pembayaran Anda telah diverifikasi. Selamat bergabung di ekosistem <strong>Tokcer AI</strong>. Akun Anda telah aktif dengan paket <span style="color: #f97316;">${trx.plan_name.toUpperCase()}</span>.
+                                                            </p>
+                                                            
+                                                            <!-- Akun Box -->
+                                                            <div style="background-color: #111; border: 1px solid #222; border-radius: 16px; padding: 25px; margin-bottom: 30px;">
+                                                                <p style="color: #71717a; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">Akses Login Anda</p>
+                                                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                                                    <tr>
+                                                                        <td style="padding-bottom: 10px;">
+                                                                            <span style="color: #52525b; font-size: 13px;">Email Address:</span><br>
+                                                                            <span style="color: #fff; font-size: 16px; font-weight: 700;">${email}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <span style="color: #52525b; font-size: 13px;">Temporary Password:</span><br>
+                                                                            <span style="color: #f97316; font-size: 18px; font-weight: 900;">${generatedPassword}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
+                                                            
+                                                            <!-- CTA Button -->
+                                                            <div style="text-align: center; margin-bottom: 40px;">
+                                                                <a href="https://staging.tokcer-ai.com/login" style="display: inline-block; background-color: #f97316; color: #fff; font-weight: 900; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-size: 16px; box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);">MASUK KE DASHBOARD</a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                    <!-- Footer -->
+                                                    <tr>
+                                                        <td style="background-color: #111; padding: 30px 40px; border-top: 1px solid #1a1a1a; text-align: center;">
+                                                            <p style="color: #52525b; font-size: 12px; line-height: 1.5; margin: 0;">
+                                                                &copy; 2026 Tokcer AI Solutions.<br>
+                                                                Anda menerima email ini karena melakukan pendaftaran di staging.tokcer-ai.com.
+                                                            </p>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </body>
+                                </html>
                             `
                         })
                     });
@@ -95,7 +131,6 @@ serve(async (req) => {
             }
         }
 
-        // C. Update Status & Paket
         if (targetUserId) {
             await supabaseClient.from('transactions').update({ 
                 status: 'settlement', 

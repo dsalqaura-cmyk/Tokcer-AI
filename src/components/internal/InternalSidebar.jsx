@@ -65,6 +65,7 @@ const InternalSidebar = ({
             { id: 'tickets', label: t('tickets'), icon: 'solar:bug-bold-duotone', badge: tickets.length || null },
             { id: 'insight', label: t('businessInsight'), icon: 'solar:graph-bold-duotone' },
             { id: 'ai-gen', label: t('aiStrategy'), icon: 'solar:magic-stick-bold-duotone' },
+            { id: 'token-audit', label: 'Token Audit & Billing', icon: 'solar:bill-list-bold-duotone' },
             { id: 'supabase', label: t('supabase'), icon: 'solar:database-bold-duotone' }
           ].map((item) => (
             <button
