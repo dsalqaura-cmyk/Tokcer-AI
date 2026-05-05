@@ -14,7 +14,9 @@ const OverviewTab = ({
   setShowPlatformDropdown,
   profile,
   lang,
-  setActiveMenu
+  setActiveMenu,
+  systemBriefing,
+  isFetchingBriefing
 }) => {
   // --- REAL DATA CALCULATIONS ---
   const platformFilteredOrders = platformFilter === 'all' 
