@@ -756,18 +756,42 @@ const Dashboard = () => {
         if (!checkPlanPermission('video_gen')) return;
     }
 
-    // 1. Check Credits (Bypass for Admin)
     const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
-    if (!isAdmin && (!profile || (profile.tokens || 0) < 1)) {
-      setAiResult("⚠️ Maaf, sisa token AI Anda habis. Silakan hubungi admin untuk top-up.");
-      return;
+    
+    // 1. SECURE TOKEN DEDUCTION (PRE-AI CALL)
+    if (!isAdmin) {
+        const lastPrompt = localStorage.getItem('tokcer_last_prompt');
+        const isNewTopic = !lastPrompt || lastPrompt.trim().toLowerCase() !== aiPrompt.trim().toLowerCase();
+
+        if (isNewTopic) {
+            // Pre-check state
+            if (!profile || (profile.tokens || 0) < 1) {
+                setAiResult("⚠️ Maaf, sisa token AI Anda habis. Silakan hubungi admin untuk top-up.");
+                return;
+            }
+
+            const { data: deductData, error: deductError } = await supabase.rpc('rpc_deduct_token', {
+                p_user_id: user.id,
+                p_feature: 'content_generator',
+                p_amount: 1
+            });
+
+            if (deductError || !deductData.success) {
+                setAiResult("⚠️ Maaf, sisa token AI Anda habis atau gagal diverifikasi.");
+                return;
+            }
+            
+            // Sync state
+            setProfile(prev => ({ ...prev, tokens: deductData.new_balance }));
+            localStorage.setItem('tokcer_last_prompt', aiPrompt);
+        }
     }
 
     setIsGenerating(true);
     setAiResult('');
 
     try {
-      // 2. Fetch RAG Config from Supabase
+      // 2. Fetch RAG Config
       const { data: config } = await supabase
         .from('ai_configs')
         .select('*')
@@ -775,7 +799,6 @@ const Dashboard = () => {
         .single();
 
       const targetLang = lang === 'id' ? 'Bahasa Indonesia' : 'English';
-      
       let platformContext = "";
       if (aiFormat === 'TikTok Video') {
         platformContext = `Buatlah naskah video TikTok durasi 3 menit. Sertakan: Hook viral di 3 detik pertama, Breakdown adegan (Scene by Scene), saran musik latar yang sedang tren, dan narasi yang enerjik.`;
@@ -802,54 +825,26 @@ const Dashboard = () => {
       const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
-      // 3. Call Intelligence Engine (using master API key from .env automatically)
+      // 3. CALL AI ENGINE
       const { text: result, usage } = await callAiEngine(fullSystemPrompt, userMessage, null, 2048, 0.8);
       
-      // Update tokens/credits if applicable (optional based on your credit system)
-      // For now we just log it
+      setAiResult(result);
+
+      // 4. Log Usage
       await supabase.from('ai_usage_logs').insert([{
           user_id: user.id,
-          feature: 'analytics_chat',
+          feature: 'content_generator',
           prompt: userMessage,
           response: result,
+          tokens_used: (isAdmin || localStorage.getItem('tokcer_last_prompt') === aiPrompt) ? 0 : 1,
           input_tokens: usage.prompt_tokens,
           output_tokens: usage.completion_tokens,
           cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
       }]);
-      setAiResult(result);
-
-      // 4. Update Tokens & Log Usage (Logic Update: 1 Credit per unique topic)
-      if (!isAdmin) {
-        const lastPrompt = localStorage.getItem('tokcer_last_prompt');
-        const isNewTopic = !lastPrompt || lastPrompt.trim().toLowerCase() !== aiPrompt.trim().toLowerCase();
-
-        if (isNewTopic) {
-            const { data: deductData, error: deductError } = await supabase.rpc('rpc_deduct_token', {
-                p_user_id: user.id,
-                p_feature: 'content_generator',
-                p_amount: 1
-            });
-
-            if (deductError || !deductData.success) {
-                setAiResult("⚠️ Maaf, sisa token AI Anda habis.");
-                return;
-            }
-
-            setProfile(prev => ({ ...prev, tokens: deductData.new_balance }));
-            localStorage.setItem('tokcer_last_prompt', aiPrompt);
-        }
-
-        await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
-          prompt: userMessage,
-          response: result,
-          tokens_used: isNewTopic ? 1 : 0,
-          feature: 'content_generator'
-        }]);
-      }
 
     } catch (e) {
-      setAiResult(`❌ Error: ${e.message}`);
+      console.error("AI Generation Error:", e);
+      setAiResult(`❌ Terjadi kesalahan: ${e.message}`);
     } finally {
       setIsGenerating(false);
     }

@@ -274,6 +274,11 @@ const InternalDashboard = () => {
   };
 
   const sendWelcomeEmail = async (email, name, plan, cycle) => {
+    // 🏮 SAFETY GUARD: Fungsi ini HANYA untuk pengiriman MANUAL (Resend Email).
+    // Email otomatis sudah ditangani secara terpusat oleh Database Trigger: tr_send_welcome_email.
+    // JANGAN panggil fungsi ini di dalam flow handleApprove otomatis untuk mencegah Double Email.
+    console.log("ℹ️ Menjalankan fungsi email manual untuk:", email);
+
     // Gunakan dari Database jika ada, kalau tidak ada pakai .env
     const apiKey = aiConfig.resend_api_key || import.meta.env.VITE_RESEND_API_KEY;
     
