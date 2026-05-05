@@ -10,10 +10,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const supabaseClient = createClient(
@@ -21,22 +18,22 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // 1. Get user from Auth Header
-    const authHeader = req.headers.get('Authorization')!
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authHeader.replace('Bearer ', ''))
-    if (userError || !user) throw new Error('Unauthorized')
-
-    // 2. Get Request Body (Plan info)
-    const { plan_name, amount, tokens } = await req.json()
+    const { plan_name, amount, tokens, is_sandbox, user_data } = await req.json()
     
-    // 3. Generate Unique Order ID
-    const orderId = `TOKCER-${Date.now()}-${user.id.slice(0, 4)}`
+    // 1. Determine Environment & Keys
+    const serverKey = is_sandbox 
+      ? Deno.env.get('MIDTRANS_SERVER_KEY_SANDBOX') 
+      : Deno.env.get('MIDTRANS_SERVER_KEY_PROD');
+    
+    const midtransUrl = is_sandbox 
+      ? 'https://app.sandbox.midtrans.com/snap/v1/transactions' 
+      : 'https://app.midtrans.com/snap/v1/transactions';
 
-    // 4. Call Midtrans Snap API (PRODUCTION)
-    const serverKey = Deno.env.get('MIDTRANS_SERVER_KEY') 
     const authString = btoa(`${serverKey}:`)
-    
-    const midtransResponse = await fetch('https://app.midtrans.com/snap/v1/transactions', {
+    const orderId = `TOKCER-${Date.now()}-${user_data.email.slice(0, 3)}`
+
+    // 2. Call Midtrans API
+    const midtransResponse = await fetch(midtransUrl, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -44,13 +41,11 @@ serve(async (req) => {
         'Authorization': `Basic ${authString}`
       },
       body: JSON.stringify({
-        transaction_details: {
-          order_id: orderId,
-          gross_amount: amount
-        },
+        transaction_details: { order_id: orderId, gross_amount: amount },
         customer_details: {
-          email: user.email,
-          first_name: user.user_metadata?.full_name || 'Tokcer User'
+          email: user_data.email,
+          first_name: user_data.nama,
+          phone: user_data.phone
         },
         item_details: [{
           id: plan_name,
@@ -62,18 +57,18 @@ serve(async (req) => {
     })
 
     const midtransData = await midtransResponse.json()
-
     if (!midtransResponse.ok) throw new Error(midtransData.error_messages?.join(', ') || 'Midtrans Error')
 
-    // 5. Save to transactions table
+    // 3. Save to transactions table
     await supabaseClient.from('transactions').insert({
-      user_id: user.id,
+      user_id: null, // User belum dibuat auth-nya, kita simpan datanya di metadata transaksi
       order_id: orderId,
       plan_name: plan_name,
       amount: amount,
       tokens_to_add: tokens,
       snap_token: midtransData.token,
-      status: 'pending'
+      status: 'pending',
+      raw_notification: { user_data } // Simpan info pendaftaran untuk di-create saat sukses
     })
 
     return new Response(

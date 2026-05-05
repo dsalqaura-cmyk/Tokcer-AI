@@ -15,6 +15,33 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [affiliateId, setAffiliateId] = useState(localStorage.getItem('tokcer_affiliate_id') || '');
   const [billingCycle, setBillingCycle] = useState('Monthly');
 
+  const [isSnapLoaded, setIsSnapLoaded] = useState(false);
+
+  // 1. Dynamic Script Loading & Environment Detection
+  const isSandbox = window.location.hostname.includes('staging');
+  const MIDTRANS_CLIENT_KEY = isSandbox 
+    ? 'Mid-client-w0fhy-qm6_MgWzGY' 
+    : 'Mid-client-kIWFreS7VE0iNHP0';
+  const SNAP_SCRIPT_URL = isSandbox 
+    ? 'https://app.sandbox.midtrans.com/snap/snap.js' 
+    : 'https://app.midtrans.com/snap/snap.js';
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Load Snap script dynamically
+    const script = document.createElement('script');
+    script.src = SNAP_SCRIPT_URL;
+    script.setAttribute('data-client-key', MIDTRANS_CLIENT_KEY);
+    script.async = true;
+    script.onload = () => setIsSnapLoaded(true);
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, [isOpen]);
+
   // Fetch Pricing Plans from DB
   useEffect(() => {
     const fetchPlans = async () => {
@@ -49,6 +76,10 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isSnapLoaded) {
+      setStatus("Tunggu sebentar, sistem pembayaran sedang dimuat...");
+      return;
+    }
     setLoading(true);
     setStatus(null);
 
@@ -93,6 +124,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             plan_name: planValue, 
             amount: amount, 
             tokens: tokens,
+            is_sandbox: isSandbox, // Kirim flag sandbox ke server
             user_data: { nama, email, phone, platforms: selectedPlatforms, storeLinks, affiliateId }
         }
       });
