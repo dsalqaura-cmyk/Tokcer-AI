@@ -90,6 +90,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     const planValue = formPlan || 'starter';
     const billing_cycle = formData.get('billing_cycle') || 'Monthly';
     
+    const business_type = formData.get('business_type');
+    
     // 1. Basic Validations
     if (selectedPlatforms.length === 0) {
         setLoading(false);
@@ -133,7 +135,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             amount: amount, 
             tokens: tokens,
             is_sandbox: isSandbox, // Kirim flag sandbox ke server
-            user_data: { nama, email, phone, platforms: selectedPlatforms, storeLinks, affiliateId }
+            user_data: { nama, email, phone, platforms: selectedPlatforms, storeLinks, affiliateId, business_type, billing_cycle }
         }
       });
 

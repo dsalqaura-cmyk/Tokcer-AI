@@ -14,7 +14,7 @@ serve(async (req) => {
     const body = await req.json()
     console.log("Midtrans Notification Received:", body)
 
-    const { order_id, transaction_status, fraud_status } = body
+    const { order_id, transaction_status, fraud_status, payment_type } = body
 
     // 1. Find the transaction in our DB
     const { data: trx, error: trxError } = await supabaseClient
@@ -29,29 +29,68 @@ serve(async (req) => {
     if (transaction_status === 'settlement' || transaction_status === 'capture') {
       if (fraud_status === 'accept' || !fraud_status) {
         
-        // A. Update Transaction Status
+        let targetUserId = trx.user_id;
+
+        // CASE: NEW REGISTRATION (user_id is null)
+        if (!targetUserId && trx.raw_notification?.user_data) {
+            const { email, nama, phone, platforms, storeLinks, business_type, affiliateId } = trx.raw_notification.user_data;
+            
+            console.log(`🐣 Creating new user account for: ${email}`);
+
+            // A. Create Auth User (Admin bypass)
+            const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
+                email: email,
+                email_confirm: true,
+                user_metadata: { 
+                    full_name: nama, 
+                    phone: phone,
+                    platforms: platforms,
+                    store_links: storeLinks,
+                    business_type: business_type,
+                    affiliate_id: affiliateId
+                }
+            });
+
+            if (createError) {
+                // If user already exists, just find them
+                if (createError.message.includes('already registered')) {
+                    const { data: existingUser } = await supabaseClient.from('profiles').select('id').eq('email', email).single();
+                    targetUserId = existingUser?.id;
+                } else {
+                    throw createError;
+                }
+            } else {
+                targetUserId = newUser.user?.id;
+            }
+        }
+
+        // B. Update Transaction Status
         await supabaseClient
           .from('transactions')
-          .update({ status: 'settlement', raw_notification: body })
+          .update({ 
+              status: 'settlement', 
+              payment_type: payment_type,
+              raw_notification: body,
+              user_id: targetUserId // Link the transaction to the newly created user
+          })
           .eq('order_id', order_id)
 
-        // B. UPGRADE USER PLAN & ADD TOKENS
-        // Ambil data quota dari plan (Bisa disesuaikan)
+        // C. UPGRADE USER PROFILE
         const newPlan = trx.plan_name.toLowerCase()
         const additionalTokens = trx.tokens_to_add || 0
 
-        // Jalankan update profil
-        const { error: updateError } = await supabaseClient
-          .from('profiles')
-          .update({ 
-            subscription_plan: newPlan,
-            ai_tokens: additionalTokens // Atau tambahkan ke saldo lama: ai_tokens: current + additionalTokens
-          })
-          .eq('id', trx.user_id)
+        if (targetUserId) {
+            const { error: updateError } = await supabaseClient
+              .from('profiles')
+              .update({ 
+                subscription_plan: newPlan,
+                ai_tokens: additionalTokens 
+              })
+              .eq('id', targetUserId)
 
-        if (updateError) console.error("Error updating user profile:", updateError)
-        
-        console.log(`✅ Payment Success: User ${trx.user_id} upgraded to ${newPlan}`);
+            if (updateError) console.error("Error updating user profile:", updateError)
+            console.log(`✅ Payment Success & Account Activated: User ${targetUserId} upgraded to ${newPlan}`);
+        }
       }
     } 
     // 3. Logic: Failure/Expiry
