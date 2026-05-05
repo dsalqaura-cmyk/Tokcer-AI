@@ -841,7 +841,7 @@ const Dashboard = () => {
 
       // 4. Log Usage
       await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
+          user_id: user?.id || null,
           feature: 'content_generator',
           prompt: userMessage,
           response: result,
@@ -902,7 +902,7 @@ const Dashboard = () => {
       setTrendResult(result);
 
       await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
+          user_id: user?.id || null,
           feature: 'market_intel_analysis_complete',
           prompt: userQuery,
           response: result,
@@ -949,7 +949,7 @@ const Dashboard = () => {
       // We don't necessarily need to log every background trend fetch to save space, 
       // but if you want to track cost:
       await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
+          user_id: user?.id || null,
           feature: 'global_market_trends',
           prompt: "Background Fetch: " + bizType,
           response: "SUCCESS",
