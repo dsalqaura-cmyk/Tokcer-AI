@@ -476,7 +476,7 @@ const Dashboard = () => {
             const userPrompt = `Data: ${bizType} shop, ${lowStockCount} products low stock, ${highReturnOrders} returned orders, ${orders.length} total orders.`;
             
             const result = await callAiEngine(systemPrompt, userPrompt, null, 1024, 0.5);
-            const cleanJson = result.replace(/```json|```/g, '').trim();
+            const cleanJson = result.text.replace(/```json|```/g, '').trim();
             const data = JSON.parse(cleanJson);
             
             setSystemBriefing(data);
