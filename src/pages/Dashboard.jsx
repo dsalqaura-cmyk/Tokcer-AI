@@ -492,7 +492,6 @@ const Dashboard = () => {
         }
     };
 
-  useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
