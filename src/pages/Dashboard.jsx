@@ -521,12 +521,6 @@ const Dashboard = () => {
         }
 
         if (prof || clientData) {
-            console.log("🔍 DEBUG PLAN:", {
-                email: session.user.email,
-                prof_plan: prof?.subscription_plan,
-                client_plan: clientData?.plan,
-                final_plan: (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase()
-            });
             const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
             const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
             const totalQuota = quotaMap[plan] || 50;
