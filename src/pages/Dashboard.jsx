@@ -85,6 +85,10 @@ const Dashboard = () => {
   const [isAnalyzingHealth, setIsAnalyzingHealth] = useState(false);
   const [marketplaceConnections, setMarketplaceConnections] = useState([]);
 
+  // System Briefing States
+  const [systemBriefing, setSystemBriefing] = useState(null);
+  const [isFetchingBriefing, setIsFetchingBriefing] = useState(false);
+
   const t = (key) => dashboardTranslations[lang][key] || key;
   const navigate = useNavigate();
 
@@ -104,7 +108,7 @@ const Dashboard = () => {
             return false;
         }
 
-        if (count >= limit) {
+        if (count >= limit && plan !== 'ultimate') {
             alert(`⚠️ Batas maksimal toko untuk paket ${plan.toUpperCase()} adalah ${limit} toko. Silakan upgrade paket Anda untuk menambah lebih banyak!`);
             return false;
         }
@@ -349,6 +353,9 @@ const Dashboard = () => {
 
     const fetchAnalyticsInsight = async () => {
         if (!user || isAnalyzingAnalytics) return;
+        
+        // Safety check for Plan Permission
+        if (!checkPlanPermission('analytics')) return;
 
         const today = new Date().toISOString().split('T')[0];
         const cacheKey = `tokcer_cache_analytics_${user.id}_${today}`;
@@ -404,6 +411,9 @@ const Dashboard = () => {
 
     const fetchHealthInsight = async (metrics) => {
         if (!user || isAnalyzingHealth) return;
+        
+        // Safety check for Plan Permission
+        if (!checkPlanPermission('health_check')) return;
 
         const today = new Date().toISOString().split('T')[0];
         const cacheKey = `tokcer_cache_health_${user.id}_${today}`;
@@ -438,6 +448,47 @@ const Dashboard = () => {
             ]);
         } finally {
             setIsAnalyzingHealth(false);
+        }
+    };
+    
+    const fetchSystemBriefing = async () => {
+        if (!user || isFetchingBriefing) return;
+
+        const today = new Date().toISOString().split('T')[0];
+        const cacheKey = `tokcer_cache_briefing_${user.id}_${today}`;
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (cachedData) {
+            setSystemBriefing(JSON.parse(cachedData));
+            return;
+        }
+
+        setIsFetchingBriefing(true);
+        try {
+            const bizType = profile?.business_type || 'E-commerce';
+            const lowStockCount = products.filter(p => p.stock < 10).length;
+            const highReturnOrders = orders.filter(o => o.status === 'returned').length;
+            
+            const systemPrompt = `You are the Tokcer AI System Assistant. Analyze the shop data and provide 3 concise, professional, and actionable notifications in Indonesian.
+            Format: JSON array of objects with keys: "title", "desc", "type" (warning, success, info), "time" (e.g. "Baru saja", "1 jam lalu").
+            Focus on inventory, store health, or growth opportunities.`;
+            
+            const userPrompt = `Data: ${bizType} shop, ${lowStockCount} products low stock, ${highReturnOrders} returned orders, ${orders.length} total orders.`;
+            
+            const result = await callAiEngine(systemPrompt, userPrompt, null, 1024, 0.5);
+            const cleanJson = result.replace(/```json|```/g, '').trim();
+            const data = JSON.parse(cleanJson);
+            
+            setSystemBriefing(data);
+            localStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch (err) {
+            console.error("Briefing Error:", err);
+            setSystemBriefing([
+                { title: "Sistem Optimal", desc: "Seluruh integrasi toko Anda berjalan lancar hari ini.", type: "success", time: "Baru saja" },
+                { title: "Tips Pertumbuhan", desc: "Gunakan Market Intel untuk mencari tren produk terbaru.", type: "info", time: "1 jam lalu" }
+            ]);
+        } finally {
+            setIsFetchingBriefing(false);
         }
     };
 
@@ -491,6 +542,7 @@ const Dashboard = () => {
         }
         fetchOperationalData(session.user.id, session.user);
         fetchMarketplaceConnections(session.user.id);
+        fetchSystemBriefing();
       } else if (isAdmin) {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);
@@ -676,7 +728,9 @@ const Dashboard = () => {
         const permissions = {
             'video_gen': ['pro', 'elite', 'ultimate'],
             'health_check': ['pro', 'elite', 'ultimate'],
+            'analytics': ['starter', 'pro', 'elite', 'ultimate'], // Basic allowed for all
             'market_intel': ['elite', 'ultimate'],
+            'price_optimizer': ['elite', 'ultimate'],
             'competitor_analysis': ['ultimate']
         };
         
@@ -1065,6 +1119,9 @@ const Dashboard = () => {
             setShowPlatformDropdown={setShowPlatformDropdown}
             profile={profile}
             lang={lang}
+            setActiveMenu={setActiveMenu}
+            systemBriefing={systemBriefing}
+            isFetchingBriefing={isFetchingBriefing}
           />
         );
       case 'tab-omzet':

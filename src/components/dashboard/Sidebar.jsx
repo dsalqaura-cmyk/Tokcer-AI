@@ -110,40 +110,58 @@ const Sidebar = ({
 
           {/* User Tier Card */}
           <div className="mb-4 px-2">
-            <div className="bg-gradient-to-br from-amber-950/60 to-orange-950/40 border border-amber-700/40 rounded-xl p-3 relative overflow-hidden">
-              <div className="absolute -top-4 -right-4 w-12 h-12 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
-                    <iconify-icon icon="solar:crown-bold" className="text-white text-[10px]"></iconify-icon>
-                  </div>
-                  <div>
-                    <p className="text-[8px] text-amber-400/80 uppercase tracking-widest font-semibold">{t('planActive')}</p>
-                    <p className="text-xs font-bold text-amber-300 leading-none">
-                      {profile?.subscription_plan ? t(profile.subscription_plan.toLowerCase() + 'Plan') : (profile?.planName || 'Starter')}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">✓ {t('active')}</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between items-center text-[9px]">
-                  <span className="text-zinc-500">{t('aiQuota')}</span>
-                  {profile?.isUnlimited ? (
-                    <span className="text-amber-400 font-bold flex items-center gap-1">
-                      <iconify-icon icon="solar:star-bold" className="text-[10px]"></iconify-icon>
-                      Unlimited
+            {(() => {
+              const plan = (profile?.subscription_plan || 'starter').toLowerCase();
+              const isUltimate = plan === 'ultimate';
+              
+              const planConfigs = {
+                starter: { color: 'from-zinc-950/60 to-zinc-900/40', border: 'border-zinc-700/40', text: 'text-zinc-400', icon: 'solar:box-linear', bgIcon: 'bg-zinc-500', glow: 'bg-zinc-500/10' },
+                pro: { color: 'from-blue-950/60 to-indigo-950/40', border: 'border-blue-700/40', text: 'text-blue-400', icon: 'solar:medal-star-bold', bgIcon: 'bg-blue-500', glow: 'bg-blue-500/10' },
+                elite: { color: 'from-indigo-950/60 to-purple-950/40', border: 'border-indigo-700/40', text: 'text-indigo-400', icon: 'solar:crown-bold', bgIcon: 'bg-indigo-500', glow: 'bg-indigo-500/10' },
+                ultimate: { color: 'from-amber-950/60 to-orange-950/40', border: 'border-amber-700/40', text: 'text-amber-400', icon: 'solar:crown-bold', bgIcon: 'bg-gradient-to-br from-amber-400 to-orange-500', glow: 'bg-amber-500/10' }
+              };
+              
+              const conf = planConfigs[plan] || planConfigs.starter;
+              
+              return (
+                <div className={`bg-gradient-to-br ${conf.color} border ${conf.border} rounded-xl p-3 relative overflow-hidden`}>
+                  <div className={`absolute -top-4 -right-4 w-12 h-12 ${conf.glow} rounded-full blur-xl pointer-events-none`}></div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-md ${conf.bgIcon} flex items-center justify-center shadow-sm`}>
+                        <iconify-icon icon={conf.icon} className="text-white text-[10px]"></iconify-icon>
+                      </div>
+                      <div>
+                        <p className={`text-[8px] ${conf.text}/80 uppercase tracking-widest font-semibold`}>{t('planActive')}</p>
+                        <p className={`text-xs font-bold ${isUltimate ? 'text-amber-300' : 'text-white'} leading-none capitalize`}>
+                          {plan}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${isUltimate ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
+                      ✓ {t('active')}
                     </span>
-                  ) : (
-                    <span className="text-amber-400 font-semibold">{profile?.tokens || 0} / {profile?.totalQuota || 50}</span>
-                  )}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-[9px]">
+                      <span className="text-zinc-500">{t('aiQuota')}</span>
+                      {isUltimate ? (
+                        <span className="text-amber-400 font-bold flex items-center gap-1">
+                          <iconify-icon icon="solar:star-bold" className="text-[10px]"></iconify-icon>
+                          Unlimited
+                        </span>
+                      ) : (
+                        <span className="text-zinc-400 font-semibold">{profile?.tokens || 0} / {profile?.totalQuota || 50}</span>
+                      )}
+                    </div>
+                    <div className="w-full bg-zinc-800/80 rounded-full h-1">
+                      <div className={`h-1 rounded-full ${isUltimate ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-zinc-600'}`} style={{width: `${isUltimate ? 100 : Math.min(100, ((profile?.tokens || 0) / (profile?.totalQuota || 50)) * 100)}%`}}></div>
+                    </div>
+                  </div>
+                  <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
                 </div>
-                <div className="w-full bg-zinc-800/80 rounded-full h-1">
-                  <div className="h-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{width: `${profile?.isUnlimited ? 100 : Math.min(100, ((profile?.tokens || 0) / (profile?.totalQuota || 50)) * 100)}%`}}></div>
-                </div>
-              </div>
-              <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
-            </div>
+              );
+            })()}
           </div>
 
           <div className="mb-4 px-2">
