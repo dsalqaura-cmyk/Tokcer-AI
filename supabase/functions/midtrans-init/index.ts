@@ -59,17 +59,29 @@ serve(async (req) => {
     const midtransData = await midtransResponse.json()
     if (!midtransResponse.ok) throw new Error(midtransData.error_messages?.join(', ') || 'Midtrans Error')
 
-    // 3. Save to transactions table
-    await supabaseClient.from('transactions').insert({
-      user_id: null, // User belum dibuat auth-nya, kita simpan datanya di metadata transaksi
+    // 3. AGGRESSIVE SAVE: Kita hanya kirim data yang PASTI diperbolehkan database
+    const insertData: any = {
       order_id: orderId,
       plan_name: plan_name,
       amount: amount,
       tokens_to_add: tokens,
       snap_token: midtransData.token,
       status: 'pending',
-      raw_notification: { user_data } // Simpan info pendaftaran untuk di-create saat sukses
-    })
+      raw_notification: { user_data }
+    };
+
+    // Hanya isi user_id jika datanya ada (User Lama)
+    // Jika User Baru, kolom ini tidak akan dikirim sama sekali agar tidak ditolak database
+    if (user_data.user_id) {
+        insertData.user_id = user_data.user_id;
+    }
+
+    const { error: dbError } = await supabaseClient.from('transactions').insert(insertData);
+    
+    if (dbError) {
+        console.error("DB INSERT ERROR:", dbError.message);
+        throw new Error(`Gagal mencatat transaksi: ${dbError.message}`);
+    }
 
     return new Response(
       JSON.stringify({ token: midtransData.token, orderId }),
@@ -77,6 +89,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error("INIT ERROR:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
