@@ -529,7 +529,7 @@ const Dashboard = () => {
             const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
             const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
             const totalQuota = quotaMap[plan] || 50;
-            const activeTokens = prof?.tokens !== undefined ? prof.tokens : (prof?.ai_credits_remaining || 0);
+            const activeTokens = prof?.ai_tokens ?? 0;
             
             setProfile({ 
                 ...(prof || {}), 
@@ -610,7 +610,7 @@ const Dashboard = () => {
     
     if (localStorage.getItem(storageKey)) return true;
 
-    const currentTokens = profile?.tokens !== undefined ? profile.tokens : (profile?.ai_credits_remaining || 0);
+    const currentTokens = profile?.tokens ?? 0;
     if (currentTokens < 1) {
         console.warn("Insufficient tokens for feature:", feature);
         return false;
