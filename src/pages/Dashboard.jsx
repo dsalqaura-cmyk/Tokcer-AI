@@ -1122,6 +1122,8 @@ const Dashboard = () => {
             setActiveMenu={setActiveMenu}
             systemBriefing={systemBriefing}
             isFetchingBriefing={isFetchingBriefing}
+            orders={orders}
+            products={products}
           />
         );
       case 'tab-omzet':
