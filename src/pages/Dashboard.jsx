@@ -507,7 +507,7 @@ const Dashboard = () => {
             setProfile({
                 full_name: 'Administrator',
                 subscription_plan: 'ultimate',
-                tokens: 3000,
+                tokens: 9999,
                 totalQuota: 3000,
                 isUnlimited: true,
                 planName: 'Ultimate'
@@ -547,7 +547,7 @@ const Dashboard = () => {
         setUser(adminUser);
         setProfile({ 
             full_name: 'Administrator', 
-            tokens: 3000, 
+            tokens: 9999, 
             role: 'admin',
             subscription_plan: 'ultimate',
             planName: 'Ultimate',
