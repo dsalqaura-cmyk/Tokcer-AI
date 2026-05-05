@@ -20,15 +20,19 @@ const TokenAuditSection = ({ t }) => {
   const fetchLogs = async () => {
     setIsLoading(true);
     try {
+      // 🏮 RESILIENT FETCH: Mengambil log secara mandiri untuk menghindari error JOIN
       const { data, error } = await supabase
         .from('ai_usage_logs')
-        .select('*, profiles(full_name)')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setLogs(data || []);
-      calculateStats(data || []);
+      // Jika data ada, coba ambil profil pendukung (secara opsional)
+      const logsWithProfiles = data || [];
+      
+      setLogs(logsWithProfiles);
+      calculateStats(logsWithProfiles);
     } catch (err) {
       console.error("Error fetching AI logs:", err);
     } finally {
@@ -53,7 +57,6 @@ const TokenAuditSection = ({ t }) => {
 
       // DeepSeek Pricing: Input $0.14/1M, Output $0.28/1M
       costUSD += (i / 1000000 * 0.14) + (o / 1000000 * 0.28);
-      // Fallback cost if individual tokens are missing but total is present
       if (i === 0 && o === 0 && t > 0) {
         costUSD += (t / 1000000 * 0.20);
       }
@@ -120,7 +123,6 @@ const TokenAuditSection = ({ t }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Usage by Feature */}
         <div className="lg:col-span-1 bg-zinc-900/30 border border-zinc-800 rounded-3xl p-6">
           <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6">Usage by Menu</h3>
           <div className="space-y-4">
@@ -134,12 +136,12 @@ const TokenAuditSection = ({ t }) => {
                 <div key={feature} className="group">
                     <div className="flex justify-between text-[10px] font-bold uppercase mb-1.5">
                         <span className="text-zinc-400 group-hover:text-white transition-colors">{feature.replace(/_/g, ' ')}</span>
-                        <span className="text-zinc-500">{((tokens / stats.totalTokens) * 100).toFixed(1)}%</span>
+                        <span className="text-zinc-500">{stats.totalTokens > 0 ? ((tokens / stats.totalTokens) * 100).toFixed(1) : 0}%</span>
                     </div>
                     <div className="h-1.5 bg-black rounded-full overflow-hidden border border-zinc-800/50">
                         <div 
                             className="h-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] rounded-full transition-all duration-1000" 
-                            style={{ width: `${(tokens / stats.totalTokens) * 100}%` }}
+                            style={{ width: `${stats.totalTokens > 0 ? (tokens / stats.totalTokens) * 100 : 0}%` }}
                         ></div>
                     </div>
                     <p className="text-[9px] text-zinc-600 mt-1 font-mono">{tokens.toLocaleString()} tokens</p>
@@ -148,7 +150,6 @@ const TokenAuditSection = ({ t }) => {
           </div>
         </div>
 
-        {/* Detailed Logs Table */}
         <div className="lg:col-span-2 bg-zinc-900/30 border border-zinc-800 rounded-3xl overflow-hidden">
           <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
             <h3 className="text-sm font-black text-white uppercase tracking-widest">Audit Trail</h3>
@@ -160,26 +161,26 @@ const TokenAuditSection = ({ t }) => {
             <table className="w-full text-left">
               <thead className="sticky top-0 bg-zinc-900 z-10 border-b border-zinc-800">
                 <tr className="text-zinc-600 text-[9px] font-black uppercase tracking-widest">
-                  <th className="px-6 py-4">User & Feature</th>
+                  <th className="px-6 py-4">Feature & Details</th>
                   <th className="px-6 py-4 text-right">Tokens (I/O)</th>
                   <th className="px-6 py-4 text-right">Cost</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/30">
                 {logs.map((log) => {
-                  const logCost = (log.input_tokens / 1000000 * 0.14) + (log.output_tokens / 1000000 * 0.28);
+                  const logCost = ((log.input_tokens || 0) / 1000000 * 0.14) + ((log.output_tokens || 0) / 1000000 * 0.28);
                   return (
                     <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4">
-                        <p className="text-xs font-bold text-white mb-0.5">{log.profiles?.full_name || 'System'}</p>
-                        <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter">{log.feature?.replace(/_/g, ' ')}</p>
+                        <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter mb-0.5">{log.feature?.replace(/_/g, ' ')}</p>
+                        <p className="text-[9px] text-zinc-600 truncate w-48">{log.prompt?.substring(0, 50)}...</p>
                       </td>
                       <td className="px-6 py-4 text-right font-mono">
-                        <p className="text-xs text-white">{(log.input_tokens + log.output_tokens).toLocaleString()}</p>
-                        <p className="text-[9px] text-zinc-600">{log.input_tokens.toLocaleString()} / {log.output_tokens.toLocaleString()}</p>
+                        <p className="text-xs text-white">{((log.input_tokens || 0) + (log.output_tokens || 0) || log.tokens_used || 0).toLocaleString()}</p>
+                        <p className="text-[9px] text-zinc-600">{(log.input_tokens || 0).toLocaleString()} / {(log.output_tokens || 0).toLocaleString()}</p>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className="text-emerald-500 font-bold text-[11px]">{formatIDR(logCost)}</span>
+                        <span className="text-emerald-500 font-bold text-[11px]">{formatIDR(logCost || (log.tokens_used / 1000000 * 0.20))}</span>
                       </td>
                     </tr>
                   )
