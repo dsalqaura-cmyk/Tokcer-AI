@@ -507,6 +507,7 @@ const Dashboard = () => {
         const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
         
         if (session.user.email === 'admin@tokcer-ai.com') {
+            localStorage.setItem('tokcer_admin_auth', 'true');
             setProfile({
                 full_name: 'Administrator',
                 subscription_plan: 'ultimate',
@@ -518,7 +519,10 @@ const Dashboard = () => {
             setTimeFilter('Semua');
             fetchOperationalData(session.user.id, session.user);
             fetchMarketplaceConnections(session.user.id);
-            return; // EXIT EARLY - DO NOT LET DB OVERWRITE ADMIN
+            return;
+        } else {
+            // SECURITY: Clear admin flag for regular users
+            localStorage.removeItem('tokcer_admin_auth');
         }
 
         if (prof || clientData) {
@@ -597,8 +601,8 @@ const Dashboard = () => {
 
     const currentTokens = profile?.tokens !== undefined ? profile.tokens : (profile?.ai_credits_remaining || 0);
     if (currentTokens < 1) {
-        alert("⚠️ Kredit AI Anda tidak cukup untuk membuka fitur ini. Silakan upgrade paket Anda.");
-        setActiveMenu('tab-dash');
+        // SILENT FAIL for background check
+        console.warn("Insufficient tokens for feature:", feature);
         return false;
     }
 
@@ -610,8 +614,7 @@ const Dashboard = () => {
         });
 
         if (error || !data.success) {
-            alert(data?.message || "⚠️ Kredit AI Anda tidak cukup.");
-            setActiveMenu('tab-dash');
+            console.warn("Deduction failed:", data?.message);
             return false;
         }
 
@@ -712,11 +715,11 @@ const Dashboard = () => {
   };
 
   const handleLogout = async () => {
-    if(window.confirm(t('confirmLogout') || 'Logout?')) {
-      await supabase.auth.signOut().finally(() => {
-        localStorage.clear();
+    if (window.confirm(t('confirmLogout') || 'Logout?')) {
+        await supabase.auth.signOut();
+        localStorage.removeItem('tokcer_admin_auth');
+        localStorage.removeItem('tokcer_cache_analytics_' + user?.id + '_' + new Date().toISOString().split('T')[0]);
         window.location.href = '/login';
-      });
     }
   };
 
