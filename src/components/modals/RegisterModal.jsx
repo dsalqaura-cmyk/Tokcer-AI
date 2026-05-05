@@ -112,9 +112,17 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
 
       // 3. IF PAID PLAN (PRO/ELITE/ULTIMATE) -> Call Midtrans Edge Function
       const currentPlanData = dbPlans.find(p => p.id === planValue);
+      
+      // HARDCODED FALLBACK PRICES (Safety Guard)
+      const fallbackPrices = {
+        pro: { Monthly: 499000, Yearly: 5489000 },
+        elite: { Monthly: 999000, Yearly: 10989000 },
+        ultimate: { Monthly: 1999000, Yearly: 21989000 }
+      };
+
       const amount = billing_cycle === 'Monthly' 
-        ? (currentPlanData?.price_monthly || 499000) 
-        : (currentPlanData?.price_yearly || 5489000);
+        ? (currentPlanData?.price_monthly || fallbackPrices[planValue]?.Monthly || 499000) 
+        : (currentPlanData?.price_yearly || fallbackPrices[planValue]?.Yearly || 5489000);
       
       const tokens = (planValue === 'pro' ? 300 : planValue === 'elite' ? 1000 : 3000);
 
