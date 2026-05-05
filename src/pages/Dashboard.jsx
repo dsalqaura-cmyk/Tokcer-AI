@@ -500,10 +500,7 @@ const Dashboard = () => {
       if (session) {
         setUser(session.user);
         
-        // 1. Fetch from profiles
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-        
-        // 2. Fetch from clients (as secondary/admin source)
         const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
         
         if (session.user.email === 'admin@tokcer-ai.com') {
@@ -521,7 +518,6 @@ const Dashboard = () => {
             fetchMarketplaceConnections(session.user.id);
             return;
         } else {
-            // SECURITY: Clear admin flag for regular users
             localStorage.removeItem('tokcer_admin_auth');
         }
 
@@ -559,37 +555,40 @@ const Dashboard = () => {
             totalQuota: 3000,
             isUnlimited: true
         });
-        // Pastikan filter waktu default adalah 'Semua' agar data lama muncul
         setTimeFilter('Semua');
         fetchOperationalData('admin-bypass', adminUser);
         fetchMarketplaceConnections('admin-bypass');
       }
 
-      // Handle Shopee Callback Params
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       const shopId = params.get('shop_id');
-      
       if (code && shopId) {
-          console.log("📍 Shopee Auth Callback Detected:", { code, shopId });
-          alert(`Sukses! Toko Shopee (ID: ${shopId}) berhasil diotorisasi. Sedang mensinkronisasi data...`);
-          // Clear params from URL
           window.history.replaceState({}, document.title, window.location.pathname);
-          // Here we would typically call another API to exchange code for tokens
-          // But for now, we show success.
       }
-
-      // Handle TikTok Callback
       const tiktokCode = params.get('auth_code');
       if (tiktokCode) {
-          console.log("📍 TikTok Auth Callback Detected:", { tiktokCode });
-          alert(`Sukses! Toko TikTok Shop berhasil diotorisasi. Sedang mensinkronisasi data...`);
           window.history.replaceState({}, document.title, window.location.pathname);
       }
-
     };
-    getUser();
-  }, []);
+
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+                getUser();
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setProfile(null);
+                localStorage.removeItem('tokcer_admin_auth');
+            }
+        });
+
+        getUser();
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
 
   const chargeDailyCredit = async (feature) => {
     if (!user || localStorage.getItem('tokcer_admin_auth') === 'true') return true;
