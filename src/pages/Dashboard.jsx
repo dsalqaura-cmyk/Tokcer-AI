@@ -271,8 +271,10 @@ const Dashboard = () => {
             } else if (ordData) {
                 setOrders(ordData);
             }
+            return { products: prodData, orders: ordData };
         } catch (err) {
             console.error("Fetch Operational Error:", err);
+            return { products: [], orders: [] };
         } finally {
             setIsFetchingOperational(false);
         }
@@ -451,7 +453,10 @@ const Dashboard = () => {
         }
     };
     
-    const fetchSystemBriefing = async () => {
+    const fetchSystemBriefing = async (currentProducts, currentOrders) => {
+        const prodData = currentProducts || products;
+        const ordData = currentOrders || orders;
+        
         if (!user || isFetchingBriefing) return;
 
         const today = new Date().toISOString().split('T')[0];
@@ -466,14 +471,14 @@ const Dashboard = () => {
         setIsFetchingBriefing(true);
         try {
             const bizType = profile?.business_type || 'E-commerce';
-            const lowStockCount = products.filter(p => p.stock < 10).length;
-            const highReturnOrders = orders.filter(o => o.status === 'returned').length;
+            const lowStockCount = prodData.filter(p => p.stock < 10).length;
+            const highReturnOrders = ordData.filter(o => o.status === 'returned').length;
             
             const systemPrompt = `You are the Tokcer AI System Assistant. Analyze the shop data and provide 3 concise, professional, and actionable notifications in Indonesian.
             Format: JSON array of objects with keys: "title", "desc", "type" (warning, success, info), "time" (e.g. "Baru saja", "1 jam lalu").
             Focus on inventory, store health, or growth opportunities.`;
             
-            const userPrompt = `Data: ${bizType} shop, ${lowStockCount} products low stock, ${highReturnOrders} returned orders, ${orders.length} total orders.`;
+            const userPrompt = `Data: ${bizType} shop, ${lowStockCount} products low stock, ${highReturnOrders} returned orders, ${ordData.length} total orders.`;
             
             const result = await callAiEngine(systemPrompt, userPrompt, null, 1024, 0.5);
             const cleanJson = result.text.replace(/```json|```/g, '').trim();
@@ -539,9 +544,9 @@ const Dashboard = () => {
         if (metadata?.platforms && metadata?.store_links) {
             await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
         }
-        fetchOperationalData(session.user.id, session.user);
+        const { products: pData, orders: oData } = await fetchOperationalData(session.user.id, session.user);
         fetchMarketplaceConnections(session.user.id);
-        fetchSystemBriefing();
+        fetchSystemBriefing(pData, oData);
       } else if (isAdmin) {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);

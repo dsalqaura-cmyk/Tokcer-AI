@@ -288,20 +288,20 @@ const OverviewTab = ({
                 </h3>
              </div>
              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                      <iconify-icon icon="ri:tiktok-fill" className="text-zinc-400"></iconify-icon>
-                      <span className="text-[10px] text-zinc-500">TikTok Live</span>
-                   </div>
-                   <span className="text-sm font-bold text-white">{Math.floor((orders.length * 12) + (Math.random() * 20) + 40)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                      <iconify-icon icon="simple-icons:shopee" className="text-orange-500"></iconify-icon>
-                      <span className="text-[10px] text-zinc-500">Shopee Live</span>
-                   </div>
-                   <span className="text-sm font-bold text-white">{Math.floor((orders.length * 7) + (Math.random() * 15) + 20)}</span>
-                </div>
+                 <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                       <iconify-icon icon="ri:tiktok-fill" className="text-zinc-400"></iconify-icon>
+                       <span className="text-[10px] text-zinc-500">TikTok Live</span>
+                    </div>
+                    <span className="text-sm font-bold text-white">{orders.length > 0 ? Math.floor((orders.length * 12) + (Math.random() * 20)) : 0}</span>
+                 </div>
+                 <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                       <iconify-icon icon="simple-icons:shopee" className="text-orange-500"></iconify-icon>
+                       <span className="text-[10px] text-zinc-500">Shopee Live</span>
+                    </div>
+                    <span className="text-sm font-bold text-white">{orders.length > 0 ? Math.floor((orders.length * 7) + (Math.random() * 15)) : 0}</span>
+                 </div>
              </div>
           </div>
 
