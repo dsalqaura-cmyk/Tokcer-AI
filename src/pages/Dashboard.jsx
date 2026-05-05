@@ -597,6 +597,14 @@ const Dashboard = () => {
   const chargeDailyCredit = async (feature) => {
     if (!user || localStorage.getItem('tokcer_admin_auth') === 'true') return true;
 
+    // 🏮 PLAN CHECK FIRST (Blueprint Security Constraint)
+    // Map internal keys to permission keys
+    const permKey = feature === 'market' ? 'market_intel' : feature;
+    if (!checkPlanPermission(permKey, true)) {
+        console.log(`ℹ️ Feature ${feature} is locked for this plan. Skipping deduction.`);
+        return false;
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const storageKey = `tokcer_pay_${feature}_${today}`;
     
@@ -604,7 +612,6 @@ const Dashboard = () => {
 
     const currentTokens = profile?.tokens !== undefined ? profile.tokens : (profile?.ai_credits_remaining || 0);
     if (currentTokens < 1) {
-        // SILENT FAIL for background check
         console.warn("Insufficient tokens for feature:", feature);
         return false;
     }
@@ -640,7 +647,7 @@ const Dashboard = () => {
             if (allowed) fetchGlobalMarketTrends();
         });
     } else if (activeMenu === 'tab-health') {
-        chargeDailyCredit('analytics').then(allowed => {
+        chargeDailyCredit('health_check').then(allowed => {
             if (allowed) {
                 const safeOrders = Array.isArray(orders) ? orders : [];
                 const total = safeOrders.length || 1;
@@ -729,20 +736,22 @@ const Dashboard = () => {
 
 
 
-    const checkPlanPermission = (feature) => {
+    const checkPlanPermission = (feature, silent = false) => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const permissions = {
             'video_gen': ['pro', 'elite', 'ultimate'],
             'health_check': ['pro', 'elite', 'ultimate'],
-            'analytics': ['starter', 'pro', 'elite', 'ultimate'], // Basic allowed for all
+            'analytics': ['starter', 'pro', 'elite', 'ultimate'],
             'market_intel': ['elite', 'ultimate'],
             'price_optimizer': ['elite', 'ultimate'],
             'competitor_analysis': ['ultimate']
         };
         
         if (permissions[feature] && !permissions[feature].includes(plan)) {
-            const minPlan = permissions[feature][0].toUpperCase();
-            alert(`⚠️ Fitur ini hanya tersedia untuk paket ${minPlan} ke atas. Silakan upgrade paket Anda!`);
+            if (!silent) {
+                const minPlan = permissions[feature][0].toUpperCase();
+                alert(`⚠️ Fitur ini hanya tersedia untuk paket ${minPlan} ke atas. Silakan upgrade paket Anda!`);
+            }
             return false;
         }
         return true;
