@@ -10,6 +10,7 @@ import AdminLogin from './pages/AdminLogin.jsx';
 import PartnerAgreement from './pages/PartnerAgreement.jsx';
 import TikTokMockAuth from './pages/TikTokMockAuth.jsx';
 import HppCalculator from './pages/HppCalculator.jsx';
+import { TermsPage, PrivacyPage, RefundPage } from './pages/LegalPages.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -123,6 +124,12 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        
+        {/* Legal Pages */}
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/refund" element={<RefundPage />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

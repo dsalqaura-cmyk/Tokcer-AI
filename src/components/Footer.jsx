@@ -37,9 +37,10 @@ const Footer = () => {
               <a href="https://www.youtube.com/@tokcer_AI" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-orange-500 hover:-translate-y-1 transition-all duration-300"><iconify-icon icon="mdi:youtube" className="text-xl"></iconify-icon></a>
             </div>
             
-            <div className="flex gap-8 text-xs font-medium uppercase tracking-widest text-zinc-500">
-              <a href="#" className="hover:text-white transition-colors">{t('footerPrivacy')}</a>
-              <a href="#" className="hover:text-white transition-colors">{t('footerTerms')}</a>
+            <div className="flex flex-wrap justify-end gap-6 md:gap-8 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              <a href="/privacy" className="hover:text-white transition-colors">{t('footerPrivacy')}</a>
+              <a href="/terms" className="hover:text-white transition-colors">{t('footerTerms')}</a>
+              <a href="/refund" className="hover:text-white transition-colors text-orange-500/80">Refund Policy</a>
             </div>
           </div>
         </div>
