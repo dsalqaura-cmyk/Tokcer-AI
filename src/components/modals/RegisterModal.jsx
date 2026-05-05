@@ -242,7 +242,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                 </div>
                 <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Siklus</label>
-                    <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
+                    <select name="billing_cycle" value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
                         <option value="Monthly">Bulanan</option>
                         <option value="Yearly">Tahunan (Save 15%)</option>
                     </select>
