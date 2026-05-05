@@ -340,7 +340,7 @@ const OverviewTab = ({
            <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-bold text-white">{t('recentTrx')}</h3>
               <button 
-                onClick={() => setActiveMenu('tab-rev')}
+                onClick={() => setActiveMenu('tab-omzet')}
                 className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors"
               >
                 {t('viewAll')}
@@ -377,7 +377,7 @@ const OverviewTab = ({
            <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-bold text-white">{t('lowStock')}</h3>
               <button 
-                onClick={() => setActiveMenu('tab-inv')}
+                onClick={() => setActiveMenu('tab-inventory')}
                 className="text-[10px] font-bold text-orange-500 hover:text-orange-400 uppercase tracking-widest transition-colors"
               >
                 {t('manageInv')}
