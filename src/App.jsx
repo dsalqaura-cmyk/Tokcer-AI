@@ -9,6 +9,7 @@ import InternalDashboard from './pages/InternalDashboard.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import PartnerAgreement from './pages/PartnerAgreement.jsx';
 import TikTokMockAuth from './pages/TikTokMockAuth.jsx';
+import HppCalculator from './pages/HppCalculator.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -114,6 +115,14 @@ function App() {
           } 
         />
         <Route path="/tiktok-auth-mock" element={<TikTokMockAuth />} />
+        <Route 
+          path="/hpp-calculator" 
+          element={
+            <ProtectedRoute>
+              <HppCalculator />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

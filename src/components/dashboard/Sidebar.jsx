@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 
 const Sidebar = ({ 
@@ -13,6 +14,7 @@ const Sidebar = ({
   user,
   handleLogout 
 }) => {
+  const navigate = useNavigate();
   const plan = (profile?.subscription_plan || 'starter').toLowerCase();
 
   const isLocked = (tab) => {
@@ -102,6 +104,18 @@ const Sidebar = ({
             {renderMenuItem('tab-market', 'solar:global-linear', t('marketIntel'))}
             {renderMenuItem('tab-account', 'solar:shield-keyhole-linear', t('accountSecurity'))}
             {renderMenuItem('tab-connections', 'solar:link-linear', 'Marketplace Sync')}
+            
+            {/* HPP Calculator - Redirects to separate page */}
+            <button 
+              onClick={() => navigate('/hpp-calculator')} 
+              className="w-full flex items-center justify-between px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 group font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent"
+            >
+              <div className="flex items-center gap-3 relative z-10">
+                <iconify-icon icon="solar:calculator-minimalistic-linear" className="text-lg text-emerald-500"></iconify-icon>
+                <span>HPP & Margin Calc</span>
+              </div>
+              <iconify-icon icon="solar:arrow-right-linear" className="text-zinc-600 text-[10px]"></iconify-icon>
+            </button>
           </nav>
         </div>
 
