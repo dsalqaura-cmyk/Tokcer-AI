@@ -32,11 +32,11 @@ serve(async (req) => {
     // 3. Generate Unique Order ID
     const orderId = `TOKCER-${Date.now()}-${user.id.slice(0, 4)}`
 
-    // 4. Call Midtrans Snap API
-    const serverKey = Deno.env.get('MIDTRANS_SERVER_KEY') // <--- Nanti diisi di Supabase Secrets
+    // 4. Call Midtrans Snap API (PRODUCTION)
+    const serverKey = Deno.env.get('MIDTRANS_SERVER_KEY') 
     const authString = btoa(`${serverKey}:`)
     
-    const midtransResponse = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
+    const midtransResponse = await fetch('https://app.midtrans.com/snap/v1/transactions', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
