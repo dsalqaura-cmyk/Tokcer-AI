@@ -95,7 +95,7 @@ const Dashboard = () => {
     const checkStoreLimit = async () => {
         if (!user) return false;
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
-        const limits = { 'starter': 1, 'pro': 3, 'elite': 10, 'ultimate': 9999 };
+        const limits = { 'starter': 1, 'pro': 3, 'elite': 10, 'ultimate': 30 };
         const limit = limits[plan] || 1;
 
         const { count, error } = await supabase
@@ -125,7 +125,7 @@ const Dashboard = () => {
             if (existing && existing.length > 0) return;
 
             const plan = (profile?.subscription_plan || 'starter').toLowerCase();
-            const limits = { 'starter': 1, 'pro': 3, 'elite': 10, 'ultimate': 9999 };
+            const limits = { 'starter': 1, 'pro': 3, 'elite': 10, 'ultimate': 30 };
             const limit = limits[plan] || 1;
 
             // Only take stores up to limit
@@ -507,7 +507,7 @@ const Dashboard = () => {
             setProfile({
                 full_name: 'Administrator',
                 subscription_plan: 'ultimate',
-                tokens: 9999,
+                tokens: 3000,
                 totalQuota: 3000,
                 isUnlimited: true,
                 planName: 'Ultimate'
@@ -547,7 +547,7 @@ const Dashboard = () => {
         setUser(adminUser);
         setProfile({ 
             full_name: 'Administrator', 
-            tokens: 9999, 
+            tokens: 3000, 
             role: 'admin',
             subscription_plan: 'ultimate',
             planName: 'Ultimate',
