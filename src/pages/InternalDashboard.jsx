@@ -295,27 +295,25 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      // 🏮 CENTRALIZED ACTIVATION (v5) - With Unique Password
-      const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
+      // 🏮 FLOW PARTNER (v7) - Double Access (Partner + User Ultimate 60 Days)
+      const { data, error: rpcError } = await supabase.rpc('rpc_activate_partner', {
         p_email: selectedPartnerApp.email,
         p_application_id: selectedPartnerApp.id,
         p_full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
-        p_password: generatedPassword,
-        p_plan: 'ultimate',
-        p_role: 'partner'
+        p_password: generatedPassword
       });
 
       if (rpcError) throw rpcError;
 
-      alert(`Sukses! Akun Aktif. Password Baru: ${generatedPassword}`);
+      alert(`Sukses! Partner & User Aktif. Password: ${generatedPassword}`);
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       setGeneratedPassword('');
       await fetchPartnerApps();
       await fetchClients();
     } catch (err) {
-      console.error("Activation Error:", err);
-      alert("Gagal Aktivasi: " + err.message);
+      console.error("Partner Activation Error:", err);
+      alert("Gagal Aktivasi Partner: " + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -324,35 +322,27 @@ const InternalDashboard = () => {
   const handleApprove = async (client) => {
     if (!client) return;
     
-    const needsProof = client.plan !== 'starter';
-    if (needsProof && !client.payment_proof_url && client.ref === 'Direct Web') {
-      alert("Peringatan: User ini belum melampirkan bukti bayar!");
-      return;
-    }
-
-    if (!window.confirm(`Setujui pendaftaran ${client.shop_name}?`)) return;
+    if (!window.confirm(`EMERGENCY APPROVE: Setujui pendaftaran ${client.shop_name} & Berikan Bonus Ultimate?`)) return;
 
     const newPassword = generateSecurePassword();
     setIsLoading(true);
     try {
-      // 🏮 CENTRALIZED ACTIVATION (v5) - With Unique Password
-      const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
+      // 🚀 FLOW EMERGENCY USER (v7) - Manual Overide + Bonus Ultimate 60 Days
+      const { data, error: rpcError } = await supabase.rpc('rpc_activate_emergency_user', {
         p_email: client.email,
-        p_application_id: client.id,
+        p_client_id: client.id,
         p_full_name: client.shop_name,
-        p_password: newPassword,
-        p_plan: client.plan || 'starter',
-        p_role: 'user'
+        p_password: newPassword
       });
 
       if (rpcError) throw rpcError;
 
-      alert(`Sukses! Akun Aktif. Password Baru: ${newPassword}`);
+      alert(`Sukses! User Emergency Aktif. Password: ${newPassword}`);
       await fetchClients();
       setShowModal(false);
     } catch (err) {
-      console.error("Client Activation Error:", err);
-      alert("Gagal mengaktifkan client: " + err.message);
+      console.error("Emergency Activation Error:", err);
+      alert("Gagal Aktivasi Emergency: " + err.message);
     } finally {
       setIsLoading(false);
     }
