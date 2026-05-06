@@ -274,87 +274,34 @@ const InternalDashboard = () => {
     }
   };
 
-  const sendWelcomeEmail = async (email, name, plan, cycle) => {
-    // 🏮 SAFETY GUARD: Fungsi ini HANYA untuk pengiriman MANUAL (Resend Email).
-    // Email otomatis sudah ditangani secara terpusat oleh Database Trigger: tr_send_welcome_email.
-    // JANGAN panggil fungsi ini di dalam flow handleApprove otomatis untuk mencegah Double Email.
-    console.log("ℹ️ Menjalankan fungsi email manual untuk:", email);
-
-    // Gunakan dari Database jika ada, kalau tidak ada pakai .env
-    const apiKey = aiConfig.resend_api_key || import.meta.env.VITE_RESEND_API_KEY;
-    
-    if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey === '') {
-      console.warn("⚠️ Resend API Key belum diisi. Email tidak terkirim.");
-      return;
+  const generateSecurePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let password = "TK-";
+    for (let i = 0; i < 6; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-
-    // Peringatan Domain Resend Sandbox
-    if (email.includes('mailinator') || email.includes('example')) {
-      console.log("ℹ️ Mengirim ke email testing/mailinator via Resend Sandbox...");
-    }
-
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          from: 'Tokcer AI <onboarding@resend.dev>', // Catatan: Ganti ke admin@tokcer-ai.com jika domain sudah verified
-          to: [email],
-          subject: '🚀 Akun Tokcer AI Anda Telah Aktif!',
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-              <div style="text-align: center; margin-bottom: 20px;">
-                <img src="https://dashboardstaging.tokcer-ai.com/logo.png" alt="Tokcer AI" style="height: 40px;">
-              </div>
-              <h2 style="color: #f97316;">Selamat, ${name}!</h2>
-              <p>Pendaftaran Anda untuk paket <b>${plan.toUpperCase()}</b> (${cycle || 'Monthly'}) telah disetujui.</p>
-              <p>Sekarang Anda sudah bisa mengakses seluruh fitur Tokcer AI untuk melejitkan performa toko Anda.</p>
-              <div style="background: #fdf2f7; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 0;"><b>Link Dashboard:</b> <a href="https://staging.tokcer-ai.com/login">staging.tokcer-ai.com/login</a></p>
-                <p style="margin: 10px 0 0 0;"><b>Username:</b> ${email}</p>
-                <p style="margin: 5px 0 0 0;"><b>Password:</b> Tokcer@2026</p>
-              </div>
-              <p style="font-size: 12px; color: #666;">Jika Anda lupa password, silakan gunakan fitur "Lupa Password" di halaman login.</p>
-              <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-              <p style="text-align: center; color: #999; font-size: 11px;">&copy; 2026 Tokcer AI - Solusi Cerdas E-Commerce</p>
-            </div>
-          `
-        })
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        console.log("📧 Welcome email sent successfully to:", email, "ID:", result.id);
-      } else {
-        console.error("❌ Resend API Error:", result);
-        // Jika error 403, biasanya karena domain belum verified atau kirim ke email yang tidak terdaftar di sandbox
-      }
-    } catch (err) {
-      console.error("❌ Network error while sending email:", err);
-    }
+    return password;
   };
 
   const handleApproveWithAccount = async () => {
     if (!selectedPartnerApp) return;
 
+    const newPassword = generateSecurePassword();
     setIsLoading(true);
     try {
-      // 🏮 CENTRALIZED PARTNER ACTIVATION (Blueprint Section 4.A.3)
-      // All logic (Auth, Profile, Partner Record, Strategy Sync, and Emails) is now handled by this single RPC.
+      // 🏮 CENTRALIZED ACTIVATION (v5) - With Unique Password
       const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
         p_email: selectedPartnerApp.email,
         p_application_id: selectedPartnerApp.id,
         p_full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
+        p_password: newPassword,
         p_plan: 'ultimate',
         p_role: 'partner'
       });
 
       if (rpcError) throw rpcError;
 
-      alert(`Sukses! Partner ${selectedPartnerApp.nama} aktif dan data partner terbuat di database.`);
+      alert(`Sukses! Akun Aktif. Password Baru: ${newPassword}`);
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       await fetchPartnerApps();
@@ -376,22 +323,24 @@ const InternalDashboard = () => {
       return;
     }
 
-    if (!window.confirm(`Setujui pendaftaran ${client.shop_name} dengan paket ${client.plan?.toUpperCase()}?`)) return;
+    if (!window.confirm(`Setujui pendaftaran ${client.shop_name}?`)) return;
 
+    const newPassword = generateSecurePassword();
     setIsLoading(true);
     try {
-      // 🏮 CENTRALIZED ACTIVATION (Blueprint Section 4.A.3)
-      // All logic (Auth, Profile, Partner Omzet, Tiers, and Emails) is now handled by this single RPC.
+      // 🏮 CENTRALIZED ACTIVATION (v5) - With Unique Password
       const { data, error: rpcError } = await supabase.rpc('rpc_activate_account', {
         p_email: client.email,
         p_application_id: client.id,
         p_full_name: client.shop_name,
-        p_plan: client.plan || 'starter'
+        p_password: newPassword,
+        p_plan: client.plan || 'starter',
+        p_role: 'user'
       });
 
       if (rpcError) throw rpcError;
 
-      alert(data.message || "User berhasil diaktifkan!");
+      alert(`Sukses! Akun Aktif. Password Baru: ${newPassword}`);
       await fetchClients();
       setShowModal(false);
     } catch (err) {

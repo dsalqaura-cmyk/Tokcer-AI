@@ -94,10 +94,30 @@ const BusinessInsightSection = ({ t }) => {
   const handleGenerateReport = async () => {
     setIsGenerating(true);
     try {
-      const { data: clients } = await supabase.from('clients').select('*');
-      const { data: orders } = await supabase.from('orders').select('*');
-      const { data: payouts } = await supabase.from('payouts').select('*').eq('status', 'paid');
-      const { data: partners } = await supabase.from('partners').select('*');
+      // 1. Fetch Latest Configs & Data
+      const [configsRes, clientsRes, ordersRes, payoutsRes] = await Promise.all([
+        supabase.from('ai_configs').select('*').or('key.ilike.%price_%,key.eq.target_revenue_monthly'),
+        supabase.from('clients').select('*'),
+        supabase.from('orders').select('*'),
+        supabase.from('payouts').select('*').eq('status', 'paid')
+      ]);
+
+      const configMap = {};
+      (configsRes.data || []).forEach(c => configMap[c.key] = c.value);
+
+      // Dynamic Prices (with Hardcoded Fallbacks for Safety)
+      const dynamicPrices = {
+        starter: Number(configMap['price_starter']) || 0,
+        pro: Number(configMap['price_pro']) || 499000,
+        elite: Number(configMap['price_elite']) || 999000,
+        ultimate: Number(configMap['price_ultimate']) || 1999000
+      };
+      
+      const targetRevenue = Number(configMap['target_revenue_monthly']) || 100000000;
+      
+      const clients = clientsRes.data || [];
+      const orders = ordersRes.data || [];
+      const payouts = payoutsRes.data || [];
 
       // 2. Calculations
       const activeSubs = {
@@ -108,19 +128,17 @@ const BusinessInsightSection = ({ t }) => {
       };
 
       const mrr = {
-        pro: activeSubs.pro * PLAN_PRICES.pro,
-        elite: activeSubs.elite * PLAN_PRICES.elite,
-        ultimate: activeSubs.ultimate * PLAN_PRICES.ultimate,
+        pro: activeSubs.pro * dynamicPrices.pro,
+        elite: activeSubs.elite * dynamicPrices.elite,
+        ultimate: activeSubs.ultimate * dynamicPrices.ultimate,
       };
 
       const totalMrr = mrr.pro + mrr.elite + mrr.ultimate;
-      const grossIncome = (orders || []).reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0);
-      const totalPayout = (payouts || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+      const grossIncome = orders.reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0);
+      const totalPayout = payouts.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       const netRevenue = grossIncome - totalPayout;
 
-      // 3. AI Analysis with Dynamic CSV Data & Executive Summary Requirements
-      const prevReport = reports[0] || null;
-      const targetRevenue = 100000000; // 100M Target
+      // 3. AI Analysis
       const progressToTarget = ((grossIncome / targetRevenue) * 100).toFixed(1);
 
       const prompt = `Analyze this ${reportPeriod} business data for Tokcer AI. 

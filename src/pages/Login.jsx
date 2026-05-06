@@ -68,27 +68,25 @@ const Login = () => {
     setLoading(true);
     setError(null);
     
-    // Handle Admin Total Bypass
-    if (email === 'admin@tokcer-ai.com' && password === 'Dind@1983') {
-      localStorage.setItem('tokcer_admin_auth', 'true');
-      const adminUser = { 
-        email: 'admin@tokcer-ai.com', 
-        id: '81c19c28-9614-4a6d-b2f2-b8244c0ced29' 
-      };
-      setLoading(false);
-      if (role === 'admin') navigate('/admin');
-      else if (role === 'partner') navigate('/partner-dashboard');
-      else navigate('/dashboard');
-      return;
-    }
+    const isDashboardDomain = window.location.hostname.includes('dashboardstaging');
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
+    
     if (error) {
       setError(error.message);
       setLoading(false);
     } else {
-      if (role === 'admin') navigate('/admin');
-      else if (role === 'partner') navigate('/partner-dashboard');
+      // Logic for admin@tokcer-ai.com
+      if (email === 'admin@tokcer-ai.com') {
+        localStorage.setItem('tokcer_admin_auth', 'true');
+        if (isDashboardDomain) {
+          navigate('/admin');
+          return;
+        }
+      }
+
+      // Standard Redirection based on Role Toggle
+      if (role === 'partner') navigate('/partner-dashboard');
       else navigate('/dashboard');
     }
   };
