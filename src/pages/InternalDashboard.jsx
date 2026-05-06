@@ -52,9 +52,25 @@ const InternalDashboard = () => {
   const [selectedPartnerApp, setSelectedPartnerApp] = useState(null);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [approvalAccount, setApprovalAccount] = useState({ username: '', password: '' });
+  const [generatedPassword, setGeneratedPassword] = useState('');
 
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
   const t = (key) => internalTranslations[lang]?.[key] || key;
+
+  const generateSecurePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let password = "TK-";
+    for (let i = 0; i < 6; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const handleOpenApproveModal = (app) => {
+    setSelectedPartnerApp(app);
+    setGeneratedPassword(generateSecurePassword());
+    setShowApproveModal(true);
+  };
 
   const toggleLang = (newLang) => {
     setLang(newLang);
@@ -274,19 +290,9 @@ const InternalDashboard = () => {
     }
   };
 
-  const generateSecurePassword = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let password = "TK-";
-    for (let i = 0; i < 6; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
-  };
-
   const handleApproveWithAccount = async () => {
-    if (!selectedPartnerApp) return;
+    if (!selectedPartnerApp || !generatedPassword) return;
 
-    const newPassword = generateSecurePassword();
     setIsLoading(true);
     try {
       // 🏮 CENTRALIZED ACTIVATION (v5) - With Unique Password
@@ -294,16 +300,17 @@ const InternalDashboard = () => {
         p_email: selectedPartnerApp.email,
         p_application_id: selectedPartnerApp.id,
         p_full_name: selectedPartnerApp.nama || selectedPartnerApp.shop_name,
-        p_password: newPassword,
+        p_password: generatedPassword,
         p_plan: 'ultimate',
         p_role: 'partner'
       });
 
       if (rpcError) throw rpcError;
 
-      alert(`Sukses! Akun Aktif. Password Baru: ${newPassword}`);
+      alert(`Sukses! Akun Aktif. Password Baru: ${generatedPassword}`);
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
+      setGeneratedPassword('');
       await fetchPartnerApps();
       await fetchClients();
     } catch (err) {
@@ -480,7 +487,7 @@ const InternalDashboard = () => {
       case 'overview':
         return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivities} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
       case 'approvals':
-        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleReject={handleReject} handleRemindPartner={handleRemindPartner} />;
+        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={handleOpenApproveModal} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleReject={handleReject} handleRemindPartner={handleRemindPartner} />;
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':
@@ -517,7 +524,7 @@ const InternalDashboard = () => {
       <UserQuickViewModal t={t} showUserStats={showUserStats} setShowUserStats={setShowUserStats} />
       <PaymentVerificationModal t={t} showModal={showModal} setShowModal={setShowModal} selectedClient={selectedClient} handleApprove={handleApprove} />
       <PartnerReviewModal selectedPartnerApp={selectedPartnerApp} setSelectedPartnerApp={setSelectedPartnerApp} setShowApproveModal={setShowApproveModal} />
-      <AccountSetupModal showApproveModal={showApproveModal} setShowApproveModal={setShowApproveModal} selectedPartnerApp={selectedPartnerApp} approvalAccount={approvalAccount} setApprovalAccount={setApprovalAccount} handleApproveWithAccount={handleApproveWithAccount} isLoading={isLoading} />
+      <AccountSetupModal showApproveModal={showApproveModal} setShowApproveModal={setShowApproveModal} selectedPartnerApp={selectedPartnerApp} generatedPassword={generatedPassword} setApprovalAccount={setApprovalAccount} handleApproveWithAccount={handleApproveWithAccount} isLoading={isLoading} />
     </div>
   );
 };

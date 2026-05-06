@@ -4,7 +4,7 @@ const AccountSetupModal = ({
   showApproveModal, 
   setShowApproveModal, 
   selectedPartnerApp, 
-  approvalAccount, 
+  generatedPassword,
   setApprovalAccount, 
   handleApproveWithAccount, 
   isLoading 
@@ -35,7 +35,7 @@ const AccountSetupModal = ({
             <div className="bg-black/40 border border-zinc-800/50 rounded-2xl p-5 flex items-center justify-between">
               <div>
                 <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1 block">Password Sementara</label>
-                <div className="text-sm text-amber-500 font-mono font-bold tracking-wider">Tokcer@2026</div>
+                <div className="text-sm text-amber-500 font-mono font-bold tracking-wider">{generatedPassword}</div>
               </div>
               <iconify-icon icon="solar:lock-password-bold" className="text-zinc-700 text-xl"></iconify-icon>
             </div>
