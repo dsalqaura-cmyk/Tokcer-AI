@@ -23,7 +23,7 @@ serve(async (req) => {
     // 1. Determine Environment & Keys
     const serverKey = is_sandbox 
       ? Deno.env.get('MIDTRANS_SERVER_KEY_SANDBOX') 
-      : Deno.env.get('MIDTRANS_SERVER_KEY_PROD');
+      : Deno.env.get('MIDTRANS_SERVER_KEY');
     
     const midtransUrl = is_sandbox 
       ? 'https://app.sandbox.midtrans.com/snap/v1/transactions' 
