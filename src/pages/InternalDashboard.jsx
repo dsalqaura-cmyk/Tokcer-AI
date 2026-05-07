@@ -305,11 +305,7 @@ const InternalDashboard = () => {
 
       if (rpcError) throw rpcError;
 
-      setActivationSuccess({
-        email: selectedPartnerApp.email,
-        password: generatedPassword
-      });
-      toast.success('Partner Activated Successfully!');
+      alert(`Sukses! Partner & User Aktif.\nEmail: ${selectedPartnerApp.email}\nPassword: ${generatedPassword}`);
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       setGeneratedPassword('');
@@ -317,7 +313,7 @@ const InternalDashboard = () => {
       await fetchClients();
     } catch (err) {
       console.error("Partner Activation Error:", err);
-      toast.error('Gagal Aktivasi Partner: ' + err.message);
+      alert('Gagal Aktivasi Partner: ' + err.message);
     } finally {
       setIsLoading(false);
     }
