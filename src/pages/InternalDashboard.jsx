@@ -36,7 +36,7 @@ const InternalDashboard = () => {
   const [showUserStats, setShowUserStats] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  
+
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const [adminClients, setAdminClients] = useState([]);
@@ -116,7 +116,7 @@ const InternalDashboard = () => {
       .from('clients')
       .select('*')
       .order('created_at', { ascending: false });
-      
+
     if (error) {
       console.error("❌ Gagal narik data Clients:", error);
       // alert("Error Database: " + error.message);
@@ -142,10 +142,10 @@ const InternalDashboard = () => {
     if (!error) setAllUsers(data || []);
   };
 
-  const [globalStats, setGlobalStats] = useState({ 
-    totalRevenue: 0, 
-    totalOrders: 0, 
-    activeUsers: 0, 
+  const [globalStats, setGlobalStats] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    activeUsers: 0,
     activePartners: 0,
     totalPaid: 0,
     totalPending: 0
@@ -157,7 +157,7 @@ const InternalDashboard = () => {
       const { count: uCount } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
       const { count: pCount } = await supabase.from('partners').select('*', { count: 'exact', head: true });
       const { data: pays } = await supabase.from('payouts').select('amount, status');
-      
+
       const revenue = (ords || []).reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0);
       const paid = (pays || []).filter(p => p.status === 'paid').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       const pending = (pays || []).filter(p => p.status === 'pending').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
@@ -191,12 +191,12 @@ const InternalDashboard = () => {
       .select('*')
       .eq('status', 'agreed')
       .order('agreed_at', { ascending: false });
-    
+
     if (!error) setPartnerApps(data || []);
   };
 
   const handleLogout = async () => {
-    if(window.confirm(t('confirmLogout') || 'Logout?')) {
+    if (window.confirm(t('confirmLogout') || 'Logout?')) {
       await supabase.auth.signOut().finally(() => {
         localStorage.clear();
         window.location.href = '/admin-login';
@@ -223,7 +223,7 @@ const InternalDashboard = () => {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(20);
-    
+
     if (error) {
       console.error("Fetch AI History Error:", error);
     } else {
@@ -259,7 +259,7 @@ const InternalDashboard = () => {
 
       for (const item of updates) {
         const oldValue = originalAiConfig[item.key];
-        
+
         // Only save to history if it's system_prompt or RAG and it has changed
         if ((item.key === 'system_prompt' || item.key === 'rag_knowledge_base') && oldValue !== item.value) {
           console.log(`Version change detected for ${item.key}. Saving history...`);
@@ -278,7 +278,7 @@ const InternalDashboard = () => {
         }, { onConflict: 'key' });
         if (error) throw error;
       }
-      
+
       setOriginalAiConfig(aiConfig);
       await fetchAiHistory();
       alert(t('configUpdated'));
@@ -305,7 +305,11 @@ const InternalDashboard = () => {
 
       if (rpcError) throw rpcError;
 
-      alert(`Sukses! Partner & User Aktif. Password: ${generatedPassword}`);
+      setActivationSuccess({
+        email: selectedPartnerApp.email,
+        password: generatedPassword
+      });
+      toast.success('Partner Activated Successfully!');
       setShowApproveModal(false);
       setSelectedPartnerApp(null);
       setGeneratedPassword('');
@@ -313,7 +317,7 @@ const InternalDashboard = () => {
       await fetchClients();
     } catch (err) {
       console.error("Partner Activation Error:", err);
-      alert("Gagal Aktivasi Partner: " + err.message);
+      toast.error('Gagal Aktivasi Partner: ' + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -321,7 +325,7 @@ const InternalDashboard = () => {
 
   const handleApprove = async (client) => {
     if (!client) return;
-    
+
     if (!window.confirm(`EMERGENCY APPROVE: Setujui pendaftaran ${client.shop_name} & Berikan Bonus Ultimate?`)) return;
 
     const newPassword = generateSecurePassword();
@@ -378,13 +382,13 @@ const InternalDashboard = () => {
       }
 
       alert(`Reminder sent to ${client.partners?.full_name}`);
-      
+
       if (user?.id) {
         await supabase.from('ai_usage_logs').insert([{
-            user_id: user.id,
-            feature: 'admin_remind_partner',
-            prompt: `Remind ${client.partners?.full_name}`,
-            response: 'SUCCESS'
+          user_id: user.id,
+          feature: 'admin_remind_partner',
+          prompt: `Remind ${client.partners?.full_name}`,
+          response: 'SUCCESS'
         }]);
       }
     } catch (err) {
@@ -423,10 +427,10 @@ const InternalDashboard = () => {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
-        
+
         const targetUser = authUser || (isAdmin ? { email: 'admin@tokcer-ai.com', id: 'admin-bypass' } : null);
         setUser(targetUser);
-        
+
         // Fetch sequentially to prevent total failure if one fails
         await fetchClients();
         await fetchPartners();
@@ -460,7 +464,7 @@ const InternalDashboard = () => {
   }, [adminClients]);
 
   const getTierBadgeClass = (tier) => {
-    switch(tier?.toLowerCase()) {
+    switch (tier?.toLowerCase()) {
       case 'platinum': return 'bg-blue-900/30 text-blue-400 border border-blue-500/20';
       case 'gold': return 'bg-amber-900/30 text-amber-400 border border-amber-500/20';
       case 'silver': return 'bg-zinc-700 text-zinc-300 border border-zinc-600';
@@ -502,10 +506,10 @@ const InternalDashboard = () => {
   return (
     <div className="flex h-screen bg-black text-white font-['Inter',sans-serif] overflow-hidden animate-in fade-in duration-700">
       <InternalSidebar t={t} activeSection={activeSection} setActiveSection={setActiveSection} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} lang={lang} toggleLang={toggleLang} handleLogout={handleLogout} adminClients={adminClients} partnerApps={partnerApps} tickets={tickets} />
-      
+
       <main className="flex-1 flex flex-col min-w-0 bg-black overflow-hidden relative">
         <InternalHeader t={t} activeSection={activeSection} setIsSidebarOpen={setIsSidebarOpen} />
-        
+
         <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
           {renderSection()}
         </div>

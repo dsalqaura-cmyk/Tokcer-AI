@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
 
+import { sendRegistrationConfirmation } from '../../utils/email';
+
 const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const { t } = useLandingTranslation();
   const navigate = useNavigate();
@@ -108,6 +110,10 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
           metadata: { store_links: storeLinks }
         }]);
         if (error) throw error;
+        
+        // Kirim email konfirmasi pendaftaran
+        await sendRegistrationConfirmation({ email, nama, plan: 'starter' });
+        
         setStatus('success');
         return;
       }
