@@ -154,8 +154,6 @@ const BusinessInsightSection = ({ t }) => {
       - Partner Data: ${partnerCSV ? JSON.stringify(partnerCSV.slice(0, 5)) : 'No custom partner data'}
       - User/Market Report Data: ${userNeedsCSV ? JSON.stringify(userNeedsCSV.slice(0, 5)) : 'No custom user needs'}
       
-      COMPARE WITH PREVIOUS: ${prevReport ? `Prev Income: ${prevReport.gross_income_idr}` : 'First Report'}
-
       PLEASE PROVIDE EXECUTIVE SUMMARY IN JSON WITH THESE KEYS:
       "financial_health": (Point List based on Part 1),
       "subscriber_movement": (Point List based on Part 2),

@@ -140,7 +140,7 @@ serve(async (req) => {
 
             await supabaseClient.from('profiles').update({ 
                 subscription_plan: trx.plan_name.toLowerCase(),
-                ai_tokens: trx.tokens_to_add || 0 
+                ai_credits_remaining: trx.tokens_to_add || 0 
             }).eq('id', targetUserId);
         }
       }

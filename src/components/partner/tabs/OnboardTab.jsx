@@ -114,30 +114,42 @@ const OnboardTab = ({
             </div>
           </div>
 
-          <div className="space-y-4">
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('paymentProof')}</label>
-            <div className="relative group/upload">
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={(e) => setForm({...form, paymentProof: e.target.files[0]})}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              />
-              <div className="border-2 border-dashed border-zinc-800 group-hover/upload:border-orange-500/30 rounded-3xl p-10 flex flex-col items-center justify-center transition-all bg-white/[0.01] group-hover/upload:bg-orange-500/[0.02]">
-                <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-4 group-hover/upload:scale-110 transition-transform">
-                  <iconify-icon icon="solar:upload-bold-duotone" className="text-3xl text-orange-500"></iconify-icon>
+          {form.paymentMethod === 'transfer' ? (
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">{t('paymentProof')}</label>
+              <div className="relative group/upload">
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setForm({...form, paymentProof: e.target.files[0]})}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div className="border-2 border-dashed border-zinc-800 group-hover/upload:border-orange-500/30 rounded-3xl p-10 flex flex-col items-center justify-center transition-all bg-white/[0.01] group-hover/upload:bg-orange-500/[0.02]">
+                  <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-4 group-hover/upload:scale-110 transition-transform">
+                    <iconify-icon icon="solar:upload-bold-duotone" className="text-3xl text-orange-500"></iconify-icon>
+                  </div>
+                  <div className="text-xs font-bold text-zinc-300 mb-1">
+                    {form.paymentProof ? (
+                      <span className="text-orange-400">{t('uploadSuccess')} {form.paymentProof.name}</span>
+                    ) : (
+                      <span>{t('uploadPrompt')}</span>
+                    )}
+                  </div>
+                  <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{t('uploadTypes')}</div>
                 </div>
-                <div className="text-xs font-bold text-zinc-300 mb-1">
-                  {form.paymentProof ? (
-                    <span className="text-orange-400">{t('uploadSuccess')} {form.paymentProof.name}</span>
-                  ) : (
-                    <span>{t('uploadPrompt')}</span>
-                  )}
-                </div>
-                <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{t('uploadTypes')}</div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-orange-600/5 border border-orange-600/20 rounded-3xl p-6 flex items-center gap-4 animate-in zoom-in-95">
+              <div className="w-12 h-12 bg-orange-600/20 rounded-xl flex items-center justify-center shrink-0">
+                <iconify-icon icon="solar:shield-check-bold-duotone" className="text-2xl text-orange-500"></iconify-icon>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-white uppercase tracking-widest">Otomatisasi Midtrans Aktif</p>
+                <p className="text-[10px] text-zinc-500 font-medium">Sistem akan otomatis mengirimkan link pembayaran & kode QRIS ke email calon user. Tidak perlu upload bukti transfer.</p>
+              </div>
+            </div>
+          )}
 
           <button 
             type="submit"
@@ -147,7 +159,7 @@ const OnboardTab = ({
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             ) : (
-              t('submitOnboard')
+              form.paymentMethod === 'transfer' ? t('submitOnboard') : 'Generate Link & Kirim Email'
             )}
           </button>
         </form>

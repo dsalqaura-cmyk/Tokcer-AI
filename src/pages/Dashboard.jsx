@@ -393,19 +393,21 @@ const Dashboard = () => {
             const userPrompt = `Generate analytics insight for my shop selling ${bizType}. I have ${recentOrdersCount} recent orders and these products: ${productNames}.`;
             
             const result = await callAiEngine(systemPrompt, userPrompt, null, 2048, 0.5);
-            const cleanJson = result.replace(/```json|```/g, '').trim();
+            const cleanJson = result.text.replace(/```json|```/g, '').trim();
             const data = JSON.parse(cleanJson);
             setAnalyticsInsight(data);
             localStorage.setItem(cacheKey, JSON.stringify(data));
         } catch (err) {
             console.error("Analytics Analysis Error:", err);
-            // Fallback empty data to prevent crash
-            setAnalyticsInsight({
-                ads_opt: { golden_hours: "19:00 - 21:00", strategy: "Fokus pada flash sale malam hari." },
-                bundling: [{ title: "Paket Hemat", desc: "Bundling produk terlaris dengan pelengkap." }],
-                market_pulse: { hot_idea: "Live Streaming", hot_desc: "Tingkatkan interaksi via Live.", content_tip: "Video Unboxing", content_desc: "Buat konten unboxing estetik." },
-                pricing: { potential_profit: "Rp 0", tip: "Lakukan riset harga kompetitor.", margin_increase: "0%" }
-            });
+            // Fallback empty data and STILL CACHE IT to prevent immediate retry loop
+            const fallback = {
+                ads_opt: { golden_hours: "19:00 - 21:00", strategy: "Gunakan data historis untuk optimasi iklan." },
+                bundling: [{ title: "Paket Rekomendasi", desc: "Bundling produk pelengkap." }],
+                market_pulse: { hot_idea: "Peningkatan Visual", hot_desc: "Perbaiki foto produk.", content_tip: "Video Review", content_desc: "Gunakan user-generated content." },
+                pricing: { potential_profit: "Rp 0", tip: "Pantau harga pasar.", margin_increase: "0%" }
+            };
+            setAnalyticsInsight(fallback);
+            localStorage.setItem(cacheKey, JSON.stringify(fallback));
         } finally {
             setIsAnalyzingAnalytics(false);
         }
@@ -437,17 +439,19 @@ const Dashboard = () => {
             const userPrompt = `Provide health recommendations for my shop based on current metrics.`;
             
             const result = await callAiEngine(systemPrompt, userPrompt, null, 2048, 0.5);
-            const cleanJson = result.replace(/```json|```/g, '').trim();
+            const cleanJson = result.text.replace(/```json|```/g, '').trim();
             const data = JSON.parse(cleanJson);
             const recommendations = data.recommendations || [];
             setHealthInsight(recommendations);
             localStorage.setItem(cacheKey, JSON.stringify(recommendations));
         } catch (err) {
             console.error("Health Analysis Error:", err);
-            setHealthInsight([
+            const fallback = [
                 lang === 'id' ? "Pertahankan performa chat Anda yang sudah baik." : "Maintain your excellent chat performance.",
                 lang === 'id' ? "Coba percepat waktu pengemasan di akhir pekan." : "Try to speed up packing time during weekends."
-            ]);
+            ];
+            setHealthInsight(fallback);
+            localStorage.setItem(cacheKey, JSON.stringify(fallback));
         } finally {
             setIsAnalyzingHealth(false);
         }
@@ -488,10 +492,12 @@ const Dashboard = () => {
             localStorage.setItem(cacheKey, JSON.stringify(data));
         } catch (err) {
             console.error("Briefing Error:", err);
-            setSystemBriefing([
+            const fallback = [
                 { title: "Sistem Optimal", desc: "Seluruh integrasi toko Anda berjalan lancar hari ini.", type: "success", time: "Baru saja" },
                 { title: "Tips Pertumbuhan", desc: "Gunakan Market Intel untuk mencari tren produk terbaru.", type: "info", time: "1 jam lalu" }
-            ]);
+            ];
+            setSystemBriefing(fallback);
+            localStorage.setItem(cacheKey, JSON.stringify(fallback));
         } finally {
             setIsFetchingBriefing(false);
         }
@@ -968,11 +974,22 @@ const Dashboard = () => {
       localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (e) {
       console.error("Fetch Trends Error:", e);
-      // Fallback
-      setViralTopics([
-        { topic: 'Local Pride Brand', platform: 'TikTok', trend_percent: '+120%', color_class: 'text-orange-500' },
-        { topic: 'Budget Skincare', platform: 'Shopee', trend_percent: '+88%', color_class: 'text-pink-500' }
-      ]);
+      const todayStr = new Date().toISOString().split('T')[0];
+      const fallbackData = {
+          topics: [
+            { topic: 'Local Pride Brand', platform: 'TikTok', trend_percent: '+120%', color_class: 'text-orange-500' },
+            { topic: 'Budget Skincare', platform: 'Shopee', trend_percent: '+88%', color_class: 'text-pink-500' }
+          ],
+          summary: 'Sistem sedang memantau tren pasar secara otomatis.'
+      };
+      
+      setViralTopics(fallbackData.topics);
+      setLiveSummary(fallbackData.summary);
+      
+      if (user?.id) {
+          const cacheKey = `tokcer_cache_global_trends_${user.id}_${todayStr}`;
+          localStorage.setItem(cacheKey, JSON.stringify(fallbackData));
+      }
     } finally {
       setIsFetchingTrends(false);
     }

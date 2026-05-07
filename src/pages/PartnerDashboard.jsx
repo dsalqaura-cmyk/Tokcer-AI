@@ -187,21 +187,13 @@ const PartnerDashboard = () => {
         throw new Error("Identitas Anda tidak terdeteksi. Mohon Logout lalu Login kembali.");
       }
 
-      if (!onboardForm.paymentProof) throw new Error("Harap upload bukti pembayaran.");
-
-      const file = onboardForm.paymentProof;
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      const filePath = `payment-proofs/${targetUser.id}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage.from('payment-proofs').upload(filePath, file);
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
-
       const rawPackage = onboardForm.package;
       let finalPlan = rawPackage;
       let billingCycle = 'Monthly';
+      let amount = 0;
+      let tokens = 0;
 
+      // 1. Calculate Plan & Amount
       if (rawPackage.includes('_')) {
         const [plan, cycle] = rawPackage.split('_');
         finalPlan = plan;
@@ -211,6 +203,90 @@ const PartnerDashboard = () => {
         billingCycle = 'Monthly';
       }
 
+      // Mapping Harga & Token (Sesuai Paket)
+      const packageMap = {
+        'starter': { price: 0, tokens: 100 },
+        'pro_monthly': { price: 499000, tokens: 500000 },
+        'pro_yearly': { price: 5489000, tokens: 6000000 },
+        'elite_monthly': { price: 999000, tokens: 1000000 },
+        'elite_yearly': { price: 10989000, tokens: 12000000 },
+        'ultimate_monthly': { price: 1999000, tokens: 5000000 },
+        'ultimate_yearly': { price: 21989000, tokens: 60000000 }
+      };
+
+      const selectedPkg = packageMap[rawPackage] || { price: 0, tokens: 0 };
+      amount = selectedPkg.price;
+      tokens = selectedPkg.tokens;
+
+      let publicUrl = null;
+      let midtransOrderId = null;
+      let paymentUrl = null;
+
+      // 2. FLOW MANUAL (TRANSFER)
+      if (onboardForm.paymentMethod === 'transfer') {
+        if (!onboardForm.paymentProof) throw new Error("Harap upload bukti pembayaran.");
+        const file = onboardForm.paymentProof;
+        const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        const filePath = `payment-proofs/${targetUser.id}/${fileName}`;
+        const { error: uploadError } = await supabase.storage.from('payment-proofs').upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl: url } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
+        publicUrl = url;
+      } 
+      // 3. FLOW OTOMATIS (MIDTRANS)
+      else {
+        // Panggil Edge Function midtrans-init
+        const { data: midtrans, error: midError } = await supabase.functions.invoke('midtrans-init', {
+          body: {
+            plan_name: finalPlan,
+            amount: amount,
+            tokens: tokens,
+            is_sandbox: true, // Ubah ke false untuk Production
+            user_data: {
+              email: onboardForm.email,
+              nama: onboardForm.shopName,
+              phone: onboardForm.whatsapp
+            }
+          }
+        });
+
+        if (midError) throw new Error(`Midtrans Error: ${midError.message}`);
+        
+        midtransOrderId = midtrans.orderId;
+        paymentUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${midtrans.token}`;
+
+        // Kirim Email Instruksi Bayar (Email 1)
+        if (import.meta.env.VITE_RESEND_API_KEY) {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_RESEND_API_KEY}`
+            },
+            body: JSON.stringify({
+              from: 'Tokcer AI <billing@tokcer-ai.com>',
+              to: [onboardForm.email],
+              subject: '🏮 Instruksi Pembayaran Tokcer AI',
+              html: `
+                <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border-radius: 24px; border: 1px solid #222;">
+                  <img src="https://staging.tokcer-ai.com/logo.png" style="height: 40px; margin-bottom: 30px;">
+                  <h2 style="font-weight: 900;">Halo, ${onboardForm.shopName}!</h2>
+                  <p style="color: #888;">Partner kami telah mendaftarkan toko Anda. Silakan selesaikan pembayaran untuk mengaktifkan akun Anda.</p>
+                  <div style="background: #111; padding: 25px; border-radius: 16px; margin: 20px 0; border: 1px dashed #333;">
+                    <p style="margin: 0; color: #555; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Tagihan Anda</p>
+                    <p style="font-size: 24px; font-weight: 900; margin: 10px 0; color: #f97316;">Rp ${amount.toLocaleString('id-ID')}</p>
+                    <p style="margin: 0; color: #aaa; font-size: 13px;">Paket: ${finalPlan.toUpperCase()} (${billingCycle})</p>
+                  </div>
+                  <a href="${paymentUrl}" style="display: inline-block; background: #f97316; color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 900; margin-top: 20px;">BAYAR SEKARANG (QRIS/VA)</a>
+                  <p style="margin-top: 30px; font-size: 12px; color: #444;">Link ini akan kadaluarsa dalam 24 jam.</p>
+                </div>
+              `
+            })
+          });
+        }
+      }
+
+      // 4. Catat ke Tabel Clients
       const { error: insertError } = await supabase.from('clients').insert([{
         partner_id: user.id === 'admin-bypass' ? null : user.id,
         shop_name: onboardForm.shopName,
@@ -220,13 +296,20 @@ const PartnerDashboard = () => {
         billing_cycle: billingCycle,
         payment_method: onboardForm.paymentMethod,
         payment_proof_url: publicUrl,
-        status: 'pending',
+        midtrans_order_id: midtransOrderId,
+        payment_url: paymentUrl,
+        status: onboardForm.paymentMethod === 'transfer' ? 'pending' : 'waiting_payment',
         ref: partnerData.full_name || 'Partner'
       }]);
 
       if (insertError) throw insertError;
 
-      alert("Pendaftaran toko berhasil! Menunggu verifikasi admin.");
+      const successMsg = onboardForm.paymentMethod === 'transfer' 
+        ? "Pendaftaran berhasil! Menunggu verifikasi admin." 
+        : "Link pembayaran telah dikirim ke email calon user!";
+      
+      alert(successMsg);
+      
       setOnboardForm({
         shopName: '',
         email: '',
