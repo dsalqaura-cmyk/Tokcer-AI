@@ -1,8 +1,19 @@
 -- ============================================================
--- 🏮 TOKCER AI: EMAIL ROBOTS STABILIZATION (v4)
--- Fokus: Pendaftaran Partner & User Starter Confirmation
+-- 🏮 TOKCER AI: EMAIL ROBOTS STABILIZATION (v4.1)
+-- Fokus: Hardening Trigger Partner & Debugging Log
 -- Tanggal: 7 Mei 2026
 -- ============================================================
+
+-- 0. TABEL DEBUG (Untuk melihat error jika email gagal)
+CREATE TABLE IF NOT EXISTS public.email_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    recipient TEXT,
+    subject TEXT,
+    status_code TEXT,
+    error_message TEXT,
+    request_id TEXT
+);
 
 -- 1. FUNGSI: SEND AGREEMENT EMAIL (Langkah 1 Pendaftaran Partner)
 CREATE OR REPLACE FUNCTION public.fn_send_agreement_email()
@@ -13,15 +24,25 @@ AS $$
 DECLARE
   v_resend_api_key TEXT;
   v_agreement_url TEXT;
+  v_http_response_id TEXT;
 BEGIN
-    -- Ambil API Key Resend
-    SELECT value INTO v_resend_api_key FROM public.ai_configs WHERE key = 'resend_api_key';
-    
-    -- Link Agreement (Gunakan staging sesuai blueprint)
-    v_agreement_url := 'https://staging.tokcer-ai.com/partner-agreement?id=' || NEW.id;
+    -- Ambil API Key (Cek Partner Key dulu, fallback ke General)
+    SELECT value INTO v_resend_api_key 
+    FROM public.ai_configs 
+    WHERE key = 'resend_api_key_partner';
 
-    IF v_resend_api_key IS NOT NULL AND v_resend_api_key <> '' THEN
-      PERFORM net.http_post(
+    IF v_resend_api_key IS NULL OR v_resend_api_key = '' THEN
+        SELECT value INTO v_resend_api_key FROM public.ai_configs WHERE key = 'resend_api_key';
+    END IF;
+    
+    -- Link Agreement (Gunakan staging, cast ID ke text)
+    v_agreement_url := 'https://staging.tokcer-ai.com/partner-agreement?id=' || NEW.id::text;
+
+    -- Kirim Email jika Key ada
+    IF v_resend_api_key IS NOT NULL AND v_resend_api_key <> '' AND v_resend_api_key NOT LIKE '%mock%' THEN
+      
+      -- Gunakan net.http_post (Asynchronous)
+      SELECT net.http_post(
         url := 'https://api.resend.com/emails',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
@@ -56,32 +77,33 @@ BEGIN
                 </a>
               </div>
               
-              <p style="font-size: 12px; line-height: 1.6; color: #4b5563; margin-top: 40px; text-align: center;">
-                Jika tombol tidak berfungsi, copy-paste link berikut ke browser Anda:<br>
-                <span style="color: #6b7280;">' || v_agreement_url || '</span>
-              </p>
-              
               <div style="margin-top: 60px; padding-top: 24px; border-top: 1px solid #1f2937; text-align: center;">
                 <p style="font-size: 11px; color: #4b5563;">&copy; 2026 Tokcer AI - Global Partner Program. All rights reserved.</p>
               </div>
             </div>'
         )
-      );
+      ) INTO v_http_response_id;
+
+      -- Log Aktivitas
+      INSERT INTO public.email_logs (recipient, subject, request_id)
+      VALUES (NEW.email, 'Agreement Partner', v_http_response_id);
+
+    ELSE
+      -- Log Error jika API Key bermasalah
+      INSERT INTO public.email_logs (recipient, subject, error_message)
+      VALUES (NEW.email, 'Agreement Partner', 'Resend API Key tidak ditemukan atau masih Mock Key');
     END IF;
 
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    -- Log jika terjadi error sistem
+    INSERT INTO public.email_logs (recipient, subject, error_message)
+    VALUES (NEW.email, 'Agreement Partner', SQLERRM);
     RETURN NEW;
 END;
 $$;
 
--- TRIGGER: Jalankan saat pendaftaran partner baru (INSERT)
-DROP TRIGGER IF EXISTS tr_send_agreement_email ON public.partner_applications;
-CREATE TRIGGER tr_send_agreement_email
-AFTER INSERT ON public.partner_applications
-FOR EACH ROW
-EXECUTE FUNCTION public.fn_send_agreement_email();
-
-
--- 2. FUNGSI: NOTIFY ADMIN REVIEW (Setelah Partner Tanda Tangan)
+-- 2. FUNGSI: NOTIFY ADMIN REVIEW
 CREATE OR REPLACE FUNCTION public.fn_notify_admin_review()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -89,14 +111,18 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_resend_api_key TEXT;
+  v_http_response_id TEXT;
 BEGIN
     -- Trigger hanya jika status berubah dari 'pending' ke 'agreed'
     IF NEW.status = 'agreed' AND OLD.status = 'pending' THEN
         
-        SELECT value INTO v_resend_api_key FROM public.ai_configs WHERE key = 'resend_api_key';
+        SELECT value INTO v_resend_api_key FROM public.ai_configs WHERE key = 'resend_api_key_partner';
+        IF v_resend_api_key IS NULL OR v_resend_api_key = '' THEN
+            SELECT value INTO v_resend_api_key FROM public.ai_configs WHERE key = 'resend_api_key';
+        END IF;
 
-        IF v_resend_api_key IS NOT NULL AND v_resend_api_key <> '' THEN
-          PERFORM net.http_post(
+        IF v_resend_api_key IS NOT NULL AND v_resend_api_key <> '' AND v_resend_api_key NOT LIKE '%mock%' THEN
+          SELECT net.http_post(
             url := 'https://api.resend.com/emails',
             headers := jsonb_build_object(
               'Content-Type', 'application/json',
@@ -123,16 +149,15 @@ BEGIN
                     </p>
                   </div>
                   
-                  <p style="font-size: 14px; line-height: 1.6; color: #9ca3af; text-align: center;">
-                    Instruksi login dan password akan dikirimkan ke email ini setelah verifikasi selesai.
-                  </p>
-                  
                   <div style="margin-top: 60px; padding-top: 24px; border-top: 1px solid #1f2937; text-align: center;">
                     <p style="font-size: 11px; color: #4b5563;">&copy; 2026 Tokcer AI. All rights reserved.</p>
                   </div>
                 </div>'
             )
-          );
+          ) INTO v_http_response_id;
+
+          INSERT INTO public.email_logs (recipient, subject, request_id)
+          VALUES (NEW.email, 'Admin Review Notification', v_http_response_id);
         END IF;
     END IF;
 
@@ -140,7 +165,13 @@ BEGIN
 END;
 $$;
 
--- TRIGGER: Jalankan saat status berubah menjadi 'agreed'
+-- RE-ENABLE TRIGGERS
+DROP TRIGGER IF EXISTS tr_send_agreement_email ON public.partner_applications;
+CREATE TRIGGER tr_send_agreement_email
+AFTER INSERT ON public.partner_applications
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_send_agreement_email();
+
 DROP TRIGGER IF EXISTS tr_notify_admin_review ON public.partner_applications;
 CREATE TRIGGER tr_notify_admin_review
 AFTER UPDATE ON public.partner_applications
