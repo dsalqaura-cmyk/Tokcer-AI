@@ -231,6 +231,11 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
               <input type="email" name="email" required className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:ring-2 focus:ring-orange-500/50 outline-none" placeholder="email@example.com" />
             </div>
 
+            <div>
+              <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Kode Partner (Opsional)</label>
+              <input type="text" value={affiliateId} onChange={(e) => setAffiliateId(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm focus:ring-2 focus:ring-orange-500/50 outline-none" placeholder="Contoh: TKC-AGR-128258" />
+            </div>
+
             {/* Plan Selection */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
