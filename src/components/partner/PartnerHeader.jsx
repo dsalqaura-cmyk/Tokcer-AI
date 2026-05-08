@@ -9,7 +9,7 @@ const PartnerHeader = ({
   setActiveTab, 
   setIsMobileMenuOpen 
 }) => {
-  const tabs = ['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'academy', 'profile'];
+  const tabs = ['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'academy', 'profile', 'commissionScheme'];
 
   return (
     <>
@@ -81,6 +81,7 @@ const PartnerHeader = ({
                   tab === 'payment' ? 'solar:card-transfer-bold-duotone' :
                   tab === 'support' ? 'solar:chat-round-dots-bold-duotone' :
                   tab === 'profile' ? 'solar:user-id-bold-duotone' :
+                  tab === 'commissionScheme' ? 'solar:money-bag-bold-duotone' :
                   'solar:notebook-bold-duotone'
                 } className={`text-lg ${activeTab === tab ? 'text-orange-500' : 'text-zinc-600 group-hover:text-zinc-300'}`}></iconify-icon>
                 {t(tab)}
