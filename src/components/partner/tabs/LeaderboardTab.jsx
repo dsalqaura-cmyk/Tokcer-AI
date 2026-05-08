@@ -3,14 +3,15 @@ import React from 'react';
 const LeaderboardTab = ({ 
   t, 
   lang, 
-  data, 
-  countdown, 
+  data = [], 
+  countdown = '00:00:00:00', 
   formatCurrency,
   leaderboardFilter,
-  setLeaderboardFilter
+  setLeaderboardFilter,
+  totalPeriodClosings = 0
 }) => {
-  // Helper to split countdown string
-  const parts = countdown.split(':');
+  // Helper to split countdown string safely
+  const parts = (countdown || '00:00:00:00').split(':');
   const countdownObj = {
     days: parts[0] || '00',
     hours: parts[1] || '00',
