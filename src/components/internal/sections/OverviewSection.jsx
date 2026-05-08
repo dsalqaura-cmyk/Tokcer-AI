@@ -97,21 +97,41 @@ const OverviewSection = ({
     if (diffHours < 24) return `${diffHours}h ago`;
     return `${diffDays}d ago`;
   };
-
-  // Subscription Revenue
-  const subscriptionRevenue = adminClients
-    .filter(c => c.status === 'active')
-    .reduce((acc, c) => {
-      let basePrice = 0;
-      if (c.plan === 'ultimate') basePrice = 1999000;
-      else if (c.plan === 'elite') basePrice = 999000;
-      else if (c.plan === 'pro') basePrice = 499000;
+  // Subscription Revenue based on period
+  const getFilteredClients = () => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    return adminClients.filter(c => {
+      if (c.status !== 'active') return false;
+      const dateStr = c.created_at;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
       
-      const isYearly = c.billing_cycle === 'Yearly';
-      const finalPrice = isYearly ? (basePrice * 11) : basePrice;
+      if (revenuePeriod === 'daily') {
+        return d >= today;
+      } else if (revenuePeriod === 'weekly') {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return d >= weekAgo;
+      } else if (revenuePeriod === 'monthly') {
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return d >= monthAgo;
+      }
+      return true;
+    });
+  };
 
-      return acc + finalPrice;
-    }, 0);
+  const periodRevenue = getFilteredClients().reduce((acc, c) => {
+    let basePrice = 0;
+    if (c.plan === 'ultimate') basePrice = 1999000;
+    else if (c.plan === 'elite') basePrice = 999000;
+    else if (c.plan === 'pro') basePrice = 499000;
+    
+    const isYearly = c.billing_cycle === 'Yearly';
+    return acc + (isYearly ? (basePrice * 11) : basePrice);
+  }, 0);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -132,7 +152,8 @@ const OverviewSection = ({
           <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('grossIncome')}</p>
             <h2 className="text-2xl font-black text-white tracking-tighter">Rp {new Intl.NumberFormat('id-ID').format(globalStats.totalRevenue || 0)}</h2>
-            <div className="mt-4 flex items-center gap-2">
+            <p className="text-[10px] font-bold text-blue-400 mt-1">Periode ini: Rp {new Intl.NumberFormat('id-ID').format(periodRevenue)}</p>
+            <div className="mt-3 flex items-center gap-2">
                 <span className="text-[9px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded tracking-widest">SUBSCRIPTION</span>
             </div>
           </div>
