@@ -840,8 +840,14 @@ const Dashboard = () => {
       const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
-      // 3. CALL AI ENGINE
-      const { text: result, usage } = await callAiEngine(fullSystemPrompt, userMessage, null, 2048, 0.8);
+      // 3. Tentukan Max Tokens Dinamis (Biar Hemat)
+      let computedMaxTokens = 2048;
+      if (aiFormat.includes('Description') || aiFormat.includes('Deskripsi') || aiFormat.includes('Caption')) {
+        computedMaxTokens = 500;
+      }
+
+      // 4. CALL AI ENGINE
+      const { text: result, usage } = await callAiEngine(fullSystemPrompt, userMessage, null, computedMaxTokens, 0.8);
       
       setAiResult(result);
 
