@@ -257,7 +257,7 @@ const PartnerDashboard = () => {
 
         // Kirim Email Instruksi Bayar (Email 1)
         if (import.meta.env.VITE_RESEND_API_KEY) {
-          await fetch('https://api.resend.com/emails', {
+          const resendResponse = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -283,6 +283,11 @@ const PartnerDashboard = () => {
               `
             })
           });
+
+          if (!resendResponse.ok) {
+            const errorText = await resendResponse.text();
+            throw new Error(`Gagal kirim email: ${errorText}`);
+          }
         }
       }
 
