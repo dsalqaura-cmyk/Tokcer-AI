@@ -10,11 +10,18 @@ Dokumentasi ini menjelaskan logika bisnis, sistem komisi, dan pencatatan referra
 
 ---
 
-## 2. Sistem Komisi (FLAT RATE) - *Bukan Persentase!*
-Mengikuti aturan baku yang tertulis di file perjanjian partner (`PartnerAgreement.jsx`):
-*   **Bukan Persentase:** Komisi partner **TIDAK DIHITUNG** berdasarkan persentase (misal 20%), melainkan menggunakan **Angka Tetap (Flat Rate)**.
-*   **Sumber Data:** Nominal rupiah komisi ditarik dari database pada tabel `ai_configs` (kunci: `commission_rates_v3`) berdasarkan kombinasi **Pangkat Partner** (Bronze, Silver, Gold, Platinum) dan **Paket yang dibeli user**.
-*   **Akumulasi Saldo:** Setiap kali ada user referral yang aktif, nominal komisi tersebut ditambahkan ke kolom `total_omzet` di tabel `partners`. Angka inilah yang menjadi saldo berjalan partner.
+## 2. Sistem Komisi (FLAT RATE)
+Mengikuti aturan baku yang tertulis di file perjanjian partner:
+*   **Bukan Persentase Langsung:** Komisi partner tidak dihitung dinamis dari persentase saat transaksi, melainkan menggunakan **Angka Tetap (Flat Rate)** yang dihitung dari persentase acuan.
+*   **Tabel Komisi (Acuan Ultimate Rp 1.999.000):**
+
+| Plan | Bronze | Silver | Gold | Platinum |
+|---|---|---|---|---|
+| **Pro** | Rp 100.000 | Rp 100.000 | Rp 100.000 | Rp 100.000 |
+| **Elite** | Rp 119.600 | Rp 149.600 | Rp 179.500 | Rp 199.400 |
+| **Ultimate** | Rp 200.000 | Rp 240.000 | Rp 300.000 | Rp 360.000 |
+
+*   **Akumulasi Saldo:** Setiap kali ada user referral yang aktif, nominal komisi di atas ditambahkan ke kolom `total_omzet` di tabel `partners`.
 
 ---
 

@@ -19,6 +19,13 @@ const AccountingSection = ({ t }) => {
   const [periodStart, setPeriodStart] = useState(new Date().toISOString().split('T')[0]);
   const [periodEnd, setPeriodEnd] = useState(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
 
+  // Auto-update harga berdasarkan pilihan paket
+  useEffect(() => {
+    if (incomePlan === 'pro') setIncomeAmount(499000);
+    else if (incomePlan === 'elite') setIncomeAmount(999000);
+    else if (incomePlan === 'ultimate') setIncomeAmount(1999000);
+  }, [incomePlan]);
+
   // State untuk Form Expense
   const [expenseCategory, setExpenseCategory] = useState('web_hosting');
   const [expenseVendor, setExpenseVendor] = useState('');
