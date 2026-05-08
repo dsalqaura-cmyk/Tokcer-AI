@@ -3,20 +3,25 @@ import React, { useState } from 'react';
 const PartnerSection = ({ 
   t, 
   adminPartners = [], 
+  adminClients = [],
+  globalStats = {},
   getTierBadgeClass 
 }) => {
   const [selectedPartner, setSelectedPartner] = useState(null);
+
+  // Hitung total referral riil dari jumlah klien yang memiliki partner
+  const realTotalReferrals = adminClients.filter(c => c.partners).length;
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">{t('totalReferrals')}</p>
-           <h3 className="text-3xl font-black text-white tracking-tighter">{adminPartners.reduce((acc, p) => acc + (p.referrals || 0), 0)}</h3>
+           <h3 className="text-3xl font-black text-white tracking-tighter">{realTotalReferrals}</h3>
         </div>
         <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">{t('networkPayouts')}</p>
-           <h3 className="text-3xl font-black text-green-500 tracking-tighter">Rp 0</h3>
+           <h3 className="text-3xl font-black text-green-500 tracking-tighter">Rp {new Intl.NumberFormat('id-ID').format(globalStats.totalPaid || 0)}</h3>
         </div>
         <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">ACTIVE PARTNERS</p>

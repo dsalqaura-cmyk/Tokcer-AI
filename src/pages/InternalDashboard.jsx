@@ -489,7 +489,7 @@ const InternalDashboard = () => {
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':
-        return <PartnerSection t={t} adminPartners={adminPartners} getTierBadgeClass={getTierBadgeClass} />;
+        return <PartnerSection t={t} adminPartners={adminPartners} adminClients={adminClients} globalStats={globalStats} getTierBadgeClass={getTierBadgeClass} />;
       case 'payouts':
         return <PayoutSection t={t} />;
       case 'tickets':
