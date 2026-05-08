@@ -49,6 +49,19 @@ const PartnerSection = ({
     }
   };
 
+  const handleViewDetail = () => {
+    if (!selectedPartner) return;
+    const myClients = adminClients.filter(c => c.partner_id === selectedPartner.id || c.ref === selectedPartner.full_name);
+    
+    if (myClients.length === 0) {
+      alert(`Partner ${selectedPartner.full_name} belum memiliki referral.`);
+      return;
+    }
+
+    const clientList = myClients.map(c => `- ${c.shop_name || c.email} (${c.plan || 'starter'})`).join('\n');
+    alert(`Daftar Referral untuk ${selectedPartner.full_name}:\n\n${clientList}`);
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -139,7 +152,7 @@ const PartnerSection = ({
             </div>
 
             <div className="space-y-3">
-              <button className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
+              <button onClick={handleViewDetail} className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
                 <iconify-icon icon="solar:eye-bold-duotone" className="text-xl text-blue-400 group-hover:scale-110 transition-transform"></iconify-icon>
                 <div className="text-left">
                   <p className="text-xs font-black uppercase tracking-wider">Lihat Detail / Aktivitas</p>
@@ -152,14 +165,6 @@ const PartnerSection = ({
                 <div className="text-left">
                   <p className="text-xs font-black uppercase tracking-wider">Ubah Tier Manual</p>
                   <p className="text-[10px] text-white/40">Naikkan pangkat ke Gold/Platinum</p>
-                </div>
-              </button>
-
-              <button className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
-                <iconify-icon icon="solar:wallet-bold-duotone" className="text-xl text-emerald-400 group-hover:scale-110 transition-transform"></iconify-icon>
-                <div className="text-left">
-                  <p className="text-xs font-black uppercase tracking-wider">Edit Data Rekening</p>
-                  <p className="text-[10px] text-white/40">Ubah bank & nomor rekening</p>
                 </div>
               </button>
 
