@@ -66,6 +66,7 @@ const InternalSidebar = ({
             { id: 'insight', label: t('businessInsight'), icon: 'solar:graph-bold-duotone' },
             { id: 'ai-gen', label: t('aiStrategy'), icon: 'solar:magic-stick-bold-duotone' },
             { id: 'token-audit', label: 'Token Audit & Billing', icon: 'solar:bill-list-bold-duotone' },
+            { id: 'accounting', label: 'Accounting', icon: 'solar:calculator-bold-duotone' },
             { id: 'supabase', label: t('supabase'), icon: 'solar:database-bold-duotone' }
           ].map((item) => (
             <button

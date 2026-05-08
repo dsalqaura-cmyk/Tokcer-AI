@@ -16,6 +16,7 @@ import SupabaseSection from '../components/internal/sections/SupabaseSection.jsx
 import PayoutSection from '../components/internal/sections/PayoutSection.jsx';
 import BusinessInsightSection from '../components/internal/sections/BusinessInsightSection.jsx';
 import TokenAuditSection from '../components/internal/sections/TokenAuditSection.jsx';
+import AccountingSection from '../components/internal/sections/AccountingSection.jsx';
 
 // Modals
 import UserQuickViewModal from '../components/internal/modals/UserQuickViewModal.jsx';
@@ -489,7 +490,7 @@ const InternalDashboard = () => {
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':
-        return <PartnerSection t={t} adminPartners={adminPartners} adminClients={adminClients} globalStats={globalStats} getTierBadgeClass={getTierBadgeClass} />;
+        return <PartnerSection t={t} adminPartners={adminPartners} adminClients={adminClients} globalStats={globalStats} getTierBadgeClass={getTierBadgeClass} fetchPartners={fetchPartners} />;
       case 'payouts':
         return <PayoutSection t={t} />;
       case 'tickets':
@@ -500,6 +501,8 @@ const InternalDashboard = () => {
         return <BusinessInsightSection t={t} />;
       case 'token-audit':
         return <TokenAuditSection t={t} />;
+      case 'accounting':
+        return <AccountingSection t={t} />;
       case 'supabase':
         return <SupabaseSection t={t} />;
       default:
