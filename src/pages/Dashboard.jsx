@@ -997,28 +997,6 @@ const Dashboard = () => {
       setIsFetchingTrends(false);
     }
   };
-    } catch (e) {
-      console.error("Fetch Trends Error:", e);
-      const todayStr = new Date().toISOString().split('T')[0];
-      const fallbackData = {
-          topics: [
-            { topic: 'Local Pride Brand', platform: 'TikTok', trend_percent: '+120%', color_class: 'text-orange-500' },
-            { topic: 'Budget Skincare', platform: 'Shopee', trend_percent: '+88%', color_class: 'text-pink-500' }
-          ],
-          summary: 'Sistem sedang memantau tren pasar secara otomatis.'
-      };
-      
-      setViralTopics(fallbackData.topics);
-      setLiveSummary(fallbackData.summary);
-      
-      if (user?.id) {
-          const cacheKey = `tokcer_cache_global_trends_${user.id}_${todayStr}`;
-          localStorage.setItem(cacheKey, JSON.stringify(fallbackData));
-      }
-    } finally {
-      setIsFetchingTrends(false);
-    }
-  };
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
