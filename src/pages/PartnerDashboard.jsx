@@ -204,20 +204,39 @@ const PartnerDashboard = () => {
         
         const { data: clients } = await supabase
           .from('clients')
-          .select('partner_id, plan, partners(full_name, tier)')
+          .select('partner_id, plan')
           .eq('status', 'active')
           .gte('created_at', start)
           .lte('created_at', end);
           
+        const partnerIds = [...new Set((clients || []).map(c => c.partner_id).filter(Boolean))];
+        
+        let partners = [];
+        if (partnerIds.length > 0) {
+          const { data } = await supabase
+            .from('partners')
+            .select('id, full_name, tier')
+            .in('id', partnerIds);
+          partners = data || [];
+        }
+        
+        const partnersMap = {};
+        partners.forEach(p => {
+          partnersMap[p.id] = p;
+        });
+        
         const partnerScores = {};
         (clients || []).forEach(c => {
-          if (!c.partner_id || !c.partners) return;
+          if (!c.partner_id) return;
+          const partner = partnersMap[c.partner_id];
+          if (!partner) return;
+          
           const price = c.plan === 'pro' ? 499000 : c.plan === 'elite' ? 999000 : c.plan === 'ultimate' ? 1999000 : 0;
           
           if (!partnerScores[c.partner_id]) {
             partnerScores[c.partner_id] = {
-              full_name: c.partners.full_name,
-              tier: c.partners.tier,
+              full_name: partner.full_name,
+              tier: partner.tier,
               total_omzet: 0,
               closings: 0
             };
@@ -241,20 +260,39 @@ const PartnerDashboard = () => {
         
         const { data: clients } = await supabase
           .from('clients')
-          .select('partner_id, plan, partners(full_name, tier)')
+          .select('partner_id, plan')
           .eq('status', 'active')
           .gte('created_at', start.toISOString())
           .lte('created_at', end.toISOString());
           
+        const partnerIds = [...new Set((clients || []).map(c => c.partner_id).filter(Boolean))];
+        
+        let partners = [];
+        if (partnerIds.length > 0) {
+          const { data } = await supabase
+            .from('partners')
+            .select('id, full_name, tier')
+            .in('id', partnerIds);
+          partners = data || [];
+        }
+        
+        const partnersMap = {};
+        partners.forEach(p => {
+          partnersMap[p.id] = p;
+        });
+        
         const partnerScores = {};
         (clients || []).forEach(c => {
-          if (!c.partner_id || !c.partners) return;
+          if (!c.partner_id) return;
+          const partner = partnersMap[c.partner_id];
+          if (!partner) return;
+          
           const price = c.plan === 'pro' ? 499000 : c.plan === 'elite' ? 999000 : c.plan === 'ultimate' ? 1999000 : 0;
           
           if (!partnerScores[c.partner_id]) {
             partnerScores[c.partner_id] = {
-              full_name: c.partners.full_name,
-              tier: c.partners.tier,
+              full_name: partner.full_name,
+              tier: partner.tier,
               total_omzet: 0,
               closings: 0
             };
