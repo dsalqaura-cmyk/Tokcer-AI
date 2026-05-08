@@ -771,7 +771,7 @@ const Dashboard = () => {
         if (!checkPlanPermission('video_gen')) return;
     }
 
-    const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
+    const isAdmin = profile?.role === 'admin';
     
     // 1. SECURE TOKEN DEDUCTION (PRE-AI CALL)
     if (!isAdmin) {
