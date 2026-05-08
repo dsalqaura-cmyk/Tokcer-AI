@@ -1,16 +1,53 @@
 import React, { useState } from 'react';
+import { supabase } from '../../../lib/supabase.js';
 
 const PartnerSection = ({ 
   t, 
   adminPartners = [], 
   adminClients = [],
   globalStats = {},
-  getTierBadgeClass 
+  getTierBadgeClass,
+  fetchPartners
 }) => {
   const [selectedPartner, setSelectedPartner] = useState(null);
 
   // Hitung total referral riil dari jumlah klien yang memiliki partner
   const realTotalReferrals = adminClients.filter(c => c.partners).length;
+
+  const handleSuspend = async () => {
+    if (!selectedPartner) return;
+    if (!window.confirm(`Yakin ingin memblokir ${selectedPartner.full_name}?`)) return;
+    
+    const { error } = await supabase.from('partners').update({ status: 'suspended' }).eq('id', selectedPartner.id);
+    if (error) {
+      alert("Gagal memblokir: " + error.message);
+    } else {
+      alert("Partner berhasil diblokir!");
+      setSelectedPartner(null);
+      if (fetchPartners) fetchPartners();
+    }
+  };
+
+  const handleUpdateTier = async () => {
+    if (!selectedPartner) return;
+    const newTier = window.prompt(`Masukkan Tier Baru untuk ${selectedPartner.full_name}\n(Bronze / Silver / Gold / Platinum):`);
+    if (!newTier) return;
+    
+    const validTiers = ['bronze', 'silver', 'gold', 'platinum'];
+    if (!validTiers.includes(newTier.toLowerCase())) {
+      alert("Tier tidak valid!");
+      return;
+    }
+
+    const { error } = await supabase.from('partners').update({ tier: newTier.toLowerCase() }).eq('id', selectedPartner.id);
+    if (error) {
+      alert("Gagal mengubah tier: " + error.message);
+    } else {
+      alert("Tier berhasil diubah!");
+      setSelectedPartner(null);
+      if (fetchPartners) fetchPartners();
+    }
+  };
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -110,7 +147,7 @@ const PartnerSection = ({
                 </div>
               </button>
 
-              <button className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
+              <button onClick={handleUpdateTier} className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
                 <iconify-icon icon="solar:medal-star-bold-duotone" className="text-xl text-amber-400 group-hover:scale-110 transition-transform"></iconify-icon>
                 <div className="text-left">
                   <p className="text-xs font-black uppercase tracking-wider">Ubah Tier Manual</p>
@@ -128,7 +165,7 @@ const PartnerSection = ({
 
               <div className="h-px bg-white/10 my-2"></div>
 
-              <button className="w-full flex items-center gap-3 p-4 bg-red-500/20 hover:bg-red-500/40 rounded-xl border border-red-500/20 transition-all group">
+              <button onClick={handleSuspend} className="w-full flex items-center gap-3 p-4 bg-red-500/20 hover:bg-red-500/40 rounded-xl border border-red-500/20 transition-all group">
                 <iconify-icon icon="solar:shield-warning-bold-duotone" className="text-xl text-red-400 group-hover:scale-110 transition-transform"></iconify-icon>
                 <div className="text-left">
                   <p className="text-xs font-black uppercase tracking-wider text-red-400">Suspend / Blokir</p>
