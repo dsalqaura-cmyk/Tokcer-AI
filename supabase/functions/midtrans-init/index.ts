@@ -83,6 +83,44 @@ serve(async (req) => {
         throw new Error(`Gagal mencatat transaksi: ${dbError.message}`);
     }
 
+    // 4. KIRIM EMAIL INSTRUKSI (Pindah ke Server)
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    const paymentUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${midtransData.token}`;
+
+    if (RESEND_API_KEY) {
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RESEND_API_KEY}`
+          },
+          body: JSON.stringify({
+            from: 'Tokcer AI <billing@tokcer-ai.com>',
+            to: [user_data.email],
+            subject: '🏮 Instruksi Pembayaran Tokcer AI',
+            html: `
+              <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border-radius: 24px; border: 1px solid #222;">
+                <img src="https://staging.tokcer-ai.com/logo.png" style="height: 40px; margin-bottom: 30px;">
+                <h2 style="font-weight: 900;">Halo, ${user_data.nama}!</h2>
+                <p style="color: #888;">Partner kami telah mendaftarkan toko Anda. Silakan selesaikan pembayaran untuk mengaktifkan akun Anda.</p>
+                <div style="background: #111; padding: 25px; border-radius: 16px; margin: 20px 0; border: 1px dashed #333;">
+                  <p style="margin: 0; color: #555; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Tagihan Anda</p>
+                  <p style="font-size: 24px; font-weight: 900; margin: 10px 0; color: #f97316;">Rp ${amount.toLocaleString('id-ID')}</p>
+                  <p style="margin: 0; color: #aaa; font-size: 13px;">Paket: ${plan_name.toUpperCase()}</p>
+                </div>
+                <a href="${paymentUrl}" style="display: inline-block; background: #f97316; color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 900; margin-top: 20px;">BAYAR SEKARANG (QRIS/VA)</a>
+                <p style="margin-top: 30px; font-size: 12px; color: #444;">Link ini akan kadaluarsa dalam 24 jam.</p>
+              </div>
+            `
+          })
+        });
+      } catch (emailErr) {
+        console.error("Gagal kirim email instruksi:", emailErr.message);
+        // Kita tidak throw error agar transaksi tetap berhasil dibuat walau email gagal
+      }
+    }
+
     return new Response(
       JSON.stringify({ token: midtransData.token, orderId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
