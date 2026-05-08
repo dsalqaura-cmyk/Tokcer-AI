@@ -9,13 +9,28 @@ const PayoutSection = ({ t }) => {
 
   const fetchPayouts = async () => {
     setLoading(true);
+    // Ganti menarik dari tabel partners yang punya saldo komisi
     const { data, error } = await supabase
-      .from('payouts')
-      .select('*, partners(full_name, bank_name, bank_account, whatsapp)')
-      .order('created_at', { ascending: false });
+      .from('partners')
+      .select('id, full_name, bank_name, bank_account, whatsapp, total_omzet, created_at')
+      .gt('total_omzet', 0)
+      .order('total_omzet', { ascending: false });
 
     if (!error && data) {
-      setPayouts(data);
+      // Bungkus datanya agar mirip dengan struktur payouts
+      const simulatedPayouts = data.map(p => ({
+        id: p.id,
+        amount: p.total_omzet,
+        created_at: p.created_at,
+        status: 'pending',
+        partners: {
+          full_name: p.full_name,
+          bank_name: p.bank_name,
+          bank_account: p.bank_account,
+          whatsapp: p.whatsapp
+        }
+      }));
+      setPayouts(simulatedPayouts);
     }
     setLoading(false);
   };
