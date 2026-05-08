@@ -153,20 +153,22 @@ const InternalDashboard = () => {
 
   const fetchGlobalStats = async () => {
     try {
-      const { data: ords } = await supabase.from('orders').select('total_amount');
-      const { count: uCount } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
-      const { count: pCount } = await supabase.from('partners').select('*', { count: 'exact', head: true });
+      // 1. Panggil RPC untuk statistik global (Tembus RLS)
+      const { data: rpcData, error: rpcError } = await supabase.rpc('rpc_get_global_stats');
+      
+      if (rpcError) throw rpcError;
+
+      // 2. Tetap hitung Payouts dari tabel payouts
       const { data: pays } = await supabase.from('payouts').select('amount, status');
 
-      const revenue = (ords || []).reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0);
       const paid = (pays || []).filter(p => p.status === 'paid').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       const pending = (pays || []).filter(p => p.status === 'pending').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
       setGlobalStats({
-        totalRevenue: revenue || 0,
-        totalOrders: ords?.length || 0,
-        activeUsers: uCount || 0,
-        activePartners: pCount || 0,
+        totalRevenue: rpcData.totalRevenue || 0,
+        totalOrders: rpcData.totalOrders || 0,
+        activeUsers: rpcData.activeUsers || 0,
+        activePartners: rpcData.activePartners || 0,
         totalPaid: paid || 0,
         totalPending: pending || 0
       });
