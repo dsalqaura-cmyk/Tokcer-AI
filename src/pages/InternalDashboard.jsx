@@ -36,6 +36,7 @@ const InternalDashboard = () => {
   const [showUserStats, setShowUserStats] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [recentActivityData, setRecentActivityData] = useState([]); // << TAMBAHAN UCUP
 
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -100,7 +101,8 @@ const InternalDashboard = () => {
           fetchPartnerApps(),
           fetchAiConfig(),
           fetchAiHistory(),
-          fetchAiLogs()
+          fetchAiLogs(),
+          fetchRecentActivity() // << TAMBAHAN UCUP
         ]);
       } catch (err) {
         console.error("Error loading dashboard data:", err);
@@ -162,7 +164,6 @@ const InternalDashboard = () => {
       const { data: pays } = await supabase.from('payouts').select('amount, status');
 
       const paid = (pays || []).filter(p => p.status === 'paid').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-      const pending = (pays || []).filter(p => p.status === 'pending').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
       setGlobalStats({
         totalRevenue: rpcData.totalRevenue || 0,
@@ -170,12 +171,17 @@ const InternalDashboard = () => {
         activeUsers: rpcData.activeUsers || 0,
         activePartners: rpcData.activePartners || 0,
         totalPaid: paid || 0,
-        totalPending: pending || 0
+        totalPending: rpcData.pendingPayouts || 0 // << AMBIL DARI RPC!
       });
     } catch (err) {
       console.error("Error fetching global stats:", err);
       setGlobalStats(prev => ({ ...prev })); // Maintain state on error
     }
+  };
+
+  const fetchRecentActivity = async () => {
+    const { data, error } = await supabase.rpc('rpc_get_recent_clients');
+    if (!error) setRecentActivityData(data || []);
   };
 
   const fetchTickets = async () => {
@@ -477,7 +483,7 @@ const InternalDashboard = () => {
   const renderSection = () => {
     switch (activeSection) {
       case 'overview':
-        return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivities} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
+        return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivityData} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
       case 'approvals':
         return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={handleOpenApproveModal} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleReject={handleReject} handleRemindPartner={handleRemindPartner} />;
       case 'users':
