@@ -131,7 +131,7 @@ const OverviewSection = ({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
           <div className="p-6 bg-zinc-950 rounded-2xl border border-zinc-800/50">
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('grossIncome')}</p>
-            <h2 className="text-2xl font-black text-white tracking-tighter">Rp {new Intl.NumberFormat('id-ID').format(subscriptionRevenue)}</h2>
+            <h2 className="text-2xl font-black text-white tracking-tighter">Rp {new Intl.NumberFormat('id-ID').format(globalStats.totalRevenue || 0)}</h2>
             <div className="mt-4 flex items-center gap-2">
                 <span className="text-[9px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded tracking-widest">SUBSCRIPTION</span>
             </div>
