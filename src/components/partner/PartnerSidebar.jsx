@@ -11,7 +11,7 @@ const PartnerSidebar = ({
   toggleLang, 
   handleLogout 
 }) => {
-  const tabs = ['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'academy', 'profile'];
+  const tabs = ['onboard', 'subscribers', 'leaderboard', 'payment', 'support', 'academy', 'profile', 'commissionScheme'];
 
   return (
     <>
@@ -44,6 +44,7 @@ const PartnerSidebar = ({
                     tab === 'payment' ? 'solar:card-transfer-bold-duotone' :
                     tab === 'support' ? 'solar:chat-round-dots-bold-duotone' :
                     tab === 'profile' ? 'solar:user-id-bold-duotone' :
+                    tab === 'commissionScheme' ? 'solar:money-bag-bold-duotone' :
                     'solar:notebook-bold-duotone'
                   } className={`text-xl ${activeTab === tab ? 'text-orange-500' : 'text-zinc-500'}`}></iconify-icon>
                   {t(tab)}

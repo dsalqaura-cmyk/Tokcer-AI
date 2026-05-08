@@ -11,6 +11,7 @@ import PaymentTab from '../components/partner/tabs/PaymentTab.jsx';
 import SupportTab from '../components/partner/tabs/SupportTab.jsx';
 import ProfileTab from '../components/partner/tabs/ProfileTab.jsx';
 import AcademyTab from '../components/partner/tabs/AcademyTab.jsx';
+import CommissionSchemeTab from '../components/partner/tabs/CommissionSchemeTab.jsx';
 import { partnerTranslations } from '../locales/partnerLocales.js';
 
 const PartnerDashboard = () => {
@@ -562,6 +563,7 @@ const PartnerDashboard = () => {
           handleUpdateProfile={handleUpdateProfile} 
         />
       );
+      case 'commissionScheme': return <CommissionSchemeTab />;
       default: return null;
     }
   };
