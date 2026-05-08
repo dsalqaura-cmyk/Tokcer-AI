@@ -941,43 +941,62 @@ const Dashboard = () => {
     if (isFetchingTrends) return;
 
     const today = new Date().toISOString().split('T')[0];
-    const cacheKey = `tokcer_cache_global_trends_${user.id}_${today}`;
-    const cachedData = localStorage.getItem(cacheKey);
-
-    if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        setViralTopics(parsed.topics || []);
-        setLiveSummary(parsed.summary || '');
-        return;
-    }
-
     setIsFetchingTrends(true);
+
     try {
       const bizType = profile?.business_type || 'General E-commerce';
+
+      // 1. CEK CACHE GLOBAL DI DATABASE (Berlaku untuk semua user)
+      const { data: existingLogs } = await supabase
+        .from('ai_usage_logs')
+        .select('response')
+        .eq('feature', 'global_market_trends')
+        .gte('created_at', today)
+        .not('response', 'eq', 'SUCCESS') // Abaikan log lama yang cuma isi "SUCCESS"
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (existingLogs && existingLogs.length > 0) {
+        const cachedResult = existingLogs[0].response;
+        try {
+          const cleanJson = cachedResult.replace(/```json|```/g, '').trim();
+          const data = JSON.parse(cleanJson);
+          if (data.topics) setViralTopics(data.topics);
+          if (data.summary) setLiveSummary(data.summary);
+          setIsFetchingTrends(false);
+          return; // STOP DI SINI (Hemat kuota!)
+        } catch (e) {
+          console.error("Gagal parse cache JSON, memanggil AI baru...");
+        }
+      }
+
+      // 2. JIKA BELUM ADA CACHE, PANGGIL DEEPSEEK
       const systemPrompt = `You are a Market Trend Scout for the Indonesian market...`;
-      
       const { text: result, usage } = await callAiEngine(systemPrompt, "Fetch current viral trends for " + bizType, null, 2048, 0.5);
       
-      // We don't necessarily need to log every background trend fetch to save space, 
-      // but if you want to track cost:
+      // Simpan jawaban asli ke database untuk dijadikan cache user lain
       await supabase.from('ai_usage_logs').insert([{
           user_id: user?.id || null,
           feature: 'global_market_trends',
           prompt: "Background Fetch: " + bizType,
-          response: "SUCCESS",
+          response: result, // << SIMPAN HASIL ASLI!
           input_tokens: usage.prompt_tokens,
           output_tokens: usage.completion_tokens,
           cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
       }]);
+
       const cleanJson = result.replace(/```json|```/g, '').trim();
       const data = JSON.parse(cleanJson);
       
       if (data.topics) setViralTopics(data.topics);
       if (data.summary) setLiveSummary(data.summary);
 
-      const today = new Date().toISOString().split('T')[0];
-      const cacheKey = `tokcer_cache_global_trends_${user.id}_${today}`;
-      localStorage.setItem(cacheKey, JSON.stringify(data));
+    } catch (err) {
+      console.error("Error fetching market trends:", err);
+    } finally {
+      setIsFetchingTrends(false);
+    }
+  };
     } catch (e) {
       console.error("Fetch Trends Error:", e);
       const todayStr = new Date().toISOString().split('T')[0];
