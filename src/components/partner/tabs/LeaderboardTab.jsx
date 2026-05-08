@@ -5,7 +5,9 @@ const LeaderboardTab = ({
   lang, 
   data, 
   countdown, 
-  formatCurrency 
+  formatCurrency,
+  leaderboardFilter,
+  setLeaderboardFilter
 }) => {
   // Helper to split countdown string
   const parts = countdown.split(':');
@@ -43,22 +45,31 @@ const LeaderboardTab = ({
           <div className="relative group">
             <button className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-100 bg-black/40 hover:bg-black/60 px-4 py-2 rounded-xl border border-zinc-800 transition-all">
               <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon>
-              <span>{t('weekCurrent')}</span>
+              <span>
+                {leaderboardFilter === 'minggu_ini' ? t('weekCurrent') :
+                 leaderboardFilter === 'minggu_lalu' ? 'Minggu Lalu' :
+                 leaderboardFilter === 'bulan_ini' ? 'Bulan Ini (26 - 25)' :
+                 'Semua Waktu (All-Time)'}
+              </span>
               <iconify-icon icon="solar:alt-arrow-down-bold" className="text-[10px] text-zinc-500"></iconify-icon>
             </button>
             
             {/* Dropdown Menu Overlay */}
             <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 overflow-hidden">
               <div className="p-1.5 flex flex-col">
-                <button className="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 rounded-xl text-left transition-colors">
+                <button onClick={() => setLeaderboardFilter('minggu_ini')} className={`flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl text-left transition-colors ${leaderboardFilter === 'minggu_ini' ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'}`}>
                   <iconify-icon icon="solar:calendar-date-bold-duotone" className="text-base"></iconify-icon>
                   {t('weekCurrent')}
                 </button>
-                <button className="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-100 hover:bg-white/5 rounded-xl text-left transition-colors">
+                <button onClick={() => setLeaderboardFilter('minggu_lalu')} className={`flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl text-left transition-colors ${leaderboardFilter === 'minggu_lalu' ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'}`}>
+                  <iconify-icon icon="solar:calendar-date-bold-duotone" className="text-base"></iconify-icon>
+                  Minggu Lalu
+                </button>
+                <button onClick={() => setLeaderboardFilter('bulan_ini')} className={`flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl text-left transition-colors ${leaderboardFilter === 'bulan_ini' ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'}`}>
                   <iconify-icon icon="solar:calendar-minimalistic-bold-duotone" className="text-base"></iconify-icon>
                   Bulan Ini (26 - 25)
                 </button>
-                <button className="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-100 hover:bg-white/5 rounded-xl text-left transition-colors">
+                <button onClick={() => setLeaderboardFilter('semua_waktu')} className={`flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl text-left transition-colors ${leaderboardFilter === 'semua_waktu' ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'}`}>
                   <iconify-icon icon="solar:globus-bold-duotone" className="text-base"></iconify-icon>
                   Semua Waktu (All-Time)
                 </button>
@@ -78,6 +89,31 @@ const LeaderboardTab = ({
             ))}
           </div>
         </div>
+
+        {/* Weekly Target Indicator */}
+        {(leaderboardFilter === 'minggu_ini' || leaderboardFilter === 'minggu_lalu') && (
+          <div className="border-t border-orange-500/20 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${totalPeriodClosings >= 5 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+              <span className="text-xs font-bold text-zinc-100">
+                Total Closing {leaderboardFilter === 'minggu_ini' ? 'Minggu Ini' : 'Minggu Lalu'}: <span className={totalPeriodClosings >= 5 ? 'text-green-400' : 'text-red-400'}>{totalPeriodClosings} / 5</span>
+              </span>
+            </div>
+            <div className="text-xs font-bold text-zinc-400">
+              {totalPeriodClosings >= 5 ? (
+                <span className="text-green-400 flex items-center gap-1">
+                  <iconify-icon icon="solar:medal-ribbons-bold" className="text-base"></iconify-icon>
+                  Syarat Bonus 300rb Terpenuhi!
+                </span>
+              ) : (
+                <span className="text-red-400 flex items-center gap-1">
+                  <iconify-icon icon="solar:danger-bold" className="text-base"></iconify-icon>
+                  Kurang {5 - totalPeriodClosings} Closing lagi untuk cairkan bonus!
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pt-4">

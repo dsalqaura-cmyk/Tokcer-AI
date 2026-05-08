@@ -45,6 +45,8 @@ const PartnerDashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [countdown, setCountdown] = useState('');
+  const [leaderboardFilter, setLeaderboardFilter] = useState('minggu_ini');
+  const [totalPeriodClosings, setTotalPeriodClosings] = useState(0);
 
   const navigate = useNavigate();
   const t = (key) => partnerTranslations[lang][key] || key;
@@ -66,18 +68,21 @@ const PartnerDashboard = () => {
 
 
   const getWeekInfo = () => {
-
     const now = new Date();
-    const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(now.setDate(diff));
-    monday.setHours(0, 0, 0, 0);
+    const day = now.getDay(); // 0: Minggu, 1: Senin, ..., 6: Sabtu
     
-    const friday = new Date(monday);
-    friday.setDate(monday.getDate() + 4);
-    friday.setHours(17, 0, 0, 0);
-
-    return { monday, friday };
+    // Hitung mundur ke hari Sabtu terdekat sebelumnya
+    const diffToSaturday = day === 6 ? 0 : -(day + 1);
+    const saturday = new Date(now);
+    saturday.setDate(now.getDate() + diffToSaturday);
+    saturday.setHours(0, 0, 0, 0);
+    
+    // Hari Jumat adalah Sabtu + 6 hari
+    const friday = new Date(saturday);
+    friday.setDate(saturday.getDate() + 6);
+    friday.setHours(23, 59, 59, 999);
+    
+    return { saturday, friday };
   };
 
   const updateCountdown = () => {
@@ -127,8 +132,6 @@ const PartnerDashboard = () => {
         }
 
         setSubscribers(subs || []);
-        const { data: leaders } = await supabase.from('partners').select('full_name, total_omzet, tier').not('full_name', 'is', null).order('total_omzet', { ascending: false }).limit(10);
-        setLeaderboardData(leaders || []);
 
       } catch (err) {
         console.error("Fetch Data Error:", err);
@@ -176,6 +179,114 @@ const PartnerDashboard = () => {
       if (partnerSubscription) supabase.removeChannel(partnerSubscription);
     };
   }, []);
+
+  // 🏆 FETCH LEADERBOARD DATA (Dynamic Filters)
+  const fetchLeaderboardData = async () => {
+    try {
+      let leaders = [];
+      let totalClosings = 0;
+      
+      if (leaderboardFilter === 'minggu_ini' || leaderboardFilter === 'minggu_lalu') {
+        const { saturday, friday } = getWeekInfo();
+        let start, end;
+        
+        if (leaderboardFilter === 'minggu_ini') {
+          start = saturday.toISOString();
+          end = friday.toISOString();
+        } else {
+          const lastSaturday = new Date(saturday);
+          lastSaturday.setDate(saturday.getDate() - 7);
+          const lastFriday = new Date(friday);
+          lastFriday.setDate(friday.getDate() - 7);
+          start = lastSaturday.toISOString();
+          end = lastFriday.toISOString();
+        }
+        
+        const { data: clients } = await supabase
+          .from('clients')
+          .select('partner_id, plan, partners(full_name, tier)')
+          .eq('status', 'active')
+          .gte('created_at', start)
+          .lte('created_at', end);
+          
+        const partnerScores = {};
+        (clients || []).forEach(c => {
+          if (!c.partner_id || !c.partners) return;
+          const price = c.plan === 'pro' ? 499000 : c.plan === 'elite' ? 999000 : c.plan === 'ultimate' ? 1999000 : 0;
+          
+          if (!partnerScores[c.partner_id]) {
+            partnerScores[c.partner_id] = {
+              full_name: c.partners.full_name,
+              tier: c.partners.tier,
+              total_omzet: 0,
+              closings: 0
+            };
+          }
+          partnerScores[c.partner_id].total_omzet += price;
+          partnerScores[c.partner_id].closings += 1;
+        });
+        
+        leaders = Object.values(partnerScores).sort((a, b) => b.total_omzet - a.total_omzet).slice(0, 10);
+        totalClosings = clients ? clients.length : 0;
+      } else if (leaderboardFilter === 'bulan_ini') {
+        const now = new Date();
+        // Bulan Ini (26 - 25)
+        let start = new Date(now.getFullYear(), now.getMonth() - 1, 26);
+        let end = new Date(now.getFullYear(), now.getMonth(), 25, 23, 59, 59, 999);
+        
+        if (now.getDate() >= 26) {
+          start = new Date(now.getFullYear(), now.getMonth(), 26);
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 25, 23, 59, 59, 999);
+        }
+        
+        const { data: clients } = await supabase
+          .from('clients')
+          .select('partner_id, plan, partners(full_name, tier)')
+          .eq('status', 'active')
+          .gte('created_at', start.toISOString())
+          .lte('created_at', end.toISOString());
+          
+        const partnerScores = {};
+        (clients || []).forEach(c => {
+          if (!c.partner_id || !c.partners) return;
+          const price = c.plan === 'pro' ? 499000 : c.plan === 'elite' ? 999000 : c.plan === 'ultimate' ? 1999000 : 0;
+          
+          if (!partnerScores[c.partner_id]) {
+            partnerScores[c.partner_id] = {
+              full_name: c.partners.full_name,
+              tier: c.partners.tier,
+              total_omzet: 0,
+              closings: 0
+            };
+          }
+          partnerScores[c.partner_id].total_omzet += price;
+          partnerScores[c.partner_id].closings += 1;
+        });
+        
+        leaders = Object.values(partnerScores).sort((a, b) => b.total_omzet - a.total_omzet).slice(0, 10);
+        totalClosings = clients ? clients.length : 0;
+      } else {
+        // Semua Waktu (All-Time)
+        const { data } = await supabase
+          .from('partners')
+          .select('full_name, total_omzet, tier')
+          .not('full_name', 'is', null)
+          .order('total_omzet', { ascending: false })
+          .limit(10);
+        leaders = data || [];
+        totalClosings = 0; // Tidak dihitung untuk all-time
+      }
+      
+      setLeaderboardData(leaders);
+      setTotalPeriodClosings(totalClosings);
+    } catch (err) {
+      console.error("Fetch Leaderboard Error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeaderboardData();
+  }, [leaderboardFilter]);
 
 
   const handleOnboardSubmit = async (e) => {
@@ -384,7 +495,7 @@ const PartnerDashboard = () => {
     switch (activeMenu) {
       case 'onboard': return <OnboardTab {...commonProps} form={onboardForm} setForm={setOnboardForm} onSubmit={handleOnboardSubmit} />;
       case 'subscribers': return <SubscribersTab {...commonProps} subscribers={subscribers} />;
-      case 'leaderboard': return <LeaderboardTab {...commonProps} data={leaderboardData} countdown={countdown} />;
+      case 'leaderboard': return <LeaderboardTab {...commonProps} data={leaderboardData} countdown={countdown} leaderboardFilter={leaderboardFilter} setLeaderboardFilter={setLeaderboardFilter} totalPeriodClosings={totalPeriodClosings} />;
       case 'payment': return <PaymentTab {...commonProps} partnerData={partnerData} />;
       case 'support': return (
         <SupportTab 
