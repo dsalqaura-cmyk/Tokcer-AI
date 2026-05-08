@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 
 const AccountingSection = ({ t }) => {
   const [usdRate, setUsdRate] = useState(17300);
+  const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
@@ -58,7 +60,7 @@ const AccountingSection = ({ t }) => {
               <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Income Module</span>
               <h3 className="text-xl font-black text-white tracking-tight mt-1">Income Transactions</h3>
             </div>
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">
+            <button onClick={() => setShowIncomeModal(true)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">
               + Tambah Transaksi
             </button>
           </div>
@@ -90,7 +92,7 @@ const AccountingSection = ({ t }) => {
               <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Expense Module</span>
               <h3 className="text-xl font-black text-white tracking-tight mt-1">Infrastructure Costs</h3>
             </div>
-            <button className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-black uppercase tracking-widest rounded-xl border border-zinc-700 transition-all">
+            <button onClick={() => setShowExpenseModal(true)} className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-black uppercase tracking-widest rounded-xl border border-zinc-700 transition-all">
               + Catat Biaya
             </button>
           </div>
@@ -127,6 +129,82 @@ const AccountingSection = ({ t }) => {
         </div>
 
       </div>
+
+      {/* Modal Income */}
+      {showIncomeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-zinc-900/90 border border-white/10 rounded-[2rem] p-8 w-full max-w-md text-white relative shadow-2xl">
+            <button onClick={() => setShowIncomeModal(false)} className="absolute top-6 right-6 text-white/60 hover:text-white">
+              <iconify-icon icon="solar:close-circle-bold-duotone" className="text-2xl"></iconify-icon>
+            </button>
+            <div className="mb-6">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Income Module</span>
+              <h3 className="text-xl font-black mt-1">Tambah Transaksi</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase text-zinc-500">Source</label>
+                <select className="w-full bg-black border border-zinc-800 rounded-xl p-3 text-sm text-white mt-1">
+                  <option>organic</option>
+                  <option>partner</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-zinc-500">Plan</label>
+                <select className="w-full bg-black border border-zinc-800 rounded-xl p-3 text-sm text-white mt-1">
+                  <option>pro</option>
+                  <option>elite</option>
+                  <option>ultimate</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-zinc-500">Gross Amount</label>
+                <input type="number" placeholder="Rp" className="w-full bg-black border border-zinc-800 rounded-xl p-3 text-sm text-white mt-1" />
+              </div>
+              <button onClick={() => { alert('Fungsi simpan belum dihubungkan ke DB!'); setShowIncomeModal(false); }} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">
+                Simpan Transaksi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Expense */}
+      {showExpenseModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-zinc-900/90 border border-white/10 rounded-[2rem] p-8 w-full max-w-md text-white relative shadow-2xl">
+            <button onClick={() => setShowExpenseModal(false)} className="absolute top-6 right-6 text-white/60 hover:text-white">
+              <iconify-icon icon="solar:close-circle-bold-duotone" className="text-2xl"></iconify-icon>
+            </button>
+            <div className="mb-6">
+              <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Expense Module</span>
+              <h3 className="text-xl font-black mt-1">Catat Biaya Infra</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase text-zinc-500">Kategori</label>
+                <select className="w-full bg-black border border-zinc-800 rounded-xl p-3 text-sm text-white mt-1">
+                  <option>web_hosting</option>
+                  <option>ai_credit</option>
+                  <option>database</option>
+                  <option>email_service</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-zinc-500">Vendor</label>
+                <input type="text" placeholder="Nama Vendor" className="w-full bg-black border border-zinc-800 rounded-xl p-3 text-sm text-white mt-1" />
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-zinc-500">Nominal (IDR)</label>
+                <input type="number" placeholder="Rp" className="w-full bg-black border border-zinc-800 rounded-xl p-3 text-sm text-white mt-1" />
+              </div>
+              <button onClick={() => { alert('Fungsi simpan belum dihubungkan ke DB!'); setShowExpenseModal(false); }} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">
+                Simpan Biaya
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
