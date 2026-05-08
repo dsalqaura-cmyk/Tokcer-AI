@@ -84,17 +84,6 @@ const InternalSidebar = ({
               )}
             </button>
           ))}
-          
-          <div className="px-6 py-2">
-            <div className="h-px bg-zinc-800 w-full mb-2"></div>
-            <button
-              onClick={() => navigate('/hpp-calculator')}
-              className="w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all border border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:text-emerald-500 group"
-            >
-              <iconify-icon icon="solar:calculator-minimalistic-bold-duotone" className="text-xl group-hover:scale-110 text-emerald-500"></iconify-icon>
-              <span className="text-[10px] font-black uppercase tracking-[0.15em] truncate">HPP Calculator</span>
-            </button>
-          </div>
         </nav>
         
         <div className="p-6 border-t border-zinc-800 bg-zinc-950/50">
