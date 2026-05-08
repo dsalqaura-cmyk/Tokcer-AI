@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const PartnerSection = ({ 
   t, 
   adminPartners = [], 
   getTierBadgeClass 
 }) => {
+  const [selectedPartner, setSelectedPartner] = useState(null);
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -61,7 +63,7 @@ const PartnerSection = ({
                   </td>
                   <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
                      <div className="flex items-center justify-end gap-2">
-                       <button onClick={() => alert(`Settings for ${p.full_name}`)} className="w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-white hover:text-black rounded-xl border border-zinc-700 transition-all">
+                       <button onClick={() => setSelectedPartner(p)} className="w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-white hover:text-black rounded-xl border border-zinc-700 transition-all">
                          <iconify-icon icon="solar:settings-bold-duotone" className="text-xl"></iconify-icon>
                        </button>
                      </div>
@@ -76,6 +78,62 @@ const PartnerSection = ({
           </table>
         </div>
       </div>
+
+      {/* Glassmorphism Pop-up */}
+      {selectedPartner && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-8 w-full max-w-md shadow-2xl shadow-black/50 text-white relative">
+            <button 
+              onClick={() => setSelectedPartner(null)} 
+              className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors"
+            >
+              <iconify-icon icon="solar:close-circle-bold-duotone" className="text-2xl"></iconify-icon>
+            </button>
+            
+            <div className="mb-6">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Aksi Partner</span>
+              <h3 className="text-2xl font-black tracking-tight mt-1">{selectedPartner.full_name}</h3>
+              <p className="text-xs text-white/60 mt-1">{selectedPartner.email}</p>
+            </div>
+
+            <div className="space-y-3">
+              <button className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
+                <iconify-icon icon="solar:eye-bold-duotone" className="text-xl text-blue-400 group-hover:scale-110 transition-transform"></iconify-icon>
+                <div className="text-left">
+                  <p className="text-xs font-black uppercase tracking-wider">Lihat Detail / Aktivitas</p>
+                  <p className="text-[10px] text-white/40">Lihat performa & klien partner ini</p>
+                </div>
+              </button>
+
+              <button className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
+                <iconify-icon icon="solar:medal-star-bold-duotone" className="text-xl text-amber-400 group-hover:scale-110 transition-transform"></iconify-icon>
+                <div className="text-left">
+                  <p className="text-xs font-black uppercase tracking-wider">Ubah Tier Manual</p>
+                  <p className="text-[10px] text-white/40">Naikkan pangkat ke Gold/Platinum</p>
+                </div>
+              </button>
+
+              <button className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/20 rounded-xl border border-white/10 transition-all group">
+                <iconify-icon icon="solar:wallet-bold-duotone" className="text-xl text-emerald-400 group-hover:scale-110 transition-transform"></iconify-icon>
+                <div className="text-left">
+                  <p className="text-xs font-black uppercase tracking-wider">Edit Data Rekening</p>
+                  <p className="text-[10px] text-white/40">Ubah bank & nomor rekening</p>
+                </div>
+              </button>
+
+              <div className="h-px bg-white/10 my-2"></div>
+
+              <button className="w-full flex items-center gap-3 p-4 bg-red-500/20 hover:bg-red-500/40 rounded-xl border border-red-500/20 transition-all group">
+                <iconify-icon icon="solar:shield-warning-bold-duotone" className="text-xl text-red-400 group-hover:scale-110 transition-transform"></iconify-icon>
+                <div className="text-left">
+                  <p className="text-xs font-black uppercase tracking-wider text-red-400">Suspend / Blokir</p>
+                  <p className="text-[10px] text-red-400/60">Nonaktifkan akses partner ini</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
