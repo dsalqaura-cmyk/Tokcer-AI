@@ -58,7 +58,17 @@ const PartnerAgreement = () => {
       if (error) throw error;
 
       const tsShort = Date.now().toString().slice(-6);
-      setRefCode(`TKC-AGR-${tsShort}`);
+      const generatedCode = `TKC-AGR-${tsShort}`;
+
+      // [PERBAIKAN UJANG]: Simpan kode unik ke tabel partners
+      if (partnerData?.email) {
+        await supabase
+          .from('partners')
+          .update({ referral_code: generatedCode })
+          .eq('email', partnerData.email);
+      }
+
+      setRefCode(generatedCode);
       setIsSuccess(true);
     } catch (err) {
       alert("Gagal memproses persetujuan: " + (err.message || "Error tidak diketahui"));

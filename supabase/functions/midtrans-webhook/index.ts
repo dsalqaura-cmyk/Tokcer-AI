@@ -5,13 +5,20 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 serve(async (req) => {
-  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-  
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    // [PERBAIKAN UJANG]: Ambil Resend API Key dari database agar tidak kosong
+    const { data: resendConfig } = await supabaseClient
+      .from('ai_configs')
+      .select('value')
+      .eq('key', 'resend_api_key')
+      .maybeSingle();
+    
+    const RESEND_API_KEY = resendConfig?.value || Deno.env.get('RESEND_API_KEY');
 
     const body = await req.json()
     const { order_id, transaction_status, fraud_status, payment_type, customer_details } = body
