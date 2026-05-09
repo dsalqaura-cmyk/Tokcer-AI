@@ -70,14 +70,16 @@ const PartnerAgreement = () => {
 
         if (existingPartner) {
           // Jika sudah ada, tinggal update kodenya
-          await supabase
+          const { error: updateError } = await supabase
             .from('partners')
             .update({ referral_code: generatedCode })
             .eq('email', partnerData.email);
+          
+          if (updateError) throw updateError;
           console.log("Partner ditemukan, mengupdate kode referral.");
         } else {
           // Jika belum ada, buat baru!
-          await supabase
+          const { error: insertError } = await supabase
             .from('partners')
             .insert([{
               full_name: partnerData.full_name || 'Partner Tanpa Nama',
@@ -86,6 +88,8 @@ const PartnerAgreement = () => {
               referral_code: generatedCode,
               status: 'active'
             }]);
+          
+          if (insertError) throw insertError;
           console.log("Partner tidak ditemukan, membuat data partner baru.");
         }
       }
