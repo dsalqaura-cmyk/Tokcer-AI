@@ -36,15 +36,46 @@ serve(async (req) => {
       if (fraud_status === 'accept' || !fraud_status) {
         
         // 1. Cari data Toko di tabel clients berdasarkan order_id
-        const { data: client, error: clientError } = await supabaseClient
+        const { data: clientData, error: clientError } = await supabaseClient
           .from('clients')
           .select('*')
           .eq('midtrans_order_id', order_id)
-          .single();
+          .maybeSingle();
 
-        if (clientError || !client) {
-            console.error("Gagal menemukan client untuk order_id:", order_id, clientError?.message);
-            return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+        let client = clientData;
+
+        // [PERBAIKAN UJANG]: Jika client tidak ditemukan, buat baru dari data transaksi!
+        if (!client) {
+            console.log("Client tidak ditemukan, membuat data client baru dari data transaksi...");
+            const userData = trx.raw_notification?.user_data;
+            
+            if (!userData) {
+                console.error("Gagal: Data user tidak ditemukan di memori transaksi!");
+                return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+            }
+
+            const { data: newClient, error: createError } = await supabaseClient
+                .from('clients')
+                .insert([{
+                    shop_name: userData.nama || 'Toko Tanpa Nama',
+                    email: userData.email,
+                    whatsapp: userData.phone,
+                    plan: trx.plan_name,
+                    status: 'pending',
+                    ref: userData.affiliateId || 'Direct',
+                    metadata: { store_links: userData.storeLinks || {} },
+                    midtrans_order_id: order_id
+                }])
+                .select()
+                .maybeSingle();
+
+            if (createError || !newClient) {
+                console.error("Gagal membuat data client baru:", createError?.message);
+                return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+            }
+
+            client = newClient;
+            console.log("Client baru berhasil dibuat otomatis:", client.id);
         }
 
         const email = client.email;
