@@ -146,7 +146,14 @@ const OnboardTab = ({
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-bold text-white uppercase tracking-widest">Otomatisasi Midtrans Aktif</p>
-                <p className="text-[10px] text-zinc-500 font-medium">Sistem akan otomatis mengirimkan link pembayaran & kode QRIS ke email calon user. Tidak perlu upload bukti transfer.</p>
+                <p className="text-[10px] text-zinc-500 font-medium">
+                  Sistem akan otomatis mengirimkan link pembayaran {
+                    form.paymentMethod === 'qris' ? '& kode QRIS' : 
+                    form.paymentMethod === 'va' ? '& kode Virtual Account' : 
+                    form.paymentMethod === 'cc' ? '& link Credit Card' : 
+                    form.paymentMethod === 'e-wallet' ? '& link E-Wallet' : ''
+                  } ke email calon user. Tidak perlu upload bukti transfer.
+                </p>
               </div>
             </div>
           )}
