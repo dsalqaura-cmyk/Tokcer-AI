@@ -526,7 +526,7 @@ const PartnerDashboard = () => {
     if(window.confirm(t('confirmLogout') || 'Logout?')) {
       await supabase.auth.signOut();
       localStorage.clear();
-      navigate('/login');
+      window.location.href = '/login';
     }
   };
 

@@ -241,17 +241,17 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                 <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Paket</label>
                     <select value={formPlan} onChange={(e) => setFormPlan(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
-                        <option value="starter">Starter</option>
-                        <option value="pro">Pro Edition</option>
-                        <option value="elite">Elite Edition</option>
-                        <option value="ultimate">Ultimate Edition</option>
+                        <option value="starter">Starter (Gratis)</option>
+                        <option value="pro">Pro Edition ({billingCycle === 'Monthly' ? 'Rp 499k' : 'Rp 5.489k'})</option>
+                        <option value="elite">Elite Edition ({billingCycle === 'Monthly' ? 'Rp 999k' : 'Rp 10.989k'})</option>
+                        <option value="ultimate">Ultimate Edition ({billingCycle === 'Monthly' ? 'Rp 1.999k' : 'Rp 21.989k'})</option>
                     </select>
                 </div>
                 <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Siklus</label>
                     <select name="billing_cycle" value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
                         <option value="Monthly">Bulanan</option>
-                        <option value="Yearly">Tahunan (Save 15%)</option>
+                        <option value="Yearly">Tahunan</option>
                     </select>
                 </div>
             </div>

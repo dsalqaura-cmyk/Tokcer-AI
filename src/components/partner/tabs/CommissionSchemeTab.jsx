@@ -65,12 +65,6 @@ const CommissionSchemeTab = () => {
               </thead>
               <tbody className="divide-y divide-[rgba(255,255,255,0.04)] text-zinc-400">
                 <tr>
-                  <td className="px-4 py-3"><span className="inline-flex px-2 py-0.5 rounded border bg-zinc-800 text-zinc-400 border-zinc-700 font-['Barlow_Condensed',sans-serif] font-bold text-[10px]">Starter</span></td>
-                  <td className="px-4 py-3">≥ 1 closing</td>
-                  <td className="px-4 py-3 text-zinc-700">—</td>
-                  <td className="px-4 py-3 text-[12px] text-zinc-600">Tanggal 1 tiap bulan</td>
-                </tr>
-                <tr>
                   <td className="px-4 py-3"><span className="inline-flex px-2 py-0.5 rounded border bg-[rgba(176,108,42,0.15)] text-[#CD7F32] border-[rgba(176,108,42,0.3)] font-['Barlow_Condensed',sans-serif] font-bold text-[10px]">Bronze</span></td>
                   <td className="px-4 py-3">≥ 3 closing</td>
                   <td className="px-4 py-3 text-zinc-700">—</td>
