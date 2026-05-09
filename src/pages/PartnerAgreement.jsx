@@ -60,12 +60,34 @@ const PartnerAgreement = () => {
       const tsShort = Date.now().toString().slice(-6);
       const generatedCode = `TKC-AGR-${tsShort}`;
 
-      // [PERBAIKAN UJANG]: Simpan kode unik ke tabel partners
+      // [PERBAIKAN UJANG]: Pastikan data partner tercipta di tabel partners
       if (partnerData?.email) {
-        await supabase
+        const { data: existingPartner } = await supabase
           .from('partners')
-          .update({ referral_code: generatedCode })
-          .eq('email', partnerData.email);
+          .select('id')
+          .eq('email', partnerData.email)
+          .maybeSingle();
+
+        if (existingPartner) {
+          // Jika sudah ada, tinggal update kodenya
+          await supabase
+            .from('partners')
+            .update({ referral_code: generatedCode })
+            .eq('email', partnerData.email);
+          console.log("Partner ditemukan, mengupdate kode referral.");
+        } else {
+          // Jika belum ada, buat baru!
+          await supabase
+            .from('partners')
+            .insert([{
+              full_name: partnerData.full_name || 'Partner Tanpa Nama',
+              email: partnerData.email,
+              whatsapp: partnerData.whatsapp,
+              referral_code: generatedCode,
+              status: 'active'
+            }]);
+          console.log("Partner tidak ditemukan, membuat data partner baru.");
+        }
       }
 
       setRefCode(generatedCode);
