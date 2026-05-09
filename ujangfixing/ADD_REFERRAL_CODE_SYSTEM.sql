@@ -105,7 +105,7 @@ BEGIN
             "starter": {"bronze": 100000, "silver": 120000, "gold": 140000, "platinum": 150000},
             "pro": {"bronze": 100000, "silver": 120000, "gold": 140000, "platinum": 150000},
             "elite": {"bronze": 100000, "silver": 120000, "gold": 140000, "platinum": 150000},
-            "ultimate": {"bronze": 100000, "silver": 120000, "gold": 140000, "platinum": 150000}
+            "ultimate": {"bronze": 200000, "silver": 240000, "gold": 300000, "platinum": 360000}
         }'::jsonb;
 
         v_commission := (v_comm_rates->v_plan_key->v_partner_tier)::bigint;
