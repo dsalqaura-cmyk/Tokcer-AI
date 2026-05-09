@@ -13,7 +13,8 @@ const InternalSidebar = ({
   handleLogout, 
   adminClients, 
   partnerApps,
-  tickets = [] 
+  tickets = [],
+  ideas = [] 
 }) => {
   const navigate = useNavigate();
   return (
@@ -63,6 +64,7 @@ const InternalSidebar = ({
             { id: 'partners', label: t('partners'), icon: 'solar:users-group-two-rounded-bold-duotone' },
             { id: 'payouts', label: 'Pembayaran Partner', icon: 'solar:wallet-money-bold-duotone' },
             { id: 'tickets', label: t('tickets'), icon: 'solar:bug-bold-duotone', badge: tickets.length || null },
+            { id: 'ideas', label: 'Saran Fitur', icon: 'solar:lightbulb-bold-duotone', badge: ideas.filter(i => i.status === 'draft' || i.status === 'open').length || null },
             { id: 'insight', label: t('businessInsight'), icon: 'solar:graph-bold-duotone' },
             { id: 'ai-gen', label: t('aiStrategy'), icon: 'solar:magic-stick-bold-duotone' },
             { id: 'token-audit', label: 'Token Audit & Billing', icon: 'solar:bill-list-bold-duotone' },

@@ -11,6 +11,7 @@ import ApprovalSection from '../components/internal/sections/ApprovalSection.jsx
 import UserSection from '../components/internal/sections/UserSection.jsx';
 import PartnerSection from '../components/internal/sections/PartnerSection.jsx';
 import TicketSection from '../components/internal/sections/TicketSection.jsx';
+import IdeasSection from '../components/internal/sections/IdeasSection.jsx';
 import AiStrategySection from '../components/internal/sections/AiStrategySection.jsx';
 import SupabaseSection from '../components/internal/sections/SupabaseSection.jsx';
 import PayoutSection from '../components/internal/sections/PayoutSection.jsx';
@@ -36,6 +37,7 @@ const InternalDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [showUserStats, setShowUserStats] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [ideas, setIdeas] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [recentActivityData, setRecentActivityData] = useState([]); // << TAMBAHAN UCUP
 
@@ -99,6 +101,7 @@ const InternalDashboard = () => {
           fetchAllUsers(),
           fetchGlobalStats(),
           fetchTickets(),
+          fetchIdeas(),
           fetchPartnerApps(),
           fetchAiConfig(),
           fetchAiHistory(),
@@ -202,6 +205,15 @@ const InternalDashboard = () => {
       .order('agreed_at', { ascending: false });
 
     if (!error) setPartnerApps(data || []);
+  };
+
+  const fetchIdeas = async () => {
+    const { data, error } = await supabase
+      .from('partner_ideas')
+      .select('*, partners(full_name)')
+      .order('created_at', { ascending: false });
+
+    if (!error) setIdeas(data || []);
   };
 
   const handleLogout = async () => {
@@ -495,6 +507,8 @@ const InternalDashboard = () => {
         return <PayoutSection t={t} />;
       case 'tickets':
         return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} fetchTickets={fetchTickets} />;
+      case 'ideas':
+        return <IdeasSection t={t} ideas={ideas} fetchIdeas={fetchIdeas} />;
       case 'ai-gen':
         return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} aiHistory={aiHistory} fetchAiHistory={fetchAiHistory} aiLogs={aiLogs} />;
       case 'insight':
@@ -512,7 +526,7 @@ const InternalDashboard = () => {
 
   return (
     <div className="flex h-screen bg-black text-white font-['Inter',sans-serif] overflow-hidden animate-in fade-in duration-700">
-      <InternalSidebar t={t} activeSection={activeSection} setActiveSection={setActiveSection} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} lang={lang} toggleLang={toggleLang} handleLogout={handleLogout} adminClients={adminClients} partnerApps={partnerApps} tickets={tickets} />
+      <InternalSidebar t={t} activeSection={activeSection} setActiveSection={setActiveSection} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} lang={lang} toggleLang={toggleLang} handleLogout={handleLogout} adminClients={adminClients} partnerApps={partnerApps} tickets={tickets} ideas={ideas} />
 
       <main className="flex-1 flex flex-col min-w-0 bg-black overflow-hidden relative">
         <InternalHeader t={t} activeSection={activeSection} setIsSidebarOpen={setIsSidebarOpen} />
