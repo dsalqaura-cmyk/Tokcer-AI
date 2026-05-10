@@ -82,6 +82,7 @@ const PartnerAgreement = () => {
           const { error: insertError } = await supabase
             .from('partners')
             .insert([{
+              id: applicationId, // Menggunakan ID aplikasi sebagai ID partner agar tidak null
               full_name: partnerData.full_name || 'Partner Tanpa Nama',
               email: partnerData.email,
               whatsapp: partnerData.whatsapp,
