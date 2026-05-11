@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const OnboardTab = ({ 
   t, 
@@ -7,6 +7,7 @@ const OnboardTab = ({
   onSubmit,
   isSubmitting
 }) => {
+  const [isBusinessVerified, setIsBusinessVerified] = useState(false);
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
       <div className="text-center space-y-3 mb-10">
@@ -158,10 +159,34 @@ const OnboardTab = ({
             </div>
           )}
 
+          {/* Business Verification Checkbox */}
+          <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 space-y-3 mt-8 mb-6">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <div className="flex-shrink-0 mt-0.5">
+                <input 
+                  type="checkbox" 
+                  checked={isBusinessVerified}
+                  onChange={(e) => setIsBusinessVerified(e.target.checked)}
+                  className="w-4 h-4 rounded bg-black border-zinc-700 text-orange-600 focus:ring-orange-600 focus:ring-offset-zinc-900" 
+                />
+              </div>
+              <div className="text-xs text-zinc-400 group-hover:text-zinc-300 transition-colors leading-relaxed">
+                Saya menyatakan bahwa toko yang saya jalankan sudah berstatus <span className="text-white font-bold">Akun Bisnis / Lolos Verifikasi</span> di marketplace terkait.
+              </div>
+            </label>
+            
+            {!isBusinessVerified && (
+              <div className="flex items-start gap-2 text-[10px] text-amber-500/90 bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20">
+                <iconify-icon icon="solar:danger-triangle-bold" className="text-sm flex-shrink-0 mt-0.5"></iconify-icon>
+                <p><strong>Peringatan:</strong> Tanpa verifikasi bisnis, sistem beresiko tidak dapat menarik data toko secara otomatis. Centang kotak di atas untuk melanjutkan.</p>
+              </div>
+            )}
+          </div>
+
           <button 
             type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/10 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3"
+            disabled={isSubmitting || !isBusinessVerified}
+            className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black uppercase tracking-[0.3em] py-5 rounded-2xl shadow-xl shadow-orange-600/10 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3"
           >
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
