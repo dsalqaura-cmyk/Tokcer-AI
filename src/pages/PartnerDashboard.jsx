@@ -479,9 +479,8 @@ const PartnerDashboard = () => {
       const { error } = await supabase.from('support_tickets').insert([{
         user_id: user.id === 'admin-bypass' ? null : user.id,
         type: bugForm.category || 'bug',
-        description: bugForm.description,
-        status: 'open',
-        metadata: { source: 'partner_dashboard' }
+        description: bugForm.description + "\n\n(Sumber: Partner Dashboard)",
+        status: 'open'
       }]);
 
       if (error) throw error;

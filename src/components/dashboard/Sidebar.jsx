@@ -169,7 +169,7 @@ const Sidebar = ({
                       )}
                     </div>
                     <div className="w-full bg-zinc-800/80 rounded-full h-1">
-                      <div className={`h-1 rounded-full ${isUltimate ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-zinc-600'}`} style={{width: `${isUltimate ? 100 : Math.min(100, ((profile?.tokens || 0) / (profile?.totalQuota || 50)) * 100)}%`}}></div>
+                      <div className={`h-1 rounded-full ${isUltimate ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-orange-500'}`} style={{width: `${isUltimate ? 100 : Math.min(100, ((profile?.tokens || 0) / (profile?.totalQuota || 50)) * 100)}%`}}></div>
                     </div>
                   </div>
                   <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
