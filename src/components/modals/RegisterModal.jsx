@@ -14,6 +14,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [dbPlans, setDbPlans] = useState([]);
   const [affiliateId, setAffiliateId] = useState(localStorage.getItem('tokcer_affiliate_id') || '');
   const [billingCycle, setBillingCycle] = useState('Monthly');
+  const [isBusinessVerified, setIsBusinessVerified] = useState(false);
 
   const [isSnapLoaded, setIsSnapLoaded] = useState(false);
 
@@ -270,7 +271,31 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="w-full bg-orange-600 text-white py-4 rounded-2xl text-sm font-black uppercase tracking-[0.2em] hover:bg-orange-500 transition-all flex justify-center items-center gap-2 disabled:opacity-70">
+            {/* Business Verification Checkbox */}
+            <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <div className="flex-shrink-0 mt-0.5">
+                  <input 
+                    type="checkbox" 
+                    checked={isBusinessVerified}
+                    onChange={(e) => setIsBusinessVerified(e.target.checked)}
+                    className="w-4 h-4 rounded bg-black border-zinc-700 text-orange-600 focus:ring-orange-600 focus:ring-offset-zinc-900" 
+                  />
+                </div>
+                <div className="text-xs text-zinc-400 group-hover:text-zinc-300 transition-colors leading-relaxed">
+                  Saya menyatakan bahwa toko saya sudah berstatus <span className="text-white font-bold">Akun Bisnis / Lolos Verifikasi</span> di marketplace yang ingin saya integrasikan.
+                </div>
+              </label>
+              
+              {!isBusinessVerified && (
+                <div className="flex items-start gap-2 text-[10px] text-amber-500/90 bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20">
+                  <iconify-icon icon="solar:danger-triangle-bold" className="text-sm flex-shrink-0 mt-0.5"></iconify-icon>
+                  <p><strong>Peringatan:</strong> Jika akun marketplace Anda belum terverifikasi sebagai akun bisnis, sistem Tokcer AI beresiko tidak dapat menarik data produk dan penjualan secara otomatis.</p>
+                </div>
+              )}
+            </div>
+
+            <button type="submit" disabled={loading || !isBusinessVerified} className="w-full bg-orange-600 text-white py-4 rounded-2xl text-sm font-black uppercase tracking-[0.2em] hover:bg-orange-500 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
               {loading && <iconify-icon icon="solar:spinner-linear" className="animate-spin text-lg"></iconify-icon>}
               {loading ? "MENYIAPKAN PEMBAYARAN..." : "DAFTAR & BAYAR SEKARANG"}
             </button>
