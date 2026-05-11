@@ -9,6 +9,7 @@ const ApprovalSection = ({
   MOCK_USERS, 
   getTierBadgeClass, 
   setSelectedPartnerApp, 
+  handleOpenApproveModal,
   setShowApproveModal, 
   handleApprove,
   handleReject,
@@ -115,7 +116,7 @@ const ApprovalSection = ({
                                 <iconify-icon icon="solar:eye-bold-duotone" className="text-xl"></iconify-icon>
                               </button>
                               <button 
-                                onClick={() => { setSelectedPartnerApp(item); setShowApproveModal(true); }} 
+                                onClick={() => handleOpenApproveModal(item)} 
                                 className="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-amber-600/20 active:scale-95"
                               >
                                 Approve & Setup
