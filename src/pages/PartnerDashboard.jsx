@@ -113,6 +113,14 @@ const PartnerDashboard = () => {
         setLoading(true);
         
         const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
+        
+        // 🛡️ SECURITY PATCH UJANG: Tendang user biasa ke dashboard mereka!
+        if (!partner) {
+          console.warn("🛡️ SECURITY ALERT: Akses ditolak! User bukan Partner.");
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+
         const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
         const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
 

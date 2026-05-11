@@ -12,19 +12,28 @@ async function check() {
   const { data: partner, error: pError } = await supabase
     .from('partners')
     .select('*')
-    .eq('email', 'flux@mailinator.com');
+    .in('email', ['flux@mailinator.com', 'flux1@mailinator.com', 'flux2@mailinator.com', 'userflux@mailinator.com']);
   
   if (pError) console.error("❌ Gagal cek tabel partners:", pError.message);
   else console.log("📊 Data di tabel partners:", partner);
 
-  // 2. Cek di tabel clients
-  const { data: client, error: cError } = await supabase
+  // 2. Cek di tabel profiles untuk mencari ID flux, flux1, flux2 dan userflux
+  const { data: prof, error: pError2 } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('email', ['flux@mailinator.com', 'flux1@mailinator.com', 'flux2@mailinator.com', 'userflux@mailinator.com']);
+  
+  if (pError2) console.error("❌ Gagal cek tabel profiles:", pError2.message);
+  else console.log("📊 Data di tabel profiles:", prof);
+
+  // 3. Cek di tabel clients untuk melihat partner_id
+  const { data: cli, error: cError } = await supabase
     .from('clients')
     .select('*')
-    .eq('email', 'flux@mailinator.com');
+    .in('email', ['flux1@mailinator.com', 'flux2@mailinator.com']);
   
   if (cError) console.error("❌ Gagal cek tabel clients:", cError.message);
-  else console.log("📊 Data di tabel clients:", client);
+  else console.log("📊 Data di tabel clients:", cli);
 }
 
 check();

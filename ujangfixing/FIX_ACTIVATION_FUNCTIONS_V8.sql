@@ -118,13 +118,16 @@ BEGIN
         -- Find Referrer Partner
         v_partner_id := v_client_record.partner_id;
         IF v_partner_id IS NULL AND v_client_record.ref IS NOT NULL AND v_client_record.ref <> 'Direct Web' THEN
-            SELECT id INTO v_partner_id FROM public.partners WHERE full_name = v_client_record.ref LIMIT 1;
+            SELECT id INTO v_partner_id FROM public.partners WHERE referral_code = v_client_record.ref LIMIT 1;
         END IF;
 
         IF v_partner_id IS NOT NULL THEN
+            -- [PERBAIKAN UJANG]: Sync partner_id ke tabel clients agar hitungan valid
+            UPDATE public.clients SET partner_id = v_partner_id WHERE id = v_client_record.id;
+
             -- Calculate Dynamic Tier
-            SELECT count(*) INTO v_active_count FROM public.clients WHERE (partner_id = v_partner_id OR ref = (SELECT full_name FROM public.partners WHERE id = v_partner_id)) AND status = 'active';
-            SELECT count(*) INTO v_elite_count FROM public.clients WHERE (partner_id = v_partner_id OR ref = (SELECT full_name FROM public.partners WHERE id = v_partner_id)) AND status = 'active' AND plan IN ('elite', 'ultimate');
+            SELECT count(*) INTO v_active_count FROM public.clients WHERE (partner_id = v_partner_id OR ref = (SELECT referral_code FROM public.partners WHERE id = v_partner_id)) AND status = 'active';
+            SELECT count(*) INTO v_elite_count FROM public.clients WHERE (partner_id = v_partner_id OR ref = (SELECT referral_code FROM public.partners WHERE id = v_partner_id)) AND status = 'active' AND plan IN ('elite', 'ultimate');
 
             -- Tier Logic (Min Bronze)
             v_partner_tier := CASE 
@@ -146,21 +149,25 @@ BEGIN
             END IF;
 
             -- LOGIKA BONUS PERFORMANCE (VOLUME MILESTONE)
+            -- [PERBAIKAN UJANG]: Tambahkan INSERT ke ai_usage_logs agar tidak double bonus
             IF v_active_count >= 5 THEN
                 IF NOT EXISTS (SELECT 1 FROM public.ai_usage_logs WHERE user_id = v_partner_id AND feature = 'partner_milestone_bonus' AND prompt LIKE '%Milestone: 5%') THEN
                     v_milestone_bonus := 150000;
+                    INSERT INTO public.ai_usage_logs (user_id, feature, prompt) VALUES (v_partner_id, 'partner_milestone_bonus', 'Achieved Milestone: 5 clients');
                 END IF;
             END IF;
 
             IF v_active_count >= 10 THEN
                 IF NOT EXISTS (SELECT 1 FROM public.ai_usage_logs WHERE user_id = v_partner_id AND feature = 'partner_milestone_bonus' AND prompt LIKE '%Milestone: 10%') THEN
                     v_milestone_bonus := v_milestone_bonus + 350000;
+                    INSERT INTO public.ai_usage_logs (user_id, feature, prompt) VALUES (v_partner_id, 'partner_milestone_bonus', 'Achieved Milestone: 10 clients');
                 END IF;
             END IF;
 
             IF v_active_count >= 15 THEN
                 IF NOT EXISTS (SELECT 1 FROM public.ai_usage_logs WHERE user_id = v_partner_id AND feature = 'partner_milestone_bonus' AND prompt LIKE '%Milestone: 15%') THEN
                     v_milestone_bonus := v_milestone_bonus + 750000;
+                    INSERT INTO public.ai_usage_logs (user_id, feature, prompt) VALUES (v_partner_id, 'partner_milestone_bonus', 'Achieved Milestone: 15 clients');
                 END IF;
             END IF;
 
