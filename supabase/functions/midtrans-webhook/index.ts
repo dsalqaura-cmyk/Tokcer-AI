@@ -95,7 +95,7 @@ serve(async (req) => {
             p_email: email,
             p_application_id: client.id,
             p_full_name: nama,
-            p_plan: client.plan,
+            p_plan_key: client.plan,
             p_role: 'user'
         });
 
