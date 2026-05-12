@@ -421,7 +421,9 @@ const PartnerDashboard = () => {
 
       // 4. Catat ke Tabel Clients
       const { error: insertError } = await supabase.from('clients').insert([{
-        partner_id: user.id === 'admin-bypass' ? null : user.id,
+        // 🛡️ FIX UJANG: Gunakan partnerData.id (ID dari tabel partners) jika ada, 
+        // sebagai fallback gunakan user.id (Auth ID) agar tidak bentrok ID lagi!
+        partner_id: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id),
         shop_name: onboardForm.shopName,
         email: onboardForm.email,
         whatsapp: onboardForm.whatsapp,
