@@ -57,6 +57,10 @@ const PartnerAgreement = () => {
       
       if (error) throw error;
 
+      const tsShort = Date.now().toString().slice(-6);
+      const generatedCode = `TKC-AGR-${tsShort}`;
+
+      setRefCode(generatedCode);
       setIsSuccess(true);
     } catch (err) {
       alert("Gagal memproses persetujuan: " + (err.message || "Error tidak diketahui"));
