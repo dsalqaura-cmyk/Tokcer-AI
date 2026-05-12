@@ -123,8 +123,10 @@ const PartnerDashboard = () => {
           return;
         }
 
-        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
-        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
+        // 🛡️ FIX UJANG: Gunakan partner.id (ID dari tabel partners), bukan currentUser.id (Auth ID)
+        // karena untuk partner baru, ID mereka menggunakan ID Aplikasi, bukan ID Auth!
+        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
+        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
 
         if (partner) {
           setPartnerData({
