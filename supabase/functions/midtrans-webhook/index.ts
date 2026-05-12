@@ -21,8 +21,39 @@ serve(async (req) => {
     
     const RESEND_API_KEY = resendConfig?.value || Deno.env.get('RESEND_API_KEY');
 
+    const { data: midtransConfig } = await supabaseClient
+      .from('ai_configs')
+      .select('value')
+      .eq('key', 'midtrans_server_key')
+      .maybeSingle();
+    
+    const SERVER_KEY = midtransConfig?.value || Deno.env.get('MIDTRANS_SERVER_KEY');
+
     const body = await req.json()
-    const { order_id, transaction_status, fraud_status, payment_type, customer_details } = body
+    const { order_id, transaction_status, fraud_status, payment_type, customer_details, signature_key, status_code, gross_amount } = body
+
+    // 🛡️ FIX UJANG: Verifikasi Signature Midtrans!
+    if (SERVER_KEY) {
+      if (!signature_key) {
+        console.error("🛡️ SECURITY ALERT: Signature key hilang! Upaya spoofing terdeteksi.");
+        return new Response(JSON.stringify({ status: 'error', message: 'Missing signature' }), { status: 400 });
+      }
+      
+      const text = `${order_id}${status_code}${gross_amount}${SERVER_KEY}`;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest("SHA-512", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+      if (hashHex !== signature_key) {
+        console.error("🛡️ SECURITY ALERT: Signature Midtrans tidak valid! Upaya spoofing terdeteksi.");
+        return new Response(JSON.stringify({ status: 'error', message: 'Invalid signature' }), { status: 400 });
+      }
+      console.log("🛡️ Signature Midtrans valid.");
+    } else {
+      console.warn("⚠️ MIDTRANS_SERVER_KEY tidak ditemukan di ai_configs maupun Env. Melewati verifikasi (BAHAYA untuk Prod!).");
+    }
 
     const { data: trx, error: trxError } = await supabaseClient
       .from('transactions')
