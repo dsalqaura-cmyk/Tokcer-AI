@@ -83,7 +83,7 @@ const PartnerAgreement = () => {
             .from('partners')
             .insert([{
               id: applicationId, // Menggunakan ID aplikasi sebagai ID partner agar tidak null
-              full_name: partnerData.full_name || 'Partner Tanpa Nama',
+              full_name: partnerData.nama || partnerData.full_name || 'Partner Tanpa Nama',
               email: partnerData.email,
               whatsapp: partnerData.whatsapp,
               referral_code: generatedCode,
