@@ -98,7 +98,7 @@ const PartnerAgreement = () => {
               password: generatedPassword,
               options: {
                 data: {
-                  full_name: partnerData.full_name || 'Partner Tanpa Nama'
+                  full_name: partnerData.nama || 'Partner Tanpa Nama'
                 }
               }
             });
@@ -120,7 +120,7 @@ const PartnerAgreement = () => {
             .from('partners')
             .insert([{
               id: targetUserId, // Menggunakan ID Auth agar sinkron!
-              full_name: partnerData.full_name || 'Partner Tanpa Nama',
+              full_name: partnerData.nama || 'Partner Tanpa Nama',
               email: partnerData.email,
               whatsapp: partnerData.whatsapp,
               referral_code: generatedCode,
