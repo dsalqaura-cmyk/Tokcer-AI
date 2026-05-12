@@ -78,11 +78,48 @@ const PartnerAgreement = () => {
           if (updateError) throw updateError;
           console.log("Partner ditemukan, mengupdate kode referral.");
         } else {
+          // 🛡️ FIX UJANG: Cari ID Auth berdasarkan email di tabel profiles
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', partnerData.email)
+            .maybeSingle();
+
+          let targetUserId = null;
+
+          if (existingProfile) {
+            targetUserId = existingProfile.id;
+            console.log("User ditemukan di profiles, menggunakan ID Auth:", targetUserId);
+          } else {
+            // Jika tidak ada di profiles, buat akun auth baru agar dapat ID Auth!
+            const generatedPassword = `Tokcer@${Math.floor(1000 + Math.random() * 9000)}`;
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+              email: partnerData.email,
+              password: generatedPassword,
+              options: {
+                data: {
+                  full_name: partnerData.full_name || 'Partner Tanpa Nama'
+                }
+              }
+            });
+
+            if (signUpError) {
+              console.error("Gagal SignUp otomatis:", signUpError.message);
+              // Fallback pakai applicationId jika gagal total agar tidak stuck
+              targetUserId = applicationId;
+            } else {
+              targetUserId = signUpData.user?.id;
+              console.log("Akun Auth baru berhasil dibuat untuk partner:", targetUserId);
+              // Password baru tercatat di console, idealnya dikirim via email
+              console.log("Password Sementara Partner:", generatedPassword);
+            }
+          }
+
           // Jika belum ada, buat baru!
           const { error: insertError } = await supabase
             .from('partners')
             .insert([{
-              id: applicationId, // Menggunakan ID aplikasi sebagai ID partner agar tidak null
+              id: targetUserId, // Menggunakan ID Auth agar sinkron!
               full_name: partnerData.full_name || 'Partner Tanpa Nama',
               email: partnerData.email,
               whatsapp: partnerData.whatsapp,
