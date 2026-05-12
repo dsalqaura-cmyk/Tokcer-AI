@@ -87,11 +87,11 @@ const Login = () => {
 
       // Standard Redirection based on Role Toggle
       if (role === 'partner') {
-        // VALIDASI KETAT: Cek apakah benar-benar partner
+        // VALIDASI KETAT: Cek apakah benar-benar partner (menggunakan email karena ada inkonsistensi ID)
         const { data: partnerCheck } = await supabase
           .from('partners')
           .select('id')
-          .eq('id', authData.user.id)
+          .eq('email', authData.user.email)
           .maybeSingle();
 
         if (!partnerCheck) {
