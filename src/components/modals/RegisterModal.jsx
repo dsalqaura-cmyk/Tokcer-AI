@@ -238,16 +238,17 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
             </div>
 
             {/* Plan Selection */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid grid-cols-1 ${formPlan !== 'starter' ? 'md:grid-cols-2' : ''} gap-4`}>
                 <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Paket</label>
-                    <select value={formPlan} onChange={(e) => setFormPlan(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
+                    <select value={formPlan} onChange={(e) => { setFormPlan(e.target.value); if (e.target.value === 'starter') setBillingCycle('Monthly'); }} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
                         <option value="starter">Starter (Gratis)</option>
                         <option value="pro">Pro Edition ({billingCycle === 'Monthly' ? 'Rp 499k' : 'Rp 5.489k'})</option>
                         <option value="elite">Elite Edition ({billingCycle === 'Monthly' ? 'Rp 999k' : 'Rp 10.989k'})</option>
                         <option value="ultimate">Ultimate Edition ({billingCycle === 'Monthly' ? 'Rp 1.999k' : 'Rp 21.989k'})</option>
                     </select>
                 </div>
+                {formPlan !== 'starter' && (
                 <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Siklus</label>
                     <select name="billing_cycle" value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
@@ -255,6 +256,7 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                         <option value="Yearly">Tahunan</option>
                     </select>
                 </div>
+                )}
             </div>
 
             {/* Platform Selection */}
