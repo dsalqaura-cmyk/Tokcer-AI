@@ -30,7 +30,7 @@ async function check() {
   const { data: cli, error: cError } = await supabase
     .from('clients')
     .select('*')
-    .eq('partner_id', '5cc09200-42a0-410e-922e-4c041230a21a');
+    .in('email', ['flux1@mailinator.com', 'flux2@mailinator.com']);
   
   if (cError) console.error("❌ Gagal cek tabel clients:", cError.message);
   else console.log("📊 Data di tabel clients:", cli);

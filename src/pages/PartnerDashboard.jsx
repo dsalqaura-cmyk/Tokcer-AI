@@ -112,9 +112,7 @@ const PartnerDashboard = () => {
       try {
         setLoading(true);
         
-        // 🛡️ FIX UJANG: Cek berdasarkan EMAIL, bukan ID! Karena ID di tabel partners 
-        // menggunakan ID Aplikasi, bukan ID Auth untuk partner baru.
-        const { data: partner } = await supabase.from('partners').select('*').eq('email', currentUser.email).maybeSingle();
+        const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
         
         // 🛡️ SECURITY PATCH UJANG: Tendang user biasa ke dashboard mereka!
         if (!partner) {
@@ -123,10 +121,8 @@ const PartnerDashboard = () => {
           return;
         }
 
-        // 🛡️ FIX UJANG: Gunakan partner.id (ID dari tabel partners), bukan currentUser.id (Auth ID)
-        // karena untuk partner baru, ID mereka menggunakan ID Aplikasi, bukan ID Auth!
-        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
-        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
+        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
+        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
 
         if (partner) {
           setPartnerData({
@@ -421,9 +417,7 @@ const PartnerDashboard = () => {
 
       // 4. Catat ke Tabel Clients
       const { error: insertError } = await supabase.from('clients').insert([{
-        // 🛡️ FIX UJANG: Gunakan partnerData.id (ID dari tabel partners) jika ada, 
-        // sebagai fallback gunakan user.id (Auth ID) agar tidak bentrok ID lagi!
-        partner_id: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id),
+        partner_id: user.id === 'admin-bypass' ? null : user.id,
         shop_name: onboardForm.shopName,
         email: onboardForm.email,
         whatsapp: onboardForm.whatsapp,

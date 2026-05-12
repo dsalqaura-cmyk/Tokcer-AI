@@ -60,6 +60,41 @@ const PartnerAgreement = () => {
       const tsShort = Date.now().toString().slice(-6);
       const generatedCode = `TKC-AGR-${tsShort}`;
 
+      // [PERBAIKAN UJANG]: Pastikan data partner tercipta di tabel partners
+      if (partnerData?.email) {
+        const { data: existingPartner } = await supabase
+          .from('partners')
+          .select('id')
+          .eq('email', partnerData.email)
+          .maybeSingle();
+
+        if (existingPartner) {
+          // Jika sudah ada, tinggal update kodenya
+          const { error: updateError } = await supabase
+            .from('partners')
+            .update({ referral_code: generatedCode })
+            .eq('email', partnerData.email);
+          
+          if (updateError) throw updateError;
+          console.log("Partner ditemukan, mengupdate kode referral.");
+        } else {
+          // Jika belum ada, buat baru!
+          const { error: insertError } = await supabase
+            .from('partners')
+            .insert([{
+              id: applicationId, // Menggunakan ID aplikasi sebagai ID partner agar tidak null
+              full_name: partnerData.full_name || 'Partner Tanpa Nama',
+              email: partnerData.email,
+              whatsapp: partnerData.whatsapp,
+              referral_code: generatedCode,
+              status: 'active'
+            }]);
+          
+          if (insertError) throw insertError;
+          console.log("Partner tidak ditemukan, membuat data partner baru.");
+        }
+      }
+
       setRefCode(generatedCode);
       setIsSuccess(true);
     } catch (err) {
