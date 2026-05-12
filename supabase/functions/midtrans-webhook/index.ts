@@ -61,6 +61,7 @@ serve(async (req) => {
                     email: userData.email,
                     whatsapp: userData.phone,
                     plan: trx.plan_name,
+                    billing_cycle: userData.billing_cycle || 'Monthly',
                     status: 'pending',
                     ref: userData.affiliateId || 'Direct',
                     metadata: { store_links: userData.storeLinks || {} },

@@ -408,7 +408,8 @@ const PartnerDashboard = () => {
             user_data: {
               email: onboardForm.email,
               nama: onboardForm.shopName,
-              phone: onboardForm.whatsapp
+              phone: onboardForm.whatsapp,
+              billing_cycle: billingCycle
             }
           }
         });
