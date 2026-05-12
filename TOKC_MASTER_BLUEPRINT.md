@@ -1,79 +1,79 @@
-# 🏮 TOKCER AI: MASTER SYSTEM BLUEPRINT 🏮
-## DO NOT DELETE OR MODIFY WITHOUT ADMIN APPROVAL
+# 🏮 TOKCER AI: MASTER SYSTEM BLUEPRINT v2.0 🏮
 
-Dokumen ini adalah referensi utama untuk seluruh pengembang AI (Antigravity/Ucup) agar tidak merusak logika sistem yang sudah ada. **WAJIB DIBACA SEBELUM MEMULAI CHAT BARU.**
+⚠️ RESTRICTED PROTOCOL: DO NOT DELETE, REFACTOR, OR MODIFY WITHOUT EXPLICIT ADMIN APPROVAL
 
----
+Dokumen ini adalah Absolute Source of Truth bagi seluruh AI Agent (Antigravity, Ucup, Gemini, dll). Baca setiap baris dengan saksama sebelum mengeksekusi tugas apa pun. Pelanggaran terhadap blueprint ini dianggap sebagai system failure.
 
-### 🏮 DAFTAR LINK RESMI (OFFICIAL LINKS)
-- **User Landing (Staging)**: `https://staging.tokcer-ai.com`
-- **User Login (Staging)**: `https://staging.tokcer-ai.com/login`
-- **Admin Dashboard (Staging)**: `https://dashboardstaging.tokcer-ai.com`
-- **User Landing (Production)**: `https://tokcer-ai.com`
-- **Admin Dashboard (Production)**: `https://dashboard.tokcer-ai.com`
-- **Official Logo Asset**: `https://dashboardstaging.tokcer-ai.com/logo.png`
+🌐 1. ENVIRONMENT & OFFICIAL ENDPOINTS
 
----
+Semua tautan hardcoded atau referensi URL harus menggunakan standar ini:
 
-### 🛡️ ATURAN HARAM (CRITICAL RULES)
-- **Logo Integrity**: SELALU gunakan URL `https://dashboardstaging.tokcer-ai.com/logo.png`. Jangan ganti ke teks atau URL lain.
-- **Visual Aesthetic**: Tema WAJIB **Premium Dark Mode** (Zinc-900, Black, Orange-600). Jangan gunakan warna-warna basic (Red, Blue, Green murni).
-- **Hardcoded Links**: Jangan hardcode link login di dalam file `.jsx` jika berhubungan dengan email. Gunakan Database Trigger SQL agar link tetap konsisten (`staging.tokcer-ai.com/login`).
-- **Database Trigger**: Seluruh aktivasi akun harus melalui fungsi `rpc_activate_account` untuk memastikan integrasi Auth, Profile, dan Komisi Partner sinkron.
+Official Logo Asset: https://dashboardstaging.tokcer-ai.com/logo.png (Wajib untuk Header, Sidebar, dan Email template).
 
----
+Staging Environment (Development/Testing):
+- User Landing: https://staging.tokcer-ai.com
+- User Login: https://staging.tokcer-ai.com/login
+- Admin Dashboard: https://dashboardstaging.tokcer-ai.com
 
-### 2. 🗺️ PETA LOGIKA (LOGIC FLOW)
+Production Environment (Live):
+- User Landing: https://tokcer-ai.com
+- User Login: https://tokcer-ai.com/login
+- Admin Dashboard: https://dashboard.tokcer-ai.com
 
-#### A. Alur Registrasi & Aktivasi
-1. **User/Client** mendaftar via `RegisterModal.jsx` -> Masuk ke tabel `clients` (Status: `pending`).
-2. **Partner** mendaftarkan klien -> Masuk ke tabel `clients` + `partner_id`.
-3. **Admin** klik **Approve** di Dashboard Internal -> Menjalankan logic:
-   - Buat Akun Supabase Auth.
-   - Buat Profile di tabel `profiles` (Set `subscription_plan`).
-   - Tambah `total_omzet` ke Partner terkait.
-   - Kirim email Welcome otomatis via Database Trigger `tr_send_welcome_email`.
+🛡️ 2. THE GOLDEN RULES (ANTI-HALLUCINATION & ANTI-DESTRUCT)
 
-#### B. Alur Dashboard User
-- **Data Source**: Saat ini masih berbasis **CSV Import** (Tabel `orders` & `products`).
-- **AI Credits**: 
-  - Potong 1 Token per **Topik Baru** di Generator.
-  - Potong 1 Token per **Akses Harian** di Analytics & Market Intel.
-- **Redirection**: User login harus dilempar ke `/dashboard`.
+Aturan ini TIDAK BISA DITAWAR dalam kondisi apa pun:
 
-#### C. Alur Dashboard Partner
-- **Komisi**: Berdasarkan `total_omzet` di tabel `partners`.
-- **Leaderboard**: Diurutkan berdasarkan `total_omzet` secara Real-time.
-- **Redirection**: Partner login harus dilempar ke `/partner-dashboard`.
+- **The 100% Feature Retention Rule**: Saat diinstruksikan untuk mendesain ulang (Redesign) UI/UX, Anda DILARANG KERAS menghapus, menyembunyikan, atau mengurangi logic script, fungsionalitas, atau struktur data yang sudah ada. Tugas Anda HANYA merubah visual (warna, chart, tata letak) tanpa menyentuh engine di belakangnya.
+- **File Referencing**: Koneksi ke database wajib memanggil `src/lib/supabase.js`. JANGAN PERNAH memanggil atau membuat file dengan nama `supabaseclient.js` atau variasi lainnya.
+- **No Phantom Libraries**: Jangan menggunakan library npm baru kecuali diinstruksikan secara eksplisit. Gunakan apa yang sudah ada di stack bawaan (React, Vite, Tailwind). *(Update: Sentry.io telah disetujui untuk diinstal).*
+- **Visual Delivery**: Jika Admin meminta mockup atau layout, utamakan memberikan representasi visual, diagram, atau komponen React siap pakai. Jangan membalas dengan kerangka HTML mentah yang tidak ber-styling.
 
----
+🎨 3. UI/UX & STYLING STANDARDS
 
-### 3. ⚙️ TEKNOLOGI & KONFIGURASI
-- **Frontend**: Vite + React + Tailwind CSS.
-- **Backend**: Supabase (Auth, DB, Storage).
-- **AI**: DeepSeek API (diakses via `utils/ai.js`).
-- **Configs**: Seluruh API Key (Shopee, TikTok, Resend) disimpan di tabel `public.ai_configs`.
+- **Mobile-First Mandatory**: Semua komponen dan dashboard WAJIB responsif. Mulai dari layar mobile (contoh: `w-full px-4`), lalu gunakan breakpoints Tailwind (`md:`, `lg:`) untuk layar yang lebih besar. Pendekatan konversi web-to-mobile adalah prioritas utama.
+- **Premium Dark Mode Palette**:
+  - Background Utama: `bg-zinc-900` atau `bg-black`.
+  - Card/Container: `bg-zinc-800` atau `bg-zinc-900` dengan border tipis `border-zinc-700`.
+  - Primary/Accent: `text-orange-600` or `bg-orange-600`.
+  - Text: `text-zinc-100` (Primary), `text-zinc-400` (Secondary).
+  - Dilarang: Warna dasar HTML (red, blue, green murni), gradient mencolok, atau tema terang (Light Mode).
+- **Global CSS Integrity**: DILARANG menambahkan styling di `index.css`. Semua styling wajib menggunakan utility classes bawaan Tailwind CSS di level komponen (`.jsx`).
 
----
+🏗️ 4. ARSITEKTUR LOGIKA & DATABASE (SUPABASE)
 
-### 🏮 STATUS SISTEM & PRIORITAS DEVELOPMENT (Update: 4 Mei 2026)
+A. Alur Registrasi, Aktivasi & Auth
+- **User/Client Registration**: Mendaftar via `RegisterModal.jsx` -> Insert ke tabel `clients` (Status: pending). PENTING: Jangan pernah menghapus fallback pricing logic di modal ini.
+- **Partner Registration**: Mendaftarkan klien -> Insert ke tabel `clients` + menyertakan `partner_id`.
+- **Admin Approval (Centralized Logic)**:
+  - Saat Admin menekan "Approve", sistem WAJIB memanggil PostgreSQL RPC Function: `rpc_activate_account`.
+  - Fungsi ini akan mengeksekusi secara berurutan: Pembuatan akun Auth -> Pembuatan Profile di tabel `profiles` (termasuk set `subscription_plan`) -> Penambahan `total_omzet` ke Partner -> Trigger `tr_send_welcome_email`.
+  - Dilarang memecah proses ini menjadi multiple API calls di Frontend.
+  - *(Update 11 Mei: Perbaikan parameter webhook dari `p_plan` menjadi `p_plan_key` saat memanggil RPC ini).*
 
-#### ✅ PEKERJAAN SELESAI (DONE):
-1.  **Komisi Sync**: Logika 26-25, Kriteria Tier (Min Elite), dan Rate Ultimate (Rp 249.7K - Rp 449.5K) telah sinkron di Dashboard Partner & Admin.
-2.  **Harga Real**: Paket Ultimate dikoreksi ke Rp 1.999.000 (Monthly) & Rp 21.989.000 (Yearly) di Landing Page & Dashboard.
-3.  **Onboarding V2**: Form pendaftaran sudah mendukung opsi Yearly dan menampilkan "Total Bayar" secara real-time.
-4.  **Support Separation**: Form Lapor Bug (support_tickets) dan Saran Fitur (partner_ideas) sudah dipisah secara logika dan UI.
+B. Ekonomi Token AI & Data Source
+- **Sumber Data Dashboard**: Saat ini berbasis CSV Import yang masuk ke tabel `orders` dan `products`. Sesuaikan query dengan struktur tabel ini.
+- **Sistem Token**:
+  - Kurangi 1 Token saat pembuatan Topik Baru di fitur Generator.
+  - Kurangi 1 Token saat akses harian pertama ke modul Analytics & Market Intel.
+- **Security Constraint**: Setiap inisiasi fitur AI atau dashboard widget WAJIB mengecek `subscription_plan` user dari tabel `profiles` terlebih dahulu.
 
-#### 🛠️ PRIORITAS DEVELOPMENT BERIKUTNYA (BACKLOG):
-1.  **Real Leaderboard Logic**: Implementasi filter data untuk dropdown "Minggu Ini" dan "Bulan Ini" di Leaderboard (saat ini masih menampilkan All-Time).
-2.  **Payment Tab Sync**: Menyelaraskan estimasi payout di tab Payment agar menggunakan jendela perhitungan yang sama (26 - 25).
-3.  **Bank Data Integration**: Memastikan Admin dapat melihat data bank partner secara langsung di Dashboard Internal untuk mempermudah proses transfer komisi.
-4.  **Tier Upgrade UX**: Menambahkan notifikasi/animasi saat partner berhasil naik Tier (misal: dari Bronze ke Silver) agar lebih memotivasi.
-5.  **Weekly Top 1 Validation**: Menyiapkan filter global untuk admin guna memvalidasi syarat "Minimal 5 Closing Platform" sebelum mencairkan bonus mingguan.
+C. Routing & Navigasi Berbasis Role
+- **User Biasa**: Setelah login, wajib redirect ke `/dashboard`.
+- **Partner**: Setelah login, wajib redirect ke `/partner-dashboard` (Tampilkan Komisi berdasarkan `total_omzet` dan Leaderboard real-time).
+- **Admin**: Menggunakan environment dashboard tersendiri (Staging/Prod).
 
----
+⚙️ 5. TECH STACK & INTEGRATION PROTOCOL
 
-### 🏮 PESAN UNTUK AI:
-*Jangan pernah mengubah struktur CSS Global di `index.css` tanpa izin. Selalu gunakan angka dari tabel komisi di `SubscribersTab.jsx` sebagai referensi utama. Pastikan setiap fitur baru selalu mengecek `subscription_plan` milik User.*
+- **Core Stack**: Vite + React + Tailwind CSS.
+- **Backend/BaaS**: Supabase (Database, Auth, Edge Functions/Storage jika relevan).
+- **AI Core**: Akses ke DeepSeek API harus dikemas dan dipanggil HANYA melalui utilitas terpusat di `utils/ai.js`.
+- **Configuration Security**: Credential pihak ketiga (Shopee API, TikTok API, Resend untuk email) wajib dibaca dari tabel `public.ai_configs`. Dilarang menyimpan API Key langsung di dalam komponen Frontend.
+- **Monitoring (Update 11 Mei)**: Sentry.io diinstal dan diinisialisasi di `src/main.jsx` untuk memonitor eror secara *real-time*.
 
-**STATUS SISTEM: 90% - FOKUS BERIKUTNYA: PAYMENT SYNC & LEADERBOARD FILTER.**
+🤖 6. COMMAND EXECUTION PROTOCOL (UNTUK AI AGENT)
+
+Saat Anda (AI) menerima instruksi dari Admin (atau meneruskan/memperbaiki pekerjaan developer internal seperti 'Udin'), ikuti langkah ini:
+1. **Acknowledge & Restrict**: Pahami tugasnya. Batasi perubahan HANYA pada file yang relevan.
+2. **Preserve Logic**: Tuliskan kembali atau pertahankan state, props, dan function bawaan sebelum mengganti antarmuka visual.
+3. **Incremental Code Delivery**: Jangan menulis ulang seluruh file jika hanya satu fungsi yang berubah. Gunakan indikator `// ... existing code` dan berikan snippet perubahan secara presisi.

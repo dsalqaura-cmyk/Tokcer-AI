@@ -112,7 +112,9 @@ const PartnerDashboard = () => {
       try {
         setLoading(true);
         
-        const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
+        // 🛡️ FIX UJANG: Cek berdasarkan EMAIL, bukan ID! Karena ID di tabel partners 
+        // menggunakan ID Aplikasi, bukan ID Auth untuk partner baru.
+        const { data: partner } = await supabase.from('partners').select('*').eq('email', currentUser.email).maybeSingle();
         
         // 🛡️ SECURITY PATCH UJANG: Tendang user biasa ke dashboard mereka!
         if (!partner) {
