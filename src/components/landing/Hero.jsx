@@ -8,11 +8,6 @@ const Hero = () => {
   return (
     <header className="relative pt-28 pb-16 md:pt-40 md:pb-32 px-6 overflow-hidden">
       {/* Floating Decorative Elements */}
-      <div className="absolute top-1/4 left-[5%] animate-bounce duration-[3000ms] opacity-20 hidden lg:block">
-        <div className="w-16 h-16 bg-zinc-800 rounded-2xl rotate-12 flex items-center justify-center border border-zinc-700 shadow-2xl">
-          <iconify-icon icon="ri:tiktok-fill" className="text-3xl text-white"></iconify-icon>
-        </div>
-      </div>
       <div className="absolute bottom-1/4 right-[5%] animate-bounce duration-[4000ms] opacity-20 hidden lg:block">
         <div className="w-20 h-20 bg-orange-500/10 rounded-3xl -rotate-12 flex items-center justify-center border border-orange-500/20 shadow-2xl">
           <iconify-icon icon="simple-icons:shopee" className="text-4xl text-orange-500"></iconify-icon>

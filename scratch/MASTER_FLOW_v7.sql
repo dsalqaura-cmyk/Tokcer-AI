@@ -36,8 +36,8 @@ BEGIN
         UPDATE auth.users SET encrypted_password = crypt(p_password, gen_salt('bf')), updated_at = NOW() WHERE id = v_user_id;
     END IF;
 
-    -- B. Partner Data
-    UPDATE public.partners SET status = 'active' WHERE email = p_email;
+    -- B. Partner Data (PERMANENT FIX: Sinkronisasi ID Auth ke ID Partner)
+    UPDATE public.partners SET id = v_user_id, status = 'active' WHERE email = p_email;
     UPDATE public.partner_applications SET status = 'activated', agreed_at = NOW() WHERE id = p_application_id;
 
     -- C. Double Access: Create/Update Client Account (Ultimate 60 Days)

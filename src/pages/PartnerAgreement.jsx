@@ -60,12 +60,39 @@ const PartnerAgreement = () => {
       const tsShort = Date.now().toString().slice(-6);
       const generatedCode = `TKC-AGR-${tsShort}`;
 
-      // [PERBAIKAN UJANG]: Simpan kode unik ke tabel partners
+      // [PERBAIKAN UJANG]: Pastikan data partner tercipta di tabel partners
       if (partnerData?.email) {
-        await supabase
+        const { data: existingPartner } = await supabase
           .from('partners')
-          .update({ referral_code: generatedCode })
-          .eq('email', partnerData.email);
+          .select('id')
+          .eq('email', partnerData.email)
+          .maybeSingle();
+
+        if (existingPartner) {
+          // Jika sudah ada, tinggal update kodenya
+          const { error: updateError } = await supabase
+            .from('partners')
+            .update({ referral_code: generatedCode })
+            .eq('email', partnerData.email);
+          
+          if (updateError) throw updateError;
+          console.log("Partner ditemukan, mengupdate kode referral.");
+        } else {
+          // Jika belum ada, buat baru!
+          const { error: insertError } = await supabase
+            .from('partners')
+            .insert([{
+              id: applicationId, // Menggunakan ID aplikasi sebagai ID partner agar tidak null
+              full_name: partnerData.nama || partnerData.full_name || 'Partner Tanpa Nama',
+              email: partnerData.email,
+              whatsapp: partnerData.whatsapp,
+              referral_code: generatedCode,
+              status: 'active'
+            }]);
+          
+          if (insertError) throw insertError;
+          console.log("Partner tidak ditemukan, membuat data partner baru.");
+        }
       }
 
       setRefCode(generatedCode);
@@ -251,10 +278,10 @@ const PartnerAgreement = () => {
                   </tr>
                   <tr className="hover:bg-[rgba(245,163,0,0.03)] transition-colors">
                     <td className="px-4 py-3 font-semibold text-white">Ultimate</td>
-                    <td className="px-4 py-3 text-zinc-400">Rp 249.7K</td>
-                    <td className="px-4 py-3 text-zinc-400">Rp 299.6K</td>
-                    <td className="px-4 py-3 text-zinc-400">Rp 374.6K</td>
-                    <td className="px-4 py-3 text-[#F5A300] font-bold">Rp 449.5K</td>
+                    <td className="px-4 py-3 text-zinc-400">Rp 200K</td>
+                    <td className="px-4 py-3 text-zinc-400">Rp 240K</td>
+                    <td className="px-4 py-3 text-zinc-400">Rp 300K</td>
+                    <td className="px-4 py-3 text-[#F5A300] font-bold">Rp 360K</td>
                   </tr>
                 </tbody>
               </table>

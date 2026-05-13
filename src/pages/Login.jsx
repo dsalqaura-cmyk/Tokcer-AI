@@ -86,8 +86,25 @@ const Login = () => {
       }
 
       // Standard Redirection based on Role Toggle
-      if (role === 'partner') navigate('/partner-dashboard');
-      else navigate('/dashboard');
+      if (role === 'partner') {
+        // VALIDASI KETAT: Cek apakah benar-benar partner (menggunakan email karena ada inkonsistensi ID)
+        const { data: partnerCheck } = await supabase
+          .from('partners')
+          .select('id')
+          .eq('email', authData.user.email)
+          .maybeSingle();
+
+        if (!partnerCheck) {
+          // Jika bukan partner, batalkan sesi dan berikan eror
+          await supabase.auth.signOut();
+          setError("Akses Ditolak: Anda tidak terdaftar sebagai Partner.");
+          setLoading(false);
+          return;
+        }
+        navigate('/partner-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     }
   };
 

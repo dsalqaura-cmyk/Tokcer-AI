@@ -15,7 +15,6 @@ import CommissionSchemeTab from '../components/partner/tabs/CommissionSchemeTab.
 import { partnerTranslations } from '../locales/partnerLocales.js';
 
 const PartnerDashboard = () => {
-  console.log("💎 PartnerDashboard Mounting...");
   const [activeMenu, setActiveMenu] = useState('onboard'); // Simplified names
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -112,9 +111,18 @@ const PartnerDashboard = () => {
       try {
         setLoading(true);
         
-        const { data: partner } = await supabase.from('partners').select('*').eq('id', currentUser.id).maybeSingle();
-        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
-        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', currentUser.id).order('created_at', { ascending: false });
+        // Query by email due to ID mismatch in some accounts
+        const { data: partner } = await supabase.from('partners').select('*').eq('email', currentUser.email).maybeSingle();
+        
+        // 🛡️ SECURITY PATCH UJANG: Tendang user biasa ke dashboard mereka!
+        if (!partner) {
+          console.warn("🛡️ SECURITY ALERT: Akses ditolak! User bukan Partner.");
+          navigate('/dashboard', { replace: true });
+          return null;
+        }
+
+        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
+        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
 
         if (partner) {
           setPartnerData({
@@ -134,6 +142,7 @@ const PartnerDashboard = () => {
         }
 
         setSubscribers(subs || []);
+        return partner;
 
       } catch (err) {
         console.error("Fetch Data Error:", err);
@@ -154,16 +163,18 @@ const PartnerDashboard = () => {
         
         if (targetUser) {
           setUser(targetUser);
-          await fetchData(targetUser);
+          const fetchedPartner = await fetchData(targetUser);
           
           // 🏮 REAL-TIME SUBSCRIPTION (Section 3 Action Plan)
-          partnerSubscription = supabase
-            .channel(`partner_${targetUser.id}`)
-            .on('postgres_changes', 
-              { event: '*', schema: 'public', table: 'partners', filter: `id=eq.${targetUser.id}` }, 
-              (payload) => setPartnerData(prev => ({ ...prev, ...payload.new }))
-            )
-            .subscribe();
+          if (fetchedPartner) {
+            partnerSubscription = supabase
+              .channel(`partner_${fetchedPartner.id}`)
+              .on('postgres_changes', 
+                { event: '*', schema: 'public', table: 'partners', filter: `id=eq.${fetchedPartner.id}` }, 
+                (payload) => setPartnerData(prev => ({ ...prev, ...payload.new }))
+              )
+              .subscribe();
+          }
         } else {
           navigate('/login');
         }
@@ -396,7 +407,8 @@ const PartnerDashboard = () => {
             user_data: {
               email: onboardForm.email,
               nama: onboardForm.shopName,
-              phone: onboardForm.whatsapp
+              phone: onboardForm.whatsapp,
+              billing_cycle: billingCycle
             }
           }
         });
@@ -409,7 +421,7 @@ const PartnerDashboard = () => {
 
       // 4. Catat ke Tabel Clients
       const { error: insertError } = await supabase.from('clients').insert([{
-        partner_id: user.id === 'admin-bypass' ? null : user.id,
+        partner_id: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id),
         shop_name: onboardForm.shopName,
         email: onboardForm.email,
         whatsapp: onboardForm.whatsapp,
@@ -440,6 +452,7 @@ const PartnerDashboard = () => {
         paymentProof: null
       });
       fetchData(targetUser);
+      setActiveMenu('subscribers'); // GAP 3: Arahkan langsung ke daftar klien agar partner bisa lihat
     } catch (err) {
       alert(err.message);
     } finally {
@@ -479,9 +492,8 @@ const PartnerDashboard = () => {
       const { error } = await supabase.from('support_tickets').insert([{
         user_id: user.id === 'admin-bypass' ? null : user.id,
         type: bugForm.category || 'bug',
-        description: bugForm.description,
-        status: 'open',
-        metadata: { source: 'partner_dashboard' }
+        description: bugForm.description + "\n\n(Sumber: Partner Dashboard)",
+        status: 'open'
       }]);
 
       if (error) throw error;
@@ -526,14 +538,14 @@ const PartnerDashboard = () => {
     if(window.confirm(t('confirmLogout') || 'Logout?')) {
       await supabase.auth.signOut();
       localStorage.clear();
-      navigate('/login');
+      window.location.href = '/login';
     }
   };
 
   const renderContent = () => {
     const commonProps = { t, isSubmitting, formatCurrency };
     switch (activeMenu) {
-      case 'onboard': return <OnboardTab {...commonProps} form={onboardForm} setForm={setOnboardForm} onSubmit={handleOnboardSubmit} />;
+      case 'onboard': return <OnboardTab {...commonProps} form={onboardForm} setForm={setOnboardForm} onSubmit={handleOnboardSubmit} partnerData={partnerData} />;
       case 'subscribers': return <SubscribersTab {...commonProps} subscribers={subscribers} />;
       case 'leaderboard': return <LeaderboardTab {...commonProps} data={leaderboardData} countdown={countdown} leaderboardFilter={leaderboardFilter} setLeaderboardFilter={setLeaderboardFilter} totalPeriodClosings={totalPeriodClosings} />;
       case 'payment': return <PaymentTab {...commonProps} partnerData={partnerData} />;

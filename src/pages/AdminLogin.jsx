@@ -16,31 +16,37 @@ const AdminLogin = () => {
     setError(null);
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
 
-    // TOTAL BYPASS for Admin
-    if (cleanEmail === 'admin@tokcer-ai.com' && cleanPassword === 'Dind@1983') {
-      console.log("Admin Access Granted");
-      
-      try {
-        // Silently attempt supabase login to satisfy RLS if user exists
-        supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword }).catch(() => {});
-        
-        setTimeout(() => {
-          localStorage.setItem('tokcer_admin_auth', 'true');
-          setLoading(false);
-          navigate('/admin');
-        }, 1200);
-      } catch (err) {
-        console.error("Auth error:", err);
+    try {
+      // 1. Autentikasi via Supabase (password divalidasi di server, tidak pernah ada di kode)
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: password.trim()
+      });
+
+      if (authError) {
+        setError('Access Denied: ' + authError.message);
         setLoading(false);
-        setError("System error during authentication.");
+        return;
       }
-    } else {
-      setTimeout(() => {
-        setError('Access Denied: Invalid Administrative Credentials');
+
+      // 2. Verifikasi bahwa user yang login adalah admin yang sah
+      if (authData.user?.email !== 'admin@tokcer-ai.com') {
+        // Bukan admin — paksa logout dan tolak akses
+        await supabase.auth.signOut();
+        setError('Access Denied: You do not have administrative privileges.');
         setLoading(false);
-      }, 800);
+        return;
+      }
+
+      // 3. Admin terverifikasi — set flag dan arahkan ke dashboard
+      localStorage.setItem('tokcer_admin_auth', 'true');
+      navigate('/admin');
+
+    } catch (err) {
+      console.error("Auth error:", err);
+      setError("System error during authentication.");
+      setLoading(false);
     }
   };
 

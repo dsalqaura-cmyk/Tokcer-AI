@@ -9,6 +9,7 @@ const ApprovalSection = ({
   MOCK_USERS, 
   getTierBadgeClass, 
   setSelectedPartnerApp, 
+  handleOpenApproveModal,
   setShowApproveModal, 
   handleApprove,
   handleReject,
@@ -72,6 +73,14 @@ const ApprovalSection = ({
                       {item.billing_cycle && (
                         <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest pl-1">{item.billing_cycle}</span>
                       )}
+                      {activeAppTab === 'app-subs' && (
+                        <span className={`mt-1 px-2 py-0.5 border text-[8px] font-black uppercase rounded-md tracking-widest flex items-center gap-1 w-fit ${
+                          item.is_renewal ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        }`}>
+                          <iconify-icon icon={item.is_renewal ? "solar:refresh-bold-duotone" : "solar:star-fall-bold-duotone"}></iconify-icon>
+                          {item.is_renewal ? 'RENEWAL' : 'NEW'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="p-4 border-y border-zinc-800/50 text-center">
@@ -115,7 +124,7 @@ const ApprovalSection = ({
                                 <iconify-icon icon="solar:eye-bold-duotone" className="text-xl"></iconify-icon>
                               </button>
                               <button 
-                                onClick={() => { setSelectedPartnerApp(item); setShowApproveModal(true); }} 
+                                onClick={() => handleOpenApproveModal(item)} 
                                 className="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-amber-600/20 active:scale-95"
                               >
                                 Approve & Setup

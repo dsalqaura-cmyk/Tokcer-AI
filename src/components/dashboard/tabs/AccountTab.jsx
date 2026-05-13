@@ -9,16 +9,52 @@ const AccountTab = ({
   setNewPassword, 
   confirmPassword, 
   setConfirmPassword, 
-  isUpdatingPassword 
+  isUpdatingPassword,
+  profile,
+  user,
+  clientData
 }) => {
   return (
     <div className="relative z-10 animate-in fade-in duration-500 max-w-md">
       <header className="mb-8">
-        <h2 className="text-2xl font-semibold text-white tracking-tight">{t('accountSecurity')}</h2>
+        <h2 className="text-2xl font-semibold text-white tracking-tight">{lang === 'id' ? 'Informasi Akun' : 'Account Information'}</h2>
         <p className="text-xs text-zinc-400 mt-1">
-          {lang === 'id' ? 'Atur password Anda untuk akses lebih mudah.' : 'Set your password for easier access.'}
+          {lang === 'id' ? 'Kelola profil dan keamanan akun Anda.' : 'Manage your profile and account security.'}
         </p>
       </header>
+
+      {/* GAP 2: Informasi Akun */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm mb-6">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/20 to-amber-500/10 flex items-center justify-center border border-orange-500/30 shrink-0">
+            <span className="text-2xl font-black text-orange-500">{profile?.full_name?.charAt(0)?.toUpperCase() || clientData?.shop_name?.charAt(0)?.toUpperCase() || 'U'}</span>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white truncate">{profile?.full_name || clientData?.shop_name || 'User'}</h3>
+            <p className="text-xs text-zinc-400 truncate">{user?.email}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-800">
+          <div>
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">{lang === 'id' ? 'Paket Aktif' : 'Active Plan'}</p>
+            <p className="text-sm font-bold text-white capitalize">{profile?.subscription_plan || clientData?.plan || 'Starter'}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Status</p>
+            <div className="flex items-center gap-1.5">
+               <div className={`w-2 h-2 rounded-full ${clientData?.status === 'active' || clientData?.status === 'paid' ? 'bg-emerald-500 animate-pulse' : clientData?.status === 'expired' ? 'bg-rose-500' : 'bg-amber-500'}`}></div>
+               <span className="text-sm font-bold text-white capitalize">{clientData?.status || 'Active'}</span>
+            </div>
+          </div>
+          <div className="col-span-2 mt-2">
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">{lang === 'id' ? 'Tanggal Bergabung' : 'Join Date'}</p>
+            <p className="text-sm font-bold text-white">
+              {clientData?.created_at ? new Date(clientData.created_at).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-6">

@@ -162,6 +162,30 @@ const OverviewTab = ({
         </div>
       </header>
 
+      {/* GAP 1: Starter Upgrade Banner */}
+      {(profile?.subscription_plan || '').toLowerCase() === 'starter' && (
+        <div className="bg-gradient-to-r from-orange-600/20 to-amber-600/10 border border-orange-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center border border-orange-500/30 shrink-0">
+              <iconify-icon icon="solar:star-fall-bold-duotone" className="text-2xl text-orange-500 animate-pulse"></iconify-icon>
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-sm md:text-base">Membuka Potensi Penuh Tokcer AI!</h3>
+              <p className="text-zinc-400 text-xs md:text-sm mt-0.5">
+                Saat ini Anda di paket <span className="font-bold text-orange-400">Starter (Gratis)</span>. Upgrade ke <b>Pro</b> untuk memperluas jangkauan operasional dan menambah jatah Token AI Anda.
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setActiveMenu('tab-billing')}
+            className="w-full sm:w-auto px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
+          >
+            <iconify-icon icon="solar:rocket-bold"></iconify-icon>
+            Upgrade Sekarang
+          </button>
+        </div>
+      )}
+
       {/* Row 1: Top Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Live Visitors Card */}

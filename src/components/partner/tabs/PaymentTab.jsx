@@ -5,21 +5,42 @@ const PaymentTab = ({
   partnerData, 
   formatCurrency 
 }) => {
+  const totalPayout = (partnerData?.paymentHistory || [])
+    .filter(p => p.status === 'paid')
+    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+  
+  const pendingBalance = Math.max(0, (partnerData?.total_omzet || 0) - totalPayout);
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-      {/* Stat Card: Saldo Komisi Berjalan */}
-      <div className="bg-gradient-to-br from-emerald-600/20 to-teal-600/5 backdrop-blur-md border border-emerald-500/20 rounded-[32px] p-8 flex items-center justify-between shadow-2xl group">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-            <iconify-icon icon="solar:wallet-bold-duotone" className="text-3xl text-emerald-500"></iconify-icon>
-          </div>
-          <div>
-            <div className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.3em]">Komisi Berjalan (Siap Cair)</div>
-            <div className="text-2xl font-black text-white tracking-tight font-mono">{formatCurrency(partnerData?.total_omzet || 0)}</div>
+      {/* GAP 4: Stat Card - Saldo Komisi Akurat */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Pending Balance */}
+        <div className="bg-gradient-to-br from-emerald-600/20 to-teal-600/5 backdrop-blur-md border border-emerald-500/20 rounded-[32px] p-8 flex items-center justify-between shadow-2xl group">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="solar:wallet-bold-duotone" className="text-3xl text-emerald-500"></iconify-icon>
+            </div>
+            <div>
+              <div className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.3em]">Komisi Berjalan (Siap Cair)</div>
+              <div className="text-2xl font-black text-white tracking-tight font-mono">{formatCurrency(pendingBalance)}</div>
+              <div className="text-[10px] font-medium text-emerald-400 mt-1">Akan ditransfer otomatis tanggal 25</div>
+            </div>
           </div>
         </div>
-        <div className="text-xs font-medium text-zinc-400">
-          Akan ditransfer otomatis pada tanggal 25
+
+        {/* All-time Gross */}
+        <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800 rounded-[32px] p-8 flex items-center justify-between shadow-sm group">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-zinc-800/50 rounded-full flex items-center justify-center border border-zinc-700">
+              <iconify-icon icon="solar:history-bold-duotone" className="text-3xl text-zinc-500"></iconify-icon>
+            </div>
+            <div>
+              <div className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em]">Total Sepanjang Masa</div>
+              <div className="text-xl font-bold text-zinc-300 tracking-tight font-mono">{formatCurrency(partnerData?.total_omzet || 0)}</div>
+              <div className="text-[10px] font-medium text-zinc-500 mt-1">Akumulasi seluruh komisi</div>
+            </div>
+          </div>
         </div>
       </div>
 

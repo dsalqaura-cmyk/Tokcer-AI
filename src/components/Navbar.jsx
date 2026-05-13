@@ -107,7 +107,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
                 EN
               </button>
             </div>
-            {user ? (
+            {user && window.location.pathname !== '/' ? (
               <div className="flex items-center gap-3">
                 {/* Stats Badge */}
                 <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-full text-[10px] font-bold">

@@ -1,8 +1,10 @@
 // Supabase Edge Function: midtrans-webhook
 // Lokasi: supabase/functions/midtrans-webhook/index.ts
+// [PANCINGAN]: Baris ini sengaja ditambah agar memicu auto-deploy GitHub Actions 🎣
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { reportError } from '../_shared/sentry.ts'
 
 serve(async (req) => {
   try {
@@ -35,37 +37,102 @@ serve(async (req) => {
       if (fraud_status === 'accept' || !fraud_status) {
         
         // 1. Cari data Toko di tabel clients berdasarkan order_id
-        const { data: client, error: clientError } = await supabaseClient
+        let { data: client, error: clientError } = await supabaseClient
           .from('clients')
           .select('*')
           .eq('midtrans_order_id', order_id)
-          .single();
+          .maybeSingle();
 
-        if (clientError || !client) {
-            console.error("Gagal menemukan client untuk order_id:", order_id, clientError?.message);
-            return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+        let isRenewal = false;
+        const userData = trx.raw_notification?.user_data;
+
+        // Jika client tidak ditemukan berdasarkan order_id, cek berdasarkan email (untuk Renewal)
+        if (!client && userData?.email) {
+            const { data: existingClient } = await supabaseClient
+                .from('clients')
+                .select('*')
+                .eq('email', userData.email)
+                .maybeSingle();
+            
+            if (existingClient) {
+                console.log("Client ditemukan berdasarkan email, ini adalah proses RENEWAL:", existingClient.email);
+                isRenewal = true;
+                client = existingClient;
+                
+                // Update order_id ke transaksi yang baru
+                await supabaseClient.from('clients').update({ midtrans_order_id: order_id }).eq('id', client.id);
+            }
+        }
+
+        // Jika benar-benar client baru (bukan renewal dan tidak ada order_id sebelumnya)
+        if (!client) {
+            console.log("Client tidak ditemukan, membuat data client baru dari data transaksi...");
+            
+            if (!userData) {
+                console.error("Gagal: Data user tidak ditemukan di memori transaksi!");
+                return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+            }
+
+            const { data: newClient, error: createError } = await supabaseClient
+                .from('clients')
+                .insert([{
+                    shop_name: userData.nama || 'Toko Tanpa Nama',
+                    email: userData.email,
+                    whatsapp: userData.phone,
+                    plan: trx.plan_name,
+                    billing_cycle: userData.billing_cycle || 'Monthly',
+                    status: 'pending',
+                    ref: userData.affiliateId || 'Direct',
+                    metadata: { store_links: userData.storeLinks || {} },
+                    midtrans_order_id: order_id
+                }])
+                .select()
+                .maybeSingle();
+
+            if (createError || !newClient) {
+                console.error("Gagal membuat data client baru:", createError?.message);
+                return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+            }
+
+            client = newClient;
+            console.log("Client baru berhasil dibuat otomatis:", client.id);
         }
 
         const email = client.email;
         const nama = client.shop_name;
-        const generatedPassword = `Tokcer@${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Update client status sebelum aktivasi
-        await supabaseClient
-            .from('clients')
-            .update({ status: 'active' })
-            .eq('id', client.id);
+        if (isRenewal) {
+            console.log("Memanggil rpc_renew_subscription untuk:", email);
+            const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_renew_subscription', {
+                p_email: email,
+                p_plan: trx.plan_name || client.plan,
+                p_billing_cycle: userData?.billing_cycle || client.billing_cycle || 'Monthly'
+            });
 
-        console.log("Memanggil rpc_activate_account untuk:", email);
+            if (rpcError) {
+                console.error("Gagal rpc_renew_subscription:", rpcError);
+            } else {
+                console.log("Sukses renewal:", rpcData);
+            }
+        } else {
+            const generatedPassword = `Tokcer@${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // 2. Panggil Fungsi Sakti Database untuk urus Komisi, Omzet, dan User
-        const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_activate_account', {
-            p_email: email,
-            p_application_id: client.id,
-            p_full_name: nama,
-            p_plan: client.plan,
-            p_role: 'user'
-        });
+            // Update client status sebelum aktivasi
+            await supabaseClient
+                .from('clients')
+                .update({ status: 'active' })
+                .eq('id', client.id);
+
+            console.log("Memanggil rpc_activate_account untuk:", email);
+
+            // 2. Panggil Fungsi Sakti Database untuk urus Komisi, Omzet, dan User (Pendaftaran Baru)
+            const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_activate_account', {
+                p_email: email,
+                p_application_id: client.id,
+                p_full_name: nama,
+                p_plan: trx.plan_name || client.plan,
+                p_role: 'user'
+            });
 
         if (rpcError) {
             console.error("Gagal memanggil rpc_activate_account:", rpcError.message);
@@ -178,12 +245,51 @@ serve(async (req) => {
                 console.error("Gagal kirim email password:", emailErr.message);
             }
         }
+        
+        } // End of else (New Registration)
+
+        // Pastikan transaksi diupdate untuk RENEWAL
+        if (isRenewal) {
+            await supabaseClient.from('transactions').update({ 
+                status: 'settlement', 
+                payment_type: payment_type
+            }).eq('order_id', order_id);
+        }
+
+        // GAP 13: Auto-record income to Internal Dashboard Accounting
+        const planName = trx.plan_name || client?.plan || 'pro';
+        const billingCycle = trx.billing_cycle || client?.billing_cycle || 'Monthly';
+        const isPartner = client?.partner_id || client?.ref;
+        const midtransFee = Math.round(Number(gross_amount) * 0.007); // 0.7% default fee
+        
+        // Calculate period end based on billing cycle
+        const now = new Date();
+        const periodEnd = new Date();
+        if (billingCycle.toLowerCase() === 'yearly') {
+            periodEnd.setFullYear(now.getFullYear() + 1);
+        } else {
+            periodEnd.setMonth(now.getMonth() + 1);
+        }
+
+        await supabaseClient.from('income_transactions').insert([{
+            source: isPartner ? 'partner' : 'organic',
+            plan: planName.toLowerCase(),
+            plan_type: billingCycle.toLowerCase() === 'yearly' ? 'yearly' : 'monthly',
+            gross_amount: Number(gross_amount),
+            period_start: now.toISOString(),
+            period_end: periodEnd.toISOString(),
+            midtrans_fee: midtransFee,
+            date: now.toISOString().split('T')[0]
+        }]);
+
+
       }
     }
 
     return new Response(JSON.stringify({ status: 'ok' }), { status: 200 })
 
   } catch (error) {
+    await reportError(error, { function: 'midtrans-webhook' });
     return new Response(JSON.stringify({ status: 'error', message: error.message }), { status: 200 })
   }
 })

@@ -18,6 +18,8 @@ const UserSection = ({
               <tr>
                 <th className="px-4 pb-2">{t('subscriberInfo')}</th>
                 <th className="px-4 pb-2">{t('activePlan')}</th>
+                <th className="px-4 pb-2 text-center">AI CREDITS</th>
+                <th className="px-4 pb-2 text-center">EXPIRES AT</th>
                 <th className="px-4 pb-2">{t('health')}</th>
                 <th className="px-4 pb-2 text-right">{t('actions')}</th>
               </tr>
@@ -32,8 +34,34 @@ const UserSection = ({
                   <td className="p-4 border-y border-zinc-800">
                      <span className={`${getTierBadgeClass(u.tier)} text-[9px] font-black px-3 py-1 rounded-lg uppercase`}>{u.tier || u.plan}</span>
                   </td>
+                  <td className="p-4 border-y border-zinc-800 text-center">
+                     <div className="text-[10px] font-black text-blue-400">
+                       {u.profiles?.tokens !== undefined ? u.profiles.tokens : (u.profiles?.ai_credits_remaining !== undefined ? u.profiles.ai_credits_remaining : '-')}
+                     </div>
+                  </td>
+                  <td className="p-4 border-y border-zinc-800 text-center">
+                     <div className="text-[10px] font-bold text-zinc-400">
+                       {u.expires_at ? new Date(u.expires_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
+                     </div>
+                  </td>
                   <td className="p-4 border-y border-zinc-800">
-                     <span className={`text-[10px] font-black ${u.status === 'active' ? 'text-green-500' : 'text-amber-500'}`}>{u.status?.toUpperCase()}</span>
+                     {(() => {
+                        const isExpired = u.status === 'expired' || (u.status === 'active' && u.expires_at && new Date(u.expires_at) < new Date());
+                        const isNearExpiry = u.status === 'active' && u.expires_at && new Date(u.expires_at).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
+                        
+                        let statusText = u.status?.toUpperCase() || 'UNKNOWN';
+                        let statusColor = (u.status === 'active' || u.status === 'paid') ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+
+                        if (isExpired) {
+                            statusText = 'EXPIRED';
+                            statusColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                        } else if (isNearExpiry) {
+                            statusText = 'NEAR EXPIRY (H-3)';
+                            statusColor = 'text-orange-500 bg-orange-500/10 border-orange-500/20 animate-pulse';
+                        }
+
+                        return <span className={`text-[10px] font-black px-2 py-1 rounded-md border ${statusColor}`}>{statusText}</span>;
+                     })()}
                   </td>
                   <td className="p-4 rounded-r-2xl border-r border-y border-zinc-800 text-right">
                      <button onClick={() => setShowUserStats(u)} className="px-4 py-2 bg-blue-600/10 text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-xl border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all">{t('viewDetails')}</button>
@@ -41,7 +69,7 @@ const UserSection = ({
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="4" className="py-20 text-center text-zinc-600 italic text-sm">No users found in database.</td>
+                  <td colSpan="6" className="py-20 text-center text-zinc-600 italic text-sm">No users found in database.</td>
                 </tr>
               )}
             </tbody>

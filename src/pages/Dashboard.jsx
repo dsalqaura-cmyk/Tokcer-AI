@@ -13,6 +13,7 @@ import AnalyticsTab from '../components/dashboard/tabs/AnalyticsTab.jsx';
 import AiGeneratorTab from '../components/dashboard/tabs/AiGeneratorTab.jsx';
 import HealthScoreTab from '../components/dashboard/tabs/HealthScoreTab.jsx';
 import AccountTab from '../components/dashboard/tabs/AccountTab.jsx';
+import BillingTab from '../components/dashboard/tabs/BillingTab.jsx';
 import SupportTab from '../components/dashboard/tabs/SupportTab.jsx';
 import MarketIntelTab from '../components/dashboard/tabs/MarketIntelTab.jsx';
 import MarketplaceSyncTab from '../components/dashboard/tabs/MarketplaceSyncTab.jsx';
@@ -87,6 +88,7 @@ const Dashboard = () => {
 
   // System Briefing States
   const [systemBriefing, setSystemBriefing] = useState(null);
+  const [clientData, setClientData] = useState(null);
   const [isFetchingBriefing, setIsFetchingBriefing] = useState(false);
 
   const t = (key) => dashboardTranslations[lang][key] || key;
@@ -264,7 +266,6 @@ const Dashboard = () => {
             }
 
             const { data: ordData, error: ordError } = await ordQuery;
-            console.log("📊 Raw Orders Data:", ordData);
             if (ordError) {
                 console.error("Orders Table Error:", ordError.message);
                 setOrders([]);
@@ -512,6 +513,7 @@ const Dashboard = () => {
         
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
         const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
+        setClientData(clientData);
         
         if (session.user.email === 'admin@tokcer-ai.com') {
             localStorage.setItem('tokcer_admin_auth', 'true');
@@ -607,7 +609,6 @@ const Dashboard = () => {
     // Map internal keys to permission keys
     const permKey = feature === 'market' ? 'market_intel' : feature;
     if (!checkPlanPermission(permKey, true)) {
-        console.log(`ℹ️ Feature ${feature} is locked for this plan. Skipping deduction.`);
         return false;
     }
 
@@ -923,12 +924,7 @@ const Dashboard = () => {
           cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
       }]);
 
-      // Log Usage
-      if (!isAdmin) {
-        const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
-        await supabase.from('profiles').update({ tokens: currentTokens - 1 }).eq('id', user.id);
-        setProfile({ ...profile, tokens: currentTokens - 1 });
-      }
+      // Token usage already logged and deducted by RPC above
     } catch (e) {
       console.error(e);
       setTrendResult("Maaf, terjadi kesalahan saat menganalisa tren.");
@@ -1182,6 +1178,17 @@ const Dashboard = () => {
             handleImportProducts={handleImportProducts}
           />
         );
+
+      case 'tab-billing':
+        return (
+          <BillingTab 
+            user={user} 
+            profile={profile} 
+            clientData={clientData}
+            supabase={supabase} 
+            t={t}
+          />
+        );
       case 'tab-analytics':
         return (
           <AnalyticsTab 
@@ -1295,6 +1302,9 @@ const Dashboard = () => {
             setConfirmPassword={setConfirmPassword}
             isUpdatingPassword={isUpdatingPassword}
             handleUpdatePassword={handleUpdatePassword}
+            profile={profile}
+            user={user}
+            clientData={clientData}
           />
         );
       case 'tab-connections':
@@ -1336,8 +1346,23 @@ const Dashboard = () => {
         {/* Content Spacer for Fixed Header on Mobile */}
         <div className="h-16 lg:hidden"></div>
 
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
-          {renderContent()}
+        <div className="max-w-6xl mx-auto p-4 md:p-8 relative">
+          {clientData?.status === 'expired' && activeMenu !== 'tab-billing' && (
+            <div className="absolute inset-0 z-50 bg-zinc-900/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center rounded-3xl border border-red-500/20 m-4 md:m-8">
+                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                    <iconify-icon icon="solar:danger-triangle-bold" className="text-4xl text-red-500"></iconify-icon>
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Masa Langganan Habis</h2>
+                <p className="text-zinc-400 mb-6 max-w-md">Akun Anda telah melewati batas waktu kedaluwarsa. Silakan masuk ke menu Billing untuk melakukan perpanjangan paket agar sistem dapat digunakan kembali.</p>
+                <button onClick={() => setActiveMenu('tab-billing')} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2">
+                    <iconify-icon icon="solar:wallet-bold"></iconify-icon>
+                    Buka Menu Pembayaran
+                </button>
+            </div>
+          )}
+          <div className={clientData?.status === 'expired' && activeMenu !== 'tab-billing' ? 'opacity-20 pointer-events-none blur-sm transition-all h-[70vh] overflow-hidden' : ''}>
+            {renderContent()}
+          </div>
         </div>
       </main>
 

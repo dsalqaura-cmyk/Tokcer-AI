@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const SubscribersTab = ({ 
   t, 
@@ -6,7 +6,22 @@ const SubscribersTab = ({
   subscribers,
   formatCurrency 
 }) => {
+  // GAP 9: State untuk Pencarian dan Filter
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const safeSubs = subscribers || [];
+  // GAP 9: Filter logic
+  const filteredSubs = safeSubs.filter(sub => {
+    const matchesSearch = (sub.shop_name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (sub.email || '').toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    
+    if (statusFilter === 'active') return sub.status === 'active' || sub.status === 'paid';
+    if (statusFilter === 'expired') return sub.status === 'expired' || sub.status === 'near_expiry';
+    return true;
+  });
+
   const activeSubs = safeSubs.filter(s => s.status === 'active' || s.status === 'paid');
   const cancelledCount = safeSubs.filter(s => s.status === 'cancelled' || s.status === 'returned').length;
   
@@ -173,16 +188,41 @@ const SubscribersTab = ({
         </div>
       </div>
 
-      {/* 📊 Customer List */}
+      {/* 📊 Customer List Header & Filters */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between px-2">
-          <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-            <div className="w-8 h-0.5 bg-orange-600 rounded-full"></div>
-            {t('customerList')}
-          </h3>
-          <span className="text-[10px] font-black text-orange-500 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20 uppercase tracking-widest">
-            {t('private')} 🔒
-          </span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-2">
+          <div className="flex items-center gap-3 shrink-0">
+            <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+              <div className="w-8 h-0.5 bg-orange-600 rounded-full"></div>
+              {t('customerList')}
+            </h3>
+            <span className="text-[10px] font-black text-orange-500 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/20 uppercase tracking-widest">
+              {t('private')} 🔒
+            </span>
+          </div>
+          
+          {/* GAP 9: Filter & Search Controls */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <input 
+                type="text" 
+                placeholder="Cari nama toko / email..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50"
+              />
+              <iconify-icon icon="solar:magnifer-linear" className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"></iconify-icon>
+            </div>
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-auto bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 appearance-none"
+            >
+              <option value="all">Semua Status</option>
+              <option value="active">🟢 Aktif / Paid</option>
+              <option value="expired">🔴 Expired / H-3</option>
+            </select>
+          </div>
         </div>
 
         <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[32px] overflow-hidden shadow-2xl">
@@ -198,13 +238,14 @@ const SubscribersTab = ({
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {safeSubs.map((s, idx) => {
+                {filteredSubs.length > 0 ? (
+                  filteredSubs.map((s, idx) => {
                   const currentComm = calculateItemCommission(s);
                   const isNew = isNewInPeriod(s.created_at);
                   const isYearly = s.billing_cycle === 'Yearly';
 
                   return (
-                    <tr key={s.id} className={`group border-b border-zinc-900/50 hover:bg-white/[0.01] transition-all duration-300 ${idx === safeSubs.length - 1 ? 'border-none' : ''}`}>
+                    <tr key={s.id} className={`group border-b border-zinc-900/50 hover:bg-white/[0.01] transition-all duration-300 ${idx === filteredSubs.length - 1 ? 'border-none' : ''}`}>
                       <td className="px-4 sm:px-8 py-4 sm:py-6">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-100 font-black text-[10px] sm:text-xs border border-zinc-700 group-hover:border-orange-500/50 transition-colors">
@@ -229,18 +270,37 @@ const SubscribersTab = ({
                         </div>
                       </td>
                       <td className="px-4 sm:px-8 py-4 sm:py-6">
-                        <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${
-                          s.status === 'active' || s.status === 'paid'
-                            ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
-                            : s.status === 'pending'
-                            ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-                            : s.status === 'warning'
-                            ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
-                            : 'text-zinc-500 bg-zinc-800 border-zinc-700'
-                        }`}>
-                          <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' || s.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                          {t('status' + s.status.charAt(0).toUpperCase() + s.status.slice(1))}
-                        </span>
+                        {(() => {
+                          const isExpired = s.status === 'expired' || (s.status === 'active' && s.expires_at && new Date(s.expires_at) < new Date());
+                          const isNearExpiry = s.status === 'active' && s.expires_at && new Date(s.expires_at).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
+                          
+                          let displayStatus = t('status' + s.status.charAt(0).toUpperCase() + s.status.slice(1)) || s.status;
+                          let statusClasses = 'text-zinc-500 bg-zinc-800 border-zinc-700';
+                          let dotColor = 'bg-zinc-500';
+
+                          if (isExpired) {
+                            displayStatus = 'EXPIRED';
+                            statusClasses = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+                            dotColor = 'bg-rose-500 animate-pulse';
+                          } else if (isNearExpiry) {
+                            displayStatus = 'JATUH TEMPO (H-3)';
+                            statusClasses = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                            dotColor = 'bg-amber-500 animate-pulse';
+                          } else if (s.status === 'active' || s.status === 'paid') {
+                            statusClasses = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                            dotColor = 'bg-emerald-500';
+                          } else if (s.status === 'pending') {
+                            statusClasses = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                            dotColor = 'bg-amber-500';
+                          }
+
+                          return (
+                            <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${statusClasses}`}>
+                              <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${dotColor}`}></span>
+                              {displayStatus}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 sm:px-8 py-4 sm:py-6">
                         <span className={`text-[10px] sm:text-xs font-bold ${getRelativeTime(s.created_at) === (lang === 'id' ? 'baru saja' : 'just now') ? 'text-emerald-400' : 'text-zinc-400'}`}>
@@ -252,7 +312,14 @@ const SubscribersTab = ({
                       </td>
                     </tr>
                   );
-                })}
+                })
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="px-8 py-12 text-center text-zinc-500 text-xs">
+                      Tidak ada data klien yang sesuai dengan filter pencarian.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

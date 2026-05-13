@@ -1,33 +1,20 @@
-export const callAiEngine = async (systemPrompt, userMessage, customApiKey = null, maxTokens = 2048, temperature = 0.8) => {
-  const apiKey = customApiKey || import.meta.env.VITE_DEEPSEEK_API_KEY;
-  
-  if (!apiKey || apiKey === 'your_deepseek_api_key_here') {
-    throw new Error('API Key Intelligence belum dikonfigurasi. Silakan hubungi Admin sistem.');
-  }
+import { supabase } from '../lib/supabase.js';
 
-  const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json', 
-      'Authorization': `Bearer ${apiKey}` 
-    },
-    body: JSON.stringify({
-      model: 'deepseek-v4-flash',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ],
-      temperature: temperature,
-      max_tokens: maxTokens,
-    })
+export const callAiEngine = async (systemPrompt, userMessage, customApiKey = null, maxTokens = 2048, temperature = 0.8) => {
+  // Panggil Edge Function 'ai-proxy' secara aman (API Key disembunyikan di server)
+  const { data, error } = await supabase.functions.invoke('ai-proxy', {
+    body: {
+      systemPrompt,
+      userMessage,
+      maxTokens,
+      temperature
+    }
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Request gagal dengan status ${res.status}`);
+  if (error || data?.error) {
+    throw new Error(data?.error || error?.message || 'Gagal terhubung ke server AI Tokcer.');
   }
 
-  const data = await res.json();
   return {
     text: data.choices?.[0]?.message?.content || 'AI tidak memberikan respons.',
     usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }

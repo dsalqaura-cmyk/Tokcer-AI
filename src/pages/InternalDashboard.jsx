@@ -11,6 +11,7 @@ import ApprovalSection from '../components/internal/sections/ApprovalSection.jsx
 import UserSection from '../components/internal/sections/UserSection.jsx';
 import PartnerSection from '../components/internal/sections/PartnerSection.jsx';
 import TicketSection from '../components/internal/sections/TicketSection.jsx';
+import IdeasSection from '../components/internal/sections/IdeasSection.jsx';
 import AiStrategySection from '../components/internal/sections/AiStrategySection.jsx';
 import SupabaseSection from '../components/internal/sections/SupabaseSection.jsx';
 import PayoutSection from '../components/internal/sections/PayoutSection.jsx';
@@ -36,6 +37,7 @@ const InternalDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [showUserStats, setShowUserStats] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [ideas, setIdeas] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [recentActivityData, setRecentActivityData] = useState([]); // << TAMBAHAN UCUP
 
@@ -99,6 +101,7 @@ const InternalDashboard = () => {
           fetchAllUsers(),
           fetchGlobalStats(),
           fetchTickets(),
+          fetchIdeas(),
           fetchPartnerApps(),
           fetchAiConfig(),
           fetchAiHistory(),
@@ -117,7 +120,7 @@ const InternalDashboard = () => {
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from('clients')
-      .select('*')
+      .select('*, profiles:user_id(tokens, ai_credits_remaining)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -204,6 +207,15 @@ const InternalDashboard = () => {
     if (!error) setPartnerApps(data || []);
   };
 
+  const fetchIdeas = async () => {
+    const { data, error } = await supabase
+      .from('partner_ideas')
+      .select('*, partners(full_name)')
+      .order('created_at', { ascending: false });
+
+    if (!error) setIdeas(data || []);
+  };
+
   const handleLogout = async () => {
     if (window.confirm(t('confirmLogout') || 'Logout?')) {
       await supabase.auth.signOut().finally(() => {
@@ -236,7 +248,6 @@ const InternalDashboard = () => {
     if (error) {
       console.error("Fetch AI History Error:", error);
     } else {
-      console.log("AI History Loaded:", data?.length || 0, "records");
       setAiHistory(data || []);
     }
   };
@@ -252,12 +263,10 @@ const InternalDashboard = () => {
 
   const handleSaveAiConfig = async () => {
     setIsLoading(true);
-    console.log("Saving AI Config...");
     try {
       const updates = [
         { key: 'system_prompt', value: aiConfig.system_prompt || '' },
         { key: 'rag_knowledge_base', value: aiConfig.rag_knowledge_base || '' },
-        { key: 'resend_api_key', value: aiConfig.resend_api_key || '' },
         { key: 'shopee_partner_id', value: aiConfig.shopee_partner_id || '' },
         { key: 'shopee_partner_key', value: aiConfig.shopee_partner_key || '' },
         { key: 'tiktok_app_id', value: aiConfig.tiktok_app_id || '' },
@@ -271,7 +280,6 @@ const InternalDashboard = () => {
 
         // Only save to history if it's system_prompt or RAG and it has changed
         if ((item.key === 'system_prompt' || item.key === 'rag_knowledge_base') && oldValue !== item.value) {
-          console.log(`Version change detected for ${item.key}. Saving history...`);
           const { error: histError } = await supabase.from('ai_configs_history').insert([{
             key: item.key,
             old_value: oldValue || '',
@@ -369,35 +377,22 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      const apiKey = aiConfig.resend_api_key || import.meta.env.VITE_RESEND_API_KEY;
-      if (apiKey && apiKey !== 'your_resend_api_key_here') {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            from: 'Tokcer AI <onboarding@resend.dev>',
-            to: [client.partners.email],
-            subject: 'Notifikasi Partner Tokcer AI',
-            html: `<p>Halo ${client.partners.full_name},</p><p>Terdapat klien baru Anda yang perlu di follow-up.</p>`
-          })
-        });
+      const { data, error } = await supabase.functions.invoke('send-partner-reminder', {
+        body: {
+          partnerEmail: client.partners.email,
+          partnerName: client.partners.full_name,
+          clientName: client.shop_name || client.nama
+        }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || 'Gagal mengirim pengingat');
       }
 
-      alert(`Reminder sent to ${client.partners?.full_name}`);
-
-      if (user?.id) {
-        await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
-          feature: 'admin_remind_partner',
-          prompt: `Remind ${client.partners?.full_name}`,
-          response: 'SUCCESS'
-        }]);
-      }
+      alert("Reminder berhasil dikirim ke partner!");
     } catch (err) {
-      alert("Error: " + err.message);
+      console.error("Gagal kirim reminder:", err);
+      alert("Gagal kirim email: " + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -486,7 +481,7 @@ const InternalDashboard = () => {
       case 'overview':
         return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivityData} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
       case 'approvals':
-        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={handleOpenApproveModal} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleReject={handleReject} handleRemindPartner={handleRemindPartner} />;
+        return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} handleOpenApproveModal={handleOpenApproveModal} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleReject={handleReject} handleRemindPartner={handleRemindPartner} />;
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':
@@ -495,6 +490,8 @@ const InternalDashboard = () => {
         return <PayoutSection t={t} />;
       case 'tickets':
         return <TicketSection t={t} tickets={tickets} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} fetchTickets={fetchTickets} />;
+      case 'ideas':
+        return <IdeasSection t={t} ideas={ideas} fetchIdeas={fetchIdeas} />;
       case 'ai-gen':
         return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} aiHistory={aiHistory} fetchAiHistory={fetchAiHistory} aiLogs={aiLogs} />;
       case 'insight':
@@ -512,7 +509,7 @@ const InternalDashboard = () => {
 
   return (
     <div className="flex h-screen bg-black text-white font-['Inter',sans-serif] overflow-hidden animate-in fade-in duration-700">
-      <InternalSidebar t={t} activeSection={activeSection} setActiveSection={setActiveSection} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} lang={lang} toggleLang={toggleLang} handleLogout={handleLogout} adminClients={adminClients} partnerApps={partnerApps} tickets={tickets} />
+      <InternalSidebar t={t} activeSection={activeSection} setActiveSection={setActiveSection} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} lang={lang} toggleLang={toggleLang} handleLogout={handleLogout} adminClients={adminClients} partnerApps={partnerApps} tickets={tickets} ideas={ideas} />
 
       <main className="flex-1 flex flex-col min-w-0 bg-black overflow-hidden relative">
         <InternalHeader t={t} activeSection={activeSection} setIsSidebarOpen={setIsSidebarOpen} />
