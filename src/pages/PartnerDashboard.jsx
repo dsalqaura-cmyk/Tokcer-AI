@@ -15,7 +15,6 @@ import CommissionSchemeTab from '../components/partner/tabs/CommissionSchemeTab.
 import { partnerTranslations } from '../locales/partnerLocales.js';
 
 const PartnerDashboard = () => {
-  console.log("💎 PartnerDashboard Mounting...");
   const [activeMenu, setActiveMenu] = useState('onboard'); // Simplified names
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);

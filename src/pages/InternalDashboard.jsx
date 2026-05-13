@@ -248,7 +248,6 @@ const InternalDashboard = () => {
     if (error) {
       console.error("Fetch AI History Error:", error);
     } else {
-      console.log("AI History Loaded:", data?.length || 0, "records");
       setAiHistory(data || []);
     }
   };
@@ -264,7 +263,6 @@ const InternalDashboard = () => {
 
   const handleSaveAiConfig = async () => {
     setIsLoading(true);
-    console.log("Saving AI Config...");
     try {
       const updates = [
         { key: 'system_prompt', value: aiConfig.system_prompt || '' },
@@ -282,7 +280,6 @@ const InternalDashboard = () => {
 
         // Only save to history if it's system_prompt or RAG and it has changed
         if ((item.key === 'system_prompt' || item.key === 'rag_knowledge_base') && oldValue !== item.value) {
-          console.log(`Version change detected for ${item.key}. Saving history...`);
           const { error: histError } = await supabase.from('ai_configs_history').insert([{
             key: item.key,
             old_value: oldValue || '',

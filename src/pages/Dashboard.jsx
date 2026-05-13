@@ -266,7 +266,6 @@ const Dashboard = () => {
             }
 
             const { data: ordData, error: ordError } = await ordQuery;
-            console.log("📊 Raw Orders Data:", ordData);
             if (ordError) {
                 console.error("Orders Table Error:", ordError.message);
                 setOrders([]);
@@ -610,7 +609,6 @@ const Dashboard = () => {
     // Map internal keys to permission keys
     const permKey = feature === 'market' ? 'market_intel' : feature;
     if (!checkPlanPermission(permKey, true)) {
-        console.log(`ℹ️ Feature ${feature} is locked for this plan. Skipping deduction.`);
         return false;
     }
 
