@@ -103,6 +103,7 @@ const Sidebar = ({
             {renderMenuItem('tab-health', 'solar:shield-check-linear', t('healthScore'))}
             {renderMenuItem('tab-market', 'solar:global-linear', t('marketIntel'))}
             {renderMenuItem('tab-account', 'solar:shield-keyhole-linear', t('accountSecurity'))}
+            {renderMenuItem('tab-billing', 'solar:card-2-linear', 'Billing & Langganan')}
             {renderMenuItem('tab-connections', 'solar:link-linear', 'Marketplace Sync')}
             
             {/* HPP Calculator - Redirects to separate page */}

@@ -36,18 +36,36 @@ serve(async (req) => {
       if (fraud_status === 'accept' || !fraud_status) {
         
         // 1. Cari data Toko di tabel clients berdasarkan order_id
-        const { data: clientData, error: clientError } = await supabaseClient
+        let { data: client, error: clientError } = await supabaseClient
           .from('clients')
           .select('*')
           .eq('midtrans_order_id', order_id)
           .maybeSingle();
 
-        let client = clientData;
+        let isRenewal = false;
+        const userData = trx.raw_notification?.user_data;
 
-        // [PERBAIKAN UJANG]: Jika client tidak ditemukan, buat baru dari data transaksi!
+        // Jika client tidak ditemukan berdasarkan order_id, cek berdasarkan email (untuk Renewal)
+        if (!client && userData?.email) {
+            const { data: existingClient } = await supabaseClient
+                .from('clients')
+                .select('*')
+                .eq('email', userData.email)
+                .maybeSingle();
+            
+            if (existingClient) {
+                console.log("Client ditemukan berdasarkan email, ini adalah proses RENEWAL:", existingClient.email);
+                isRenewal = true;
+                client = existingClient;
+                
+                // Update order_id ke transaksi yang baru
+                await supabaseClient.from('clients').update({ midtrans_order_id: order_id }).eq('id', client.id);
+            }
+        }
+
+        // Jika benar-benar client baru (bukan renewal dan tidak ada order_id sebelumnya)
         if (!client) {
             console.log("Client tidak ditemukan, membuat data client baru dari data transaksi...");
-            const userData = trx.raw_notification?.user_data;
             
             if (!userData) {
                 console.error("Gagal: Data user tidak ditemukan di memori transaksi!");
@@ -81,24 +99,39 @@ serve(async (req) => {
 
         const email = client.email;
         const nama = client.shop_name;
-        const generatedPassword = `Tokcer@${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Update client status sebelum aktivasi
-        await supabaseClient
-            .from('clients')
-            .update({ status: 'active' })
-            .eq('id', client.id);
+        if (isRenewal) {
+            console.log("Memanggil rpc_renew_subscription untuk:", email);
+            const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_renew_subscription', {
+                p_email: email,
+                p_plan: trx.plan_name || client.plan,
+                p_billing_cycle: userData?.billing_cycle || client.billing_cycle || 'Monthly'
+            });
 
-        console.log("Memanggil rpc_activate_account untuk:", email);
+            if (rpcError) {
+                console.error("Gagal rpc_renew_subscription:", rpcError);
+            } else {
+                console.log("Sukses renewal:", rpcData);
+            }
+        } else {
+            const generatedPassword = `Tokcer@${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // 2. Panggil Fungsi Sakti Database untuk urus Komisi, Omzet, dan User
-        const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_activate_account', {
-            p_email: email,
-            p_application_id: client.id,
-            p_full_name: nama,
-            p_plan: client.plan,
-            p_role: 'user'
-        });
+            // Update client status sebelum aktivasi
+            await supabaseClient
+                .from('clients')
+                .update({ status: 'active' })
+                .eq('id', client.id);
+
+            console.log("Memanggil rpc_activate_account untuk:", email);
+
+            // 2. Panggil Fungsi Sakti Database untuk urus Komisi, Omzet, dan User (Pendaftaran Baru)
+            const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_activate_account', {
+                p_email: email,
+                p_application_id: client.id,
+                p_full_name: nama,
+                p_plan: trx.plan_name || client.plan,
+                p_role: 'user'
+            });
 
         if (rpcError) {
             console.error("Gagal memanggil rpc_activate_account:", rpcError.message);

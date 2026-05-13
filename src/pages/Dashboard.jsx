@@ -13,6 +13,7 @@ import AnalyticsTab from '../components/dashboard/tabs/AnalyticsTab.jsx';
 import AiGeneratorTab from '../components/dashboard/tabs/AiGeneratorTab.jsx';
 import HealthScoreTab from '../components/dashboard/tabs/HealthScoreTab.jsx';
 import AccountTab from '../components/dashboard/tabs/AccountTab.jsx';
+import BillingTab from '../components/dashboard/tabs/BillingTab.jsx';
 import SupportTab from '../components/dashboard/tabs/SupportTab.jsx';
 import MarketIntelTab from '../components/dashboard/tabs/MarketIntelTab.jsx';
 import MarketplaceSyncTab from '../components/dashboard/tabs/MarketplaceSyncTab.jsx';
@@ -1180,6 +1181,17 @@ const Dashboard = () => {
             products={products}
             setShowProductModal={setShowProductModal}
             handleImportProducts={handleImportProducts}
+          />
+        );
+
+      case 'tab-billing':
+        return (
+          <BillingTab 
+            user={user} 
+            profile={profile} 
+            clientData={clientData}
+            supabase={supabase} 
+            t={t}
           />
         );
       case 'tab-analytics':
