@@ -120,7 +120,7 @@ const InternalDashboard = () => {
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from('clients')
-      .select('*')
+      .select('*, profiles:user_id(tokens, ai_credits_remaining)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -381,24 +381,22 @@ const InternalDashboard = () => {
 
     setIsLoading(true);
     try {
-      const apiKey = aiConfig.resend_api_key || import.meta.env.VITE_RESEND_API_KEY;
-      if (apiKey && apiKey !== 'your_resend_api_key_here') {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            from: 'Tokcer AI <onboarding@resend.dev>',
-            to: [client.partners.email],
-            subject: 'Notifikasi Partner Tokcer AI',
-            html: `<p>Halo ${client.partners.full_name},</p><p>Terdapat klien baru Anda yang perlu di follow-up.</p>`
-          })
-        });
+      const { data, error } = await supabase.functions.invoke('send-partner-reminder', {
+        body: {
+          partnerEmail: client.partners.email,
+          partnerName: client.partners.full_name,
+          clientName: client.shop_name || client.nama
+        }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || 'Gagal mengirim pengingat');
       }
 
-      alert(`Reminder sent to ${client.partners?.full_name}`);
+      alert("Reminder berhasil dikirim ke partner!");
+    } catch (err) {
+      console.error("Gagal kirim reminder:", err);
+      alert("Gagal kirim email: " + err.message);
 
       if (user?.id) {
         await supabase.from('ai_usage_logs').insert([{

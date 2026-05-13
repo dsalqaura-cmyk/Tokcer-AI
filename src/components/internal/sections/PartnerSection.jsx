@@ -112,7 +112,9 @@ const PartnerSection = ({
                   <td className="p-4 border-y border-zinc-800 text-center">
                      <span className={`${getTierBadgeClass(p.tier)} text-[8px] font-black px-3 py-1 rounded-lg tracking-widest uppercase`}>{p.tier || 'Bronze'}</span>
                   </td>
-                  <td className="p-4 border-y border-zinc-800 text-right font-black text-white text-sm">{p.referrals || 0}</td>
+                  <td className="p-4 border-y border-zinc-800 text-right font-black text-white text-sm">
+                    {adminClients.filter(c => c.partner_id === p.id || c.ref === p.full_name).length}
+                  </td>
                   <td className="p-4 border-y border-zinc-800 text-center">
                     <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${p.status === 'active' ? 'text-green-500 border-green-500/20' : 'text-amber-500 border-amber-500/20'}`}>{p.status?.toUpperCase() || 'ACTIVE'}</span>
                   </td>

@@ -255,6 +255,33 @@ serve(async (req) => {
             }).eq('order_id', order_id);
         }
 
+        // GAP 13: Auto-record income to Internal Dashboard Accounting
+        const planName = trx.plan_name || client?.plan || 'pro';
+        const billingCycle = trx.billing_cycle || client?.billing_cycle || 'Monthly';
+        const isPartner = client?.partner_id || client?.ref;
+        const midtransFee = Math.round(Number(gross_amount) * 0.007); // 0.7% default fee
+        
+        // Calculate period end based on billing cycle
+        const now = new Date();
+        const periodEnd = new Date();
+        if (billingCycle.toLowerCase() === 'yearly') {
+            periodEnd.setFullYear(now.getFullYear() + 1);
+        } else {
+            periodEnd.setMonth(now.getMonth() + 1);
+        }
+
+        await supabaseClient.from('income_transactions').insert([{
+            source: isPartner ? 'partner' : 'organic',
+            plan: planName.toLowerCase(),
+            plan_type: billingCycle.toLowerCase() === 'yearly' ? 'yearly' : 'monthly',
+            gross_amount: Number(gross_amount),
+            period_start: now.toISOString(),
+            period_end: periodEnd.toISOString(),
+            midtrans_fee: midtransFee,
+            date: now.toISOString().split('T')[0]
+        }]);
+
+
       }
     }
 

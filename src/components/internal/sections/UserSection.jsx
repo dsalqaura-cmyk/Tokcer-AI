@@ -18,6 +18,8 @@ const UserSection = ({
               <tr>
                 <th className="px-4 pb-2">{t('subscriberInfo')}</th>
                 <th className="px-4 pb-2">{t('activePlan')}</th>
+                <th className="px-4 pb-2 text-center">AI CREDITS</th>
+                <th className="px-4 pb-2 text-center">EXPIRES AT</th>
                 <th className="px-4 pb-2">{t('health')}</th>
                 <th className="px-4 pb-2 text-right">{t('actions')}</th>
               </tr>
@@ -31,6 +33,16 @@ const UserSection = ({
                   </td>
                   <td className="p-4 border-y border-zinc-800">
                      <span className={`${getTierBadgeClass(u.tier)} text-[9px] font-black px-3 py-1 rounded-lg uppercase`}>{u.tier || u.plan}</span>
+                  </td>
+                  <td className="p-4 border-y border-zinc-800 text-center">
+                     <div className="text-[10px] font-black text-blue-400">
+                       {u.profiles?.tokens !== undefined ? u.profiles.tokens : (u.profiles?.ai_credits_remaining !== undefined ? u.profiles.ai_credits_remaining : '-')}
+                     </div>
+                  </td>
+                  <td className="p-4 border-y border-zinc-800 text-center">
+                     <div className="text-[10px] font-bold text-zinc-400">
+                       {u.expires_at ? new Date(u.expires_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
+                     </div>
                   </td>
                   <td className="p-4 border-y border-zinc-800">
                      {(() => {
@@ -57,7 +69,7 @@ const UserSection = ({
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="4" className="py-20 text-center text-zinc-600 italic text-sm">No users found in database.</td>
+                  <td colSpan="6" className="py-20 text-center text-zinc-600 italic text-sm">No users found in database.</td>
                 </tr>
               )}
             </tbody>
