@@ -1309,6 +1309,9 @@ const Dashboard = () => {
             setConfirmPassword={setConfirmPassword}
             isUpdatingPassword={isUpdatingPassword}
             handleUpdatePassword={handleUpdatePassword}
+            profile={profile}
+            user={user}
+            clientData={clientData}
           />
         );
       case 'tab-connections':

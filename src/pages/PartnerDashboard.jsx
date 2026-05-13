@@ -453,6 +453,7 @@ const PartnerDashboard = () => {
         paymentProof: null
       });
       fetchData(targetUser);
+      setActiveMenu('subscribers'); // GAP 3: Arahkan langsung ke daftar klien agar partner bisa lihat
     } catch (err) {
       alert(err.message);
     } finally {
