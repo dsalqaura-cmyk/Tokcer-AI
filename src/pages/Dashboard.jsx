@@ -926,12 +926,7 @@ const Dashboard = () => {
           cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
       }]);
 
-      // Log Usage
-      if (!isAdmin) {
-        const currentTokens = profile.tokens !== undefined ? profile.tokens : (profile.ai_credits_remaining || 0);
-        await supabase.from('profiles').update({ tokens: currentTokens - 1 }).eq('id', user.id);
-        setProfile({ ...profile, tokens: currentTokens - 1 });
-      }
+      // Token usage already logged and deducted by RPC above
     } catch (e) {
       console.error(e);
       setTrendResult("Maaf, terjadi kesalahan saat menganalisa tren.");
