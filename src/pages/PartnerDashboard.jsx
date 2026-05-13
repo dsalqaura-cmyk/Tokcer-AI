@@ -546,7 +546,7 @@ const PartnerDashboard = () => {
   const renderContent = () => {
     const commonProps = { t, isSubmitting, formatCurrency };
     switch (activeMenu) {
-      case 'onboard': return <OnboardTab {...commonProps} form={onboardForm} setForm={setOnboardForm} onSubmit={handleOnboardSubmit} />;
+      case 'onboard': return <OnboardTab {...commonProps} form={onboardForm} setForm={setOnboardForm} onSubmit={handleOnboardSubmit} partnerData={partnerData} />;
       case 'subscribers': return <SubscribersTab {...commonProps} subscribers={subscribers} />;
       case 'leaderboard': return <LeaderboardTab {...commonProps} data={leaderboardData} countdown={countdown} leaderboardFilter={leaderboardFilter} setLeaderboardFilter={setLeaderboardFilter} totalPeriodClosings={totalPeriodClosings} />;
       case 'payment': return <PaymentTab {...commonProps} partnerData={partnerData} />;

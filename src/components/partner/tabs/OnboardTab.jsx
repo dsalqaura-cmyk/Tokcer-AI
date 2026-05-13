@@ -5,7 +5,8 @@ const OnboardTab = ({
   form, 
   setForm, 
   onSubmit,
-  isSubmitting
+  isSubmitting,
+  partnerData
 }) => {
   const [isBusinessVerified, setIsBusinessVerified] = useState(false);
   return (
@@ -14,6 +15,51 @@ const OnboardTab = ({
         <h2 className="text-2xl font-black text-white uppercase tracking-[0.4em]">{t('onboardTitle')}</h2>
         <p className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em] max-w-lg mx-auto">{t('onboardDesc')}</p>
       </div>
+
+      {/* GAP 5: Referral Link Card */}
+      {partnerData?.referral_code && (
+        <div className="bg-gradient-to-r from-orange-600/20 to-amber-600/10 border border-orange-500/30 rounded-[32px] p-6 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl relative overflow-hidden group animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 bg-orange-500/20 rounded-2xl flex items-center justify-center border border-orange-500/30 shrink-0 group-hover:scale-110 transition-transform">
+              <iconify-icon icon="solar:link-bold-duotone" className="text-3xl text-orange-500"></iconify-icon>
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg">Link Referral Anda</h3>
+              <p className="text-zinc-400 text-xs mt-1 max-w-md">
+                Bagikan link ini ke calon klien. Jika mereka mendaftar lewat link ini, otomatis akan masuk ke dalam jaringan Anda.
+              </p>
+            </div>
+          </div>
+          <div className="w-full md:w-auto flex items-center gap-2 bg-black/40 p-2 rounded-xl border border-zinc-800 relative z-10">
+            <input 
+              type="text" 
+              readOnly 
+              value={`https://staging.tokcer-ai.com/register?ref=${partnerData.referral_code}`}
+              className="bg-transparent text-zinc-300 text-xs px-3 py-2 outline-none w-full md:w-64 font-mono truncate"
+            />
+            <button 
+              type="button"
+              onClick={(e) => {
+                navigator.clipboard.writeText(`https://staging.tokcer-ai.com/register?ref=${partnerData.referral_code}`);
+                const btn = e.currentTarget;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied!';
+                btn.classList.add('bg-emerald-500', 'text-white');
+                btn.classList.remove('bg-zinc-800', 'text-zinc-400');
+                setTimeout(() => {
+                  btn.innerHTML = originalHtml;
+                  btn.classList.remove('bg-emerald-500', 'text-white');
+                  btn.classList.add('bg-zinc-800', 'text-zinc-400');
+                }, 2000);
+              }}
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-bold uppercase px-4 py-2.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0"
+            >
+              <iconify-icon icon="solar:copy-bold"></iconify-icon>
+              Salin
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-right from-orange-600 to-amber-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
