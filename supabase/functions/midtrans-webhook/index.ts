@@ -244,6 +244,17 @@ serve(async (req) => {
                 console.error("Gagal kirim email password:", emailErr.message);
             }
         }
+        
+        } // End of else (New Registration)
+
+        // Pastikan transaksi diupdate untuk RENEWAL
+        if (isRenewal) {
+            await supabaseClient.from('transactions').update({ 
+                status: 'settlement', 
+                payment_type: payment_type
+            }).eq('order_id', order_id);
+        }
+
       }
     }
 
