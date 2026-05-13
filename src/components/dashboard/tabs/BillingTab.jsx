@@ -60,10 +60,13 @@ const BillingTab = ({ profile, clientData, supabase, t }) => {
             tokens: tokens,
             is_sandbox: isSandbox,
             user_data: { 
+                user_id: profile.id,
+                client_id: clientData?.id,
                 nama: profile.full_name || clientData?.shop_name, 
                 email: profile.email, 
                 phone: clientData?.whatsapp || '08000000000', 
-                billing_cycle: billingCycle 
+                billing_cycle: billingCycle,
+                is_renewal: true
             }
         }
       });

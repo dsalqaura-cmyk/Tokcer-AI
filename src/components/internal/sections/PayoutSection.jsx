@@ -9,28 +9,43 @@ const PayoutSection = ({ t }) => {
 
   const fetchPayouts = async () => {
     setLoading(true);
-    // Ganti menarik dari tabel partners yang punya saldo komisi
-    const { data, error } = await supabase
+    // 1. Fetch partners yang punya omzet
+    const { data: partnersData, error } = await supabase
       .from('partners')
       .select('id, full_name, bank_name, bank_account, whatsapp, total_omzet, created_at')
-      .gt('total_omzet', 0)
-      .order('total_omzet', { ascending: false });
+      .gt('total_omzet', 0);
 
-    if (!error && data) {
-      // Bungkus datanya agar mirip dengan struktur payouts
-      const simulatedPayouts = data.map(p => ({
-        id: p.id,
-        amount: p.total_omzet,
-        created_at: p.created_at,
-        status: 'pending',
-        partners: {
-          full_name: p.full_name,
-          bank_name: p.bank_name,
-          bank_account: p.bank_account,
-          whatsapp: p.whatsapp
+    // 2. Fetch riwayat payouts untuk dikurangi
+    const { data: allPayouts } = await supabase
+      .from('payouts')
+      .select('partner_id, amount, status')
+      .eq('status', 'paid');
+
+    if (!error && partnersData) {
+      const generatedPending = [];
+      
+      partnersData.forEach(p => {
+        const partnerPayouts = (allPayouts || []).filter(pay => pay.partner_id === p.id);
+        const totalPaid = partnerPayouts.reduce((sum, pay) => sum + (Number(pay.amount) || 0), 0);
+        const pendingBalance = Math.max(0, p.total_omzet - totalPaid);
+
+        if (pendingBalance > 0) {
+          generatedPending.push({
+            id: p.id, // ID partner sebagai referensi checkbox
+            amount: pendingBalance,
+            created_at: new Date().toISOString(),
+            status: 'pending',
+            partners: {
+              full_name: p.full_name,
+              bank_name: p.bank_name,
+              bank_account: p.bank_account,
+              whatsapp: p.whatsapp
+            }
+          });
         }
-      }));
-      setPayouts(simulatedPayouts);
+      });
+      
+      setPayouts(generatedPending.sort((a, b) => b.amount - a.amount));
     }
     setLoading(false);
   };
@@ -58,18 +73,28 @@ const PayoutSection = ({ t }) => {
 
   const handleApproveSelected = async () => {
     if (selectedIds.length === 0) return;
-    if (!window.confirm(`Konfirmasi pembayaran untuk ${selectedIds.length} tagihan?`)) return;
+    if (!window.confirm(`Konfirmasi pembayaran untuk ${selectedIds.length} partner? Saldo pending akan otomatis terpotong.`)) return;
 
     setIsProcessing(true);
     try {
+      const payoutsToInsert = selectedIds.map(partnerId => {
+        const pData = payouts.find(p => p.id === partnerId);
+        return {
+          partner_id: partnerId,
+          amount: pData.amount,
+          status: 'paid',
+          period_start: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 26).toISOString(),
+          period_end: new Date(new Date().getFullYear(), new Date().getMonth(), 25).toISOString()
+        };
+      });
+
       const { error } = await supabase
         .from('payouts')
-        .update({ status: 'paid' })
-        .in('id', selectedIds);
+        .insert(payoutsToInsert);
 
       if (error) throw error;
       
-      alert(`Berhasil mengonfirmasi ${selectedIds.length} pembayaran.`);
+      alert(`Berhasil mencatat ${selectedIds.length} pembayaran baru.`);
       setSelectedIds([]);
       fetchPayouts();
     } catch (err) {
