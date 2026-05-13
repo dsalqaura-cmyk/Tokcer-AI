@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '../lib/supabase.js';
 
 export const callAiEngine = async (systemPrompt, userMessage, customApiKey = null, maxTokens = 2048, temperature = 0.8) => {
   // Panggil Edge Function 'ai-proxy' secara aman (API Key disembunyikan di server)

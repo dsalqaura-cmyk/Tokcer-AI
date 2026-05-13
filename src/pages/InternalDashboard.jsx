@@ -397,17 +397,6 @@ const InternalDashboard = () => {
     } catch (err) {
       console.error("Gagal kirim reminder:", err);
       alert("Gagal kirim email: " + err.message);
-
-      if (user?.id) {
-        await supabase.from('ai_usage_logs').insert([{
-          user_id: user.id,
-          feature: 'admin_remind_partner',
-          prompt: `Remind ${client.partners?.full_name}`,
-          response: 'SUCCESS'
-        }]);
-      }
-    } catch (err) {
-      alert("Error: " + err.message);
     } finally {
       setIsLoading(false);
     }
