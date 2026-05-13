@@ -24,14 +24,8 @@ serve(async (req) => {
       }
     });
 
-    // 1. Ambil Resend API Key
-    const { data: resendConfig } = await supabase
-      .from('platform_settings')
-      .select('value')
-      .eq('key', 'resend_api_key')
-      .maybeSingle();
-
-    const RESEND_API_KEY = resendConfig?.value || Deno.env.get('RESEND_API_KEY');
+    // 1. Ambil Resend API Key dari Supabase Edge Secrets
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     
     if (!RESEND_API_KEY) {
         throw new Error("Resend API Key is missing");

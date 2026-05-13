@@ -118,13 +118,12 @@ const AiStrategySection = ({
             <iconify-icon icon="solar:letter-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
             <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Resend API Key Integration</label>
           </div>
-          <input 
-            type="password"
-            className="w-full bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-6 py-4 text-sm text-zinc-300 outline-none font-mono mb-2"
-            placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
-            value={aiConfig.resend_api_key || ''}
-            onChange={(e) => setAiConfig({...aiConfig, resend_api_key: e.target.value})}
-          />
+          <div className="flex items-center justify-center bg-zinc-950/20 border border-zinc-800 rounded-2xl p-4">
+            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+              <iconify-icon icon="solar:shield-check-bold" className="text-sm"></iconify-icon>
+              Secured via Supabase Edge Secrets
+            </span>
+          </div>
         </div>
 
         {/* Marketplace API Integration */}
@@ -253,7 +252,8 @@ const AiStrategySection = ({
                     <div className="font-black text-white text-xs uppercase tracking-tight">{log.profiles?.full_name || 'System User'}</div>
                   </td>
                   <td className="p-4 border-y border-zinc-800">
-                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{log.task_type} ({log.topic})</span>
+                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{log.feature || 'UNKNOWN TASK'}</span>
+                     <div className="text-[9px] text-zinc-500 mt-1 line-clamp-1 max-w-xs" title={log.prompt}>{log.prompt || '-'}</div>
                   </td>
                   <td className="p-4 border-y border-zinc-800 text-center">
                      <div className="text-[10px] font-black text-blue-400">{log.input_tokens || 0} / {log.output_tokens || 0}</div>
