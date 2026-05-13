@@ -30,6 +30,11 @@ const Landing = () => {
       localStorage.setItem('tokcer_affiliate_id', ref);
     }
 
+    // GAP 7: Auto-open modal jika URL mengandung /register (misal dari link referral partner)
+    if (window.location.pathname === '/register') {
+      setIsRegisterOpen(true);
+    }
+
     // Fallback routing untuk link non-hash (misal dari email lama)
     const path = window.location.pathname;
     if (path === '/partner-agreement') {
