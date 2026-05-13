@@ -88,6 +88,7 @@ const Dashboard = () => {
 
   // System Briefing States
   const [systemBriefing, setSystemBriefing] = useState(null);
+  const [clientData, setClientData] = useState(null);
   const [isFetchingBriefing, setIsFetchingBriefing] = useState(false);
 
   const t = (key) => dashboardTranslations[lang][key] || key;
@@ -513,6 +514,7 @@ const Dashboard = () => {
         
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
         const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
+        setClientData(clientData);
         
         if (session.user.email === 'admin@tokcer-ai.com') {
             localStorage.setItem('tokcer_admin_auth', 'true');
