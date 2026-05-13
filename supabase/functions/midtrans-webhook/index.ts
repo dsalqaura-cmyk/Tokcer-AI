@@ -4,6 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { reportError } from '../_shared/sentry.ts'
 
 serve(async (req) => {
   try {
@@ -288,6 +289,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ status: 'ok' }), { status: 200 })
 
   } catch (error) {
+    await reportError(error, { function: 'midtrans-webhook' });
     return new Response(JSON.stringify({ status: 'error', message: error.message }), { status: 200 })
   }
 })
