@@ -95,10 +95,10 @@ const BusinessInsightSection = ({ t }) => {
     setIsGenerating(true);
     try {
       // 1. Fetch Latest Configs & Data
-      const [configsRes, clientsRes, ordersRes, payoutsRes] = await Promise.all([
+      const [configsRes, clientsRes, txRes, payoutsRes] = await Promise.all([
         supabase.from('ai_configs').select('*').or('key.ilike.%price_%,key.eq.target_revenue_monthly'),
         supabase.from('clients').select('*'),
-        supabase.from('orders').select('*'),
+        supabase.from('transactions').select('*').in('status', ['settlement', 'capture']),
         supabase.from('payouts').select('*').eq('status', 'paid')
       ]);
 
@@ -116,7 +116,7 @@ const BusinessInsightSection = ({ t }) => {
       const targetRevenue = Number(configMap['target_revenue_monthly']) || 100000000;
       
       const clients = clientsRes.data || [];
-      const orders = ordersRes.data || [];
+      const transactions = txRes.data || [];
       const payouts = payoutsRes.data || [];
 
       // 2. Calculations
@@ -134,7 +134,7 @@ const BusinessInsightSection = ({ t }) => {
       };
 
       const totalMrr = mrr.pro + mrr.elite + mrr.ultimate;
-      const grossIncome = orders.reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0);
+      const grossIncome = transactions.reduce((acc, curr) => acc + (Number(curr.gross_amount) || 0), 0);
       const totalPayout = payouts.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       const netRevenue = grossIncome - totalPayout;
 

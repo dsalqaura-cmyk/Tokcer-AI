@@ -269,7 +269,6 @@ const InternalDashboard = () => {
       const updates = [
         { key: 'system_prompt', value: aiConfig.system_prompt || '' },
         { key: 'rag_knowledge_base', value: aiConfig.rag_knowledge_base || '' },
-        { key: 'resend_api_key', value: aiConfig.resend_api_key || '' },
         { key: 'shopee_partner_id', value: aiConfig.shopee_partner_id || '' },
         { key: 'shopee_partner_key', value: aiConfig.shopee_partner_key || '' },
         { key: 'tiktok_app_id', value: aiConfig.tiktok_app_id || '' },
