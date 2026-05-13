@@ -229,18 +229,37 @@ const SubscribersTab = ({
                         </div>
                       </td>
                       <td className="px-4 sm:px-8 py-4 sm:py-6">
-                        <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${
-                          s.status === 'active' || s.status === 'paid'
-                            ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
-                            : s.status === 'pending'
-                            ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-                            : s.status === 'warning'
-                            ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
-                            : 'text-zinc-500 bg-zinc-800 border-zinc-700'
-                        }`}>
-                          <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${s.status === 'active' || s.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                          {t('status' + s.status.charAt(0).toUpperCase() + s.status.slice(1))}
-                        </span>
+                        {(() => {
+                          const isExpired = s.status === 'expired' || (s.status === 'active' && s.expires_at && new Date(s.expires_at) < new Date());
+                          const isNearExpiry = s.status === 'active' && s.expires_at && new Date(s.expires_at).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
+                          
+                          let displayStatus = t('status' + s.status.charAt(0).toUpperCase() + s.status.slice(1)) || s.status;
+                          let statusClasses = 'text-zinc-500 bg-zinc-800 border-zinc-700';
+                          let dotColor = 'bg-zinc-500';
+
+                          if (isExpired) {
+                            displayStatus = 'EXPIRED';
+                            statusClasses = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+                            dotColor = 'bg-rose-500 animate-pulse';
+                          } else if (isNearExpiry) {
+                            displayStatus = 'JATUH TEMPO (H-3)';
+                            statusClasses = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                            dotColor = 'bg-amber-500 animate-pulse';
+                          } else if (s.status === 'active' || s.status === 'paid') {
+                            statusClasses = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                            dotColor = 'bg-emerald-500';
+                          } else if (s.status === 'pending') {
+                            statusClasses = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                            dotColor = 'bg-amber-500';
+                          }
+
+                          return (
+                            <span className={`inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border ${statusClasses}`}>
+                              <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${dotColor}`}></span>
+                              {displayStatus}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 sm:px-8 py-4 sm:py-6">
                         <span className={`text-[10px] sm:text-xs font-bold ${getRelativeTime(s.created_at) === (lang === 'id' ? 'baru saja' : 'just now') ? 'text-emerald-400' : 'text-zinc-400'}`}>

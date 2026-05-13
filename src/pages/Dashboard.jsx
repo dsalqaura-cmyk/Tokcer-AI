@@ -1348,8 +1348,23 @@ const Dashboard = () => {
         {/* Content Spacer for Fixed Header on Mobile */}
         <div className="h-16 lg:hidden"></div>
 
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
-          {renderContent()}
+        <div className="max-w-6xl mx-auto p-4 md:p-8 relative">
+          {clientData?.status === 'expired' && activeMenu !== 'tab-billing' && (
+            <div className="absolute inset-0 z-50 bg-zinc-900/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center rounded-3xl border border-red-500/20 m-4 md:m-8">
+                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                    <iconify-icon icon="solar:danger-triangle-bold" className="text-4xl text-red-500"></iconify-icon>
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Masa Langganan Habis</h2>
+                <p className="text-zinc-400 mb-6 max-w-md">Akun Anda telah melewati batas waktu kedaluwarsa. Silakan masuk ke menu Billing untuk melakukan perpanjangan paket agar sistem dapat digunakan kembali.</p>
+                <button onClick={() => setActiveMenu('tab-billing')} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2">
+                    <iconify-icon icon="solar:wallet-bold"></iconify-icon>
+                    Buka Menu Pembayaran
+                </button>
+            </div>
+          )}
+          <div className={clientData?.status === 'expired' && activeMenu !== 'tab-billing' ? 'opacity-20 pointer-events-none blur-sm transition-all h-[70vh] overflow-hidden' : ''}>
+            {renderContent()}
+          </div>
         </div>
       </main>
 
