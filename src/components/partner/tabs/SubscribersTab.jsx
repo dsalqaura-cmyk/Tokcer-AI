@@ -12,13 +12,32 @@ const SubscribersTab = ({
 
   const safeSubs = subscribers || [];
   // GAP 9: Filter logic
+  // Hitung hari sejak terdaftar untuk menentukan jatuh tempo
+  const getDaysSinceRegistered = (dateStr) => {
+    if (!dateStr) return null;
+    const created = new Date(dateStr);
+    const now = new Date();
+    return Math.floor((now - created) / (1000 * 60 * 60 * 24));
+  };
+
+  // Cek apakah subscriber masuk H-3 atau H-7 (asumsi langganan 30 hari)
+  const isNearExpiry = (sub, days) => {
+    const d = getDaysSinceRegistered(sub.created_at);
+    if (d === null) return false;
+    const daysLeft = 30 - (d % 30);
+    return daysLeft <= days && (sub.status === 'active' || sub.status === 'paid' || sub.status === 'near_expiry');
+  };
+
   const filteredSubs = safeSubs.filter(sub => {
     const matchesSearch = (sub.shop_name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (sub.email || '').toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
     
     if (statusFilter === 'active') return sub.status === 'active' || sub.status === 'paid';
-    if (statusFilter === 'expired') return sub.status === 'expired' || sub.status === 'near_expiry';
+    if (statusFilter === 'waiting') return sub.status === 'waiting_payment';
+    if (statusFilter === 'expired') return sub.status === 'expired';
+    if (statusFilter === 'h3') return isNearExpiry(sub, 3);
+    if (statusFilter === 'h7') return isNearExpiry(sub, 7);
     return true;
   });
 
@@ -220,7 +239,10 @@ const SubscribersTab = ({
             >
               <option value="all">Semua Status</option>
               <option value="active">🟢 Aktif / Paid</option>
-              <option value="expired">🔴 Expired / H-3</option>
+              <option value="waiting">🟡 Waiting Payment</option>
+              <option value="h7">🟠 Jatuh Tempo H-7</option>
+              <option value="h3">🔴 Jatuh Tempo H-3</option>
+              <option value="expired">⚫ Expired</option>
             </select>
           </div>
         </div>
