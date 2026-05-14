@@ -20,6 +20,106 @@ serve(async (req) => {
     )
 
     const { plan_name, amount, tokens, is_sandbox, user_data } = await req.json()
+
+    // ==========================================
+    // 0. BYPASS UNTUK PAKET GRATIS (STARTER)
+    // ==========================================
+    if (amount === 0) {
+      console.log("Mendeteksi pendaftaran paket GRATIS untuk:", user_data.email);
+      const generatedPassword = `Tokcer@${Math.floor(1000 + Math.random() * 9000)}`;
+
+      // A. Buat User via Admin API
+      const { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
+          email: user_data.email,
+          password: generatedPassword,
+          email_confirm: true,
+          user_metadata: { full_name: user_data.nama }
+      });
+
+      if (authError) {
+          if (authError.message.includes('already exists') || authError.message.includes('already registered')) {
+               const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
+               const existingUser = existingUsers.users.find(u => u.email === user_data.email);
+               if (existingUser) {
+                   authData.user = existingUser;
+                   await supabaseClient.auth.admin.updateUserById(existingUser.id, { password: generatedPassword });
+               } else {
+                   throw new Error(`User exists but could not be retrieved: ${user_data.email}`);
+               }
+          } else {
+              throw new Error(`Gagal membuat user: ${authError.message}`);
+          }
+      }
+      
+      const targetUserId = authData?.user?.id;
+      if (!targetUserId) throw new Error("Gagal mendapatkan User ID");
+
+      // B. Catat ke Tabel Clients
+      const { data: client, error: insertError } = await supabaseClient.from('clients').insert([{
+          id: targetUserId,
+          partner_id: user_data.partner_id || null,
+          shop_name: user_data.nama,
+          email: user_data.email,
+          whatsapp: user_data.phone,
+          plan: plan_name,
+          billing_cycle: user_data.billing_cycle || 'Monthly',
+          payment_method: 'free',
+          status: 'active',
+          ref: user_data.ref || 'Partner'
+      }]).select().single();
+
+      if (insertError) throw new Error(`Gagal mencatat data klien: ${insertError.message}`);
+
+      // C. Panggil RPC Modular
+      const { error: rpcError } = await supabaseClient.rpc('rpc_setup_client_account', {
+          p_user_id: targetUserId,
+          p_email: user_data.email,
+          p_application_id: client.id,
+          p_full_name: user_data.nama,
+          p_plan: plan_name,
+          p_role: 'user'
+      });
+
+      if (rpcError) throw new Error(`Gagal setup akun (RPC): ${rpcError.message}`);
+
+      // D. Kirim Email Resend
+      const { data: resendConfig } = await supabaseClient.from('ai_configs').select('value').eq('key', 'resend_api_key').maybeSingle();
+      const RESEND_API_KEY = resendConfig?.value || Deno.env.get('RESEND_API_KEY');
+
+      if (RESEND_API_KEY) {
+          try {
+              await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
+                  body: JSON.stringify({
+                      from: 'Tokcer AI <onboarding@tokcer-ai.com>',
+                      to: [user_data.email],
+                      subject: '🏮 Selamat Datang di Tokcer AI - Akun Gratis Anda Telah Aktif!',
+                      html: `
+                          <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border-radius: 24px; border: 1px solid #222;">
+                            <img src="https://staging.tokcer-ai.com/logo.png" style="height: 40px; margin-bottom: 30px;">
+                            <h2 style="font-weight: 900;">Selamat Datang, ${user_data.nama}!</h2>
+                            <p style="color: #888;">Akun Tokcer AI Anda telah aktif dengan paket <span style="color: #f97316;">${plan_name.toUpperCase()}</span>.</p>
+                            <div style="background: #111; padding: 25px; border-radius: 16px; margin: 20px 0; border: 1px dashed #333;">
+                              <p style="margin: 0; color: #555; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Akses Login Anda</p>
+                              <p style="font-size: 16px; font-weight: 900; margin: 10px 0; color: #fff;">Email: ${user_data.email}</p>
+                              <p style="font-size: 16px; font-weight: 900; margin: 10px 0; color: #fff;">Password: <span style="color: #f97316;">${generatedPassword}</span></p>
+                            </div>
+                            <a href="https://staging.tokcer-ai.com/login" style="display: inline-block; background: #f97316; color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 900; margin-top: 20px;">MASUK KE DASHBOARD</a>
+                          </div>
+                      `
+                  })
+              });
+          } catch (e) { console.error("Email error:", e.message); }
+      }
+
+      return new Response(
+        JSON.stringify({ bypass: true, success: true, userId: targetUserId }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+    // ==========================================
+    
     
     // 1. Determine Environment & Keys
     const serverKey = is_sandbox 

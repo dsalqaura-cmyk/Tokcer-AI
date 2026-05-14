@@ -398,16 +398,21 @@ const PartnerDashboard = () => {
       // 3. FLOW OTOMATIS (MIDTRANS / FREE)
       else {
         if (amount === 0) {
-            // FREE PLAN (STARTER) BYPASS
-            const { data: freeAccountData, error: freeError } = await supabase.functions.invoke('activate-free-account', {
+            // FREE PLAN (STARTER) BYPASS via midtrans-init
+            const { data: freeAccountData, error: freeError } = await supabase.functions.invoke('midtrans-init', {
                 body: {
-                    email: onboardForm.email,
-                    shopName: onboardForm.shopName,
-                    whatsapp: onboardForm.whatsapp,
-                    plan: finalPlan,
-                    billingCycle: billingCycle,
-                    ref: partnerData?.full_name || 'Partner',
-                    partnerId: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id)
+                    plan_name: finalPlan,
+                    amount: 0,
+                    tokens: tokens,
+                    is_sandbox: true,
+                    user_data: {
+                        email: onboardForm.email,
+                        nama: onboardForm.shopName,
+                        phone: onboardForm.whatsapp,
+                        billing_cycle: billingCycle,
+                        ref: partnerData?.full_name || 'Partner',
+                        partner_id: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id)
+                    }
                 }
             });
 
