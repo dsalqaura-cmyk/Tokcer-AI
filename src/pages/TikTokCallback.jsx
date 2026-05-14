@@ -27,21 +27,20 @@ const TikTokCallback = () => {
           return;
         }
 
-        // TODO: Nanti kita buat Edge Function 'tiktok-exchange-token' untuk menukar authCode
-        // Sementara kita simpan dulu code-nya ke database sebagai tanda connected
-        const { error } = await supabase
-          .from('connected_stores')
-          .upsert({
-            user_id: session.user.id,
-            platform: 'tiktok',
-            store_name: 'TikTok Shop (Pending Sync)',
-            status: 'connected',
-            access_token: authCode // Placeholder before token exchange is implemented
-          }, { onConflict: 'user_id, platform' });
+        setStatus('Menukar token dengan server TikTok...');
 
-        if (error) throw error;
+        // Panggil Edge Function untuk menukar authCode dengan Access Token asli
+        const { data: exchangeData, error: exchangeError } = await supabase.functions.invoke('tiktok-auth', {
+            body: {
+                auth_code: authCode,
+                user_id: session.user.id
+            }
+        });
 
-        setStatus('Berhasil terhubung ke TikTok Shop! Mengalihkan...');
+        if (exchangeError) throw exchangeError;
+        if (exchangeData?.error) throw new Error(exchangeData.error);
+
+        setStatus(`Berhasil terhubung ke toko: ${exchangeData?.store_name || 'TikTok Shop'}! Mengalihkan...`);
         setTimeout(() => navigate('/dashboard'), 2000);
 
       } catch (err) {
