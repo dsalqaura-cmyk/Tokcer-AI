@@ -87,7 +87,7 @@ const PartnerAgreement = () => {
               email: partnerData.email,
               whatsapp: partnerData.whatsapp,
               referral_code: generatedCode,
-              status: 'active'
+              status: 'pending' // FIX: Partner belum bisa digunakan sampai di-approve Admin
             }]);
           
           if (insertError) throw insertError;
