@@ -85,7 +85,13 @@ serve(async (req) => {
     }
 
     // 4. KIRIM EMAIL INSTRUKSI (Pindah ke Server)
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    const { data: resendConfig } = await supabaseClient
+      .from('ai_configs')
+      .select('value')
+      .eq('key', 'resend_api_key')
+      .maybeSingle();
+    
+    const RESEND_API_KEY = resendConfig?.value || Deno.env.get('RESEND_API_KEY');
     const paymentUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${midtransData.token}`;
 
     if (RESEND_API_KEY) {
