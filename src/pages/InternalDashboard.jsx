@@ -120,7 +120,7 @@ const InternalDashboard = () => {
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from('clients')
-      .select('*, profiles:user_id(tokens, ai_credits_remaining)')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
