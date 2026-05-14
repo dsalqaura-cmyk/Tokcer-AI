@@ -197,28 +197,39 @@ const Dashboard = () => {
             }
 
             // 2. Ambil Config TikTok dari Database
-            const { data: config, error: configError } = await supabase
+            const { data: configs, error: configError } = await supabase
                 .from('ai_configs')
-                .select('value')
-                .eq('key', 'tiktok_app_id')
-                .maybeSingle();
+                .select('key, value')
+                .in('key', ['tiktok_app_id', 'tiktok_service_id']);
 
             if (configError) {
                 console.warn("DB Config Error, using fallback...");
             }
 
-            const appId = config?.value || import.meta.env.VITE_TIKTOK_APP_ID;
+            let appId = import.meta.env.VITE_TIKTOK_APP_ID;
+            let serviceId = null;
+
+            if (configs) {
+                const appConfig = configs.find(c => c.key === 'tiktok_app_id');
+                const serviceConfig = configs.find(c => c.key === 'tiktok_service_id');
+                if (appConfig) appId = appConfig.value;
+                if (serviceConfig) serviceId = serviceConfig.value;
+            }
             
-            if (!appId) {
-                alert("⚠️ App ID TikTok belum dikonfigurasi. Mohon isi di menu Admin.");
+            // TikTok Oauth memerlukan Service ID, bukan App Key. 
+            // Jika Service ID tidak ada, kita fallback menggunakan App Key dengan asumsi struktur URL beda
+            const finalIdForAuth = serviceId || appId;
+
+            if (!finalIdForAuth) {
+                alert("⚠️ App ID atau Service ID TikTok belum dikonfigurasi. Mohon isi di menu Admin.");
                 return;
             }
 
             // 3. Redirect (Bypass ke Mock Page kalau ID-nya mock/placeholder atau ID fallback staging)
-            if (appId.includes('mock') || appId.includes('6db7a') || appId.includes('6js3f')) {
+            if (finalIdForAuth.includes('mock') || finalIdForAuth.includes('6db7a') || finalIdForAuth.includes('6js3f')) {
                 navigate('/tiktok-auth-mock');
             } else {
-                window.location.href = getTikTokAuthUrl(appId);
+                window.location.href = getTikTokAuthUrl(finalIdForAuth);
             }
         } catch (err) {
             console.error("TikTok Auth Error:", err);
