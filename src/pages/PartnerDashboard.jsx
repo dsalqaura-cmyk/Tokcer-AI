@@ -395,8 +395,37 @@ const PartnerDashboard = () => {
         const { data: { publicUrl: url } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
         publicUrl = url;
       } 
-      // 3. FLOW OTOMATIS (MIDTRANS)
+      // 3. FLOW OTOMATIS (MIDTRANS / FREE)
       else {
+        if (amount === 0) {
+            // FREE PLAN (STARTER) BYPASS
+            const { data: freeAccountData, error: freeError } = await supabase.functions.invoke('activate-free-account', {
+                body: {
+                    email: onboardForm.email,
+                    shopName: onboardForm.shopName,
+                    whatsapp: onboardForm.whatsapp,
+                    plan: finalPlan,
+                    billingCycle: billingCycle,
+                    ref: partnerData?.full_name || 'Partner',
+                    partnerId: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id)
+                }
+            });
+
+            if (freeError) throw new Error(`Gagal aktivasi akun gratis: ${freeError.message}`);
+
+            alert("Pendaftaran akun Gratis berhasil! Email akses telah dikirim ke calon user.");
+            setOnboardForm({
+                shopName: '',
+                email: '',
+                whatsapp: '',
+                package: 'starter',
+                paymentMethod: 'va',
+                paymentProof: null
+            });
+            setIsSubmitting(false);
+            return; // EXIT EARLY, don't insert into clients locally because the Edge Function did it
+        }
+
         // Panggil Edge Function midtrans-init
         const { data: midtrans, error: midError } = await supabase.functions.invoke('midtrans-init', {
           body: {
@@ -419,7 +448,7 @@ const PartnerDashboard = () => {
         paymentUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${midtrans.token}`;
       }
 
-      // 4. Catat ke Tabel Clients
+      // 4. Catat ke Tabel Clients (HANYA UNTUK TRANSFER & MIDTRANS)
       const { error: insertError } = await supabase.from('clients').insert([{
         partner_id: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id),
         shop_name: onboardForm.shopName,
@@ -432,7 +461,7 @@ const PartnerDashboard = () => {
         midtrans_order_id: midtransOrderId,
         payment_url: paymentUrl,
         status: onboardForm.paymentMethod === 'transfer' ? 'pending' : 'waiting_payment',
-        ref: partnerData.full_name || 'Partner'
+        ref: partnerData?.full_name || 'Partner'
       }]);
 
       if (insertError) throw insertError;
