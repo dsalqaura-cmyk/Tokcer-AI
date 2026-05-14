@@ -62,24 +62,77 @@ const PaymentTab = ({
                 </tr>
               </thead>
               <tbody className="text-zinc-200">
-                {(partnerData?.paymentHistory || []).map((p, idx) => (
-                  <tr key={idx} className="border-b border-zinc-900/30 group-hover:bg-white/[0.01]">
-                    <td className="py-5">{p.period}</td>
-                    <td className="py-5">
-                      <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                        p.status === 'paid'
-                          ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                          : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-                      }`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${p.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></span>
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="py-5 text-right text-emerald-400 font-black font-mono text-xs">{formatCurrency(p.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
+                {(partnerData?.paymentHistory || []).map((p, idx) => {
+                  // Cek apakah ada data breakdown (kolom baru nullable)
+                  const hasBreakdown = p.revenue_share != null || p.performance_bonus != null;
+                  const revenueShare = Number(p.revenue_share) || 0;
+                  const perfBonus = Number(p.performance_bonus) || 0;
 
+                  return (
+                    <React.Fragment key={idx}>
+                      {/* Baris utama — identik dengan sebelumnya, tidak ada perubahan */}
+                      <tr className={`border-b border-zinc-900/30 group-hover:bg-white/[0.01] ${hasBreakdown ? 'border-b-0' : ''}`}>
+                        <td className="py-4 font-black text-white">{p.period}</td>
+                        <td className="py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                            p.status === 'paid'
+                              ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                              : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                          }`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${p.status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></span>
+                            {p.status}
+                          </span>
+                        </td>
+                        <td className="py-4 text-right text-emerald-400 font-black font-mono text-xs">{formatCurrency(p.amount)}</td>
+                      </tr>
+
+                      {/* Baris breakdown — HANYA muncul jika kolom baru ada datanya */}
+                      {hasBreakdown && (
+                        <tr className="border-b border-zinc-900/30">
+                          <td colSpan={3} className="pb-4 pt-1 pl-4">
+                            <div className="bg-zinc-950/60 border border-zinc-800/50 rounded-2xl p-4 space-y-3">
+
+                              {/* Label Header */}
+                              <div className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">
+                                Rincian Komisi
+                              </div>
+
+                              {/* ── BAGIAN 1: REVENUE SHARE ── */}
+                              {revenueShare > 0 && (
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                    <span className="text-[10px] text-zinc-300 font-bold normal-case tracking-normal">Revenue Share</span>
+                                  </div>
+                                  <span className="text-[11px] font-black font-mono text-blue-400">{formatCurrency(revenueShare)}</span>
+                                </div>
+                              )}
+
+                              {/* ── BAGIAN 2: PERFORMANCE BONUS ── */}
+                              {/* Hanya tampil jika perfBonus > 0 (variabel yang tercapai) */}
+                              {perfBonus > 0 && (
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                                    <span className="text-[10px] text-zinc-300 font-bold normal-case tracking-normal">Performance Bonus</span>
+                                  </div>
+                                  <span className="text-[11px] font-black font-mono text-amber-400">{formatCurrency(perfBonus)}</span>
+                                </div>
+                              )}
+
+                              {/* Divider + Total Confirm */}
+                              <div className="pt-2 mt-2 border-t border-zinc-800/50 flex items-center justify-between">
+                                <span className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Total Cair</span>
+                                <span className="text-[11px] font-black font-mono text-emerald-400">{formatCurrency(p.amount)}</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
             </table>
           </div>
         </div>
