@@ -8,7 +8,6 @@ import PartnerDashboard from './pages/PartnerDashboard.jsx';
 import InternalDashboard from './pages/InternalDashboard.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import PartnerAgreement from './pages/PartnerAgreement.jsx';
-import ResetPassword from './pages/ResetPassword.jsx';
 import TikTokMockAuth from './pages/TikTokMockAuth.jsx';
 import TikTokCallback from './pages/TikTokCallback.jsx';
 import HppCalculator from './pages/HppCalculator.jsx';
@@ -120,7 +119,6 @@ function App() {
         />
         
         {/* Legal Pages */}
-        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/tiktok-auth-mock" element={<TikTokMockAuth />} />
         <Route path="/tiktok-callback" element={<TikTokCallback />} />
         <Route path="/hpp-calculator" 
