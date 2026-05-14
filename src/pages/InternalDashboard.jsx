@@ -191,10 +191,11 @@ const InternalDashboard = () => {
   const fetchTickets = async () => {
     const { data, error } = await supabase
       .from('support_tickets')
-      .select('*, partners(full_name), clients:user_id(shop_name)')
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error) setTickets(data || []);
+    if (error) console.error('fetchTickets error:', error.message);
+    else setTickets(data || []);
   };
 
   const fetchPartnerApps = async () => {
@@ -210,10 +211,11 @@ const InternalDashboard = () => {
   const fetchIdeas = async () => {
     const { data, error } = await supabase
       .from('partner_ideas')
-      .select('*, partners(full_name)')
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error) setIdeas(data || []);
+    if (error) console.error('fetchIdeas error:', error.message);
+    else setIdeas(data || []);
   };
 
   const handleLogout = async () => {
