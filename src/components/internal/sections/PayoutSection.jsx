@@ -79,12 +79,13 @@ const PayoutSection = ({ t }) => {
     try {
       const payoutsToInsert = selectedIds.map(partnerId => {
         const pData = payouts.find(p => p.id === partnerId);
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const periodStr = `${monthNames[new Date().getMonth()]} ${new Date().getFullYear()}`;
         return {
           partner_id: partnerId,
           amount: pData.amount,
           status: 'paid',
-          period_start: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 26).toISOString(),
-          period_end: new Date(new Date().getFullYear(), new Date().getMonth(), 25).toISOString()
+          period: periodStr
         };
       });
 
