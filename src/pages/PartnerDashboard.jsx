@@ -385,7 +385,7 @@ const PartnerDashboard = () => {
       let paymentUrl = null;
 
       // 2. FLOW MANUAL (TRANSFER)
-      if (onboardForm.paymentMethod === 'transfer') {
+      if (amount > 0 && onboardForm.paymentMethod === 'transfer') {
         if (!onboardForm.paymentProof) throw new Error("Harap upload bukti pembayaran.");
         const file = onboardForm.paymentProof;
         const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
