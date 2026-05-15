@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase.js';
+import { sendDemoWelcomeEmail } from '../../utils/email.js';
 
 const DemoRegisterModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -27,6 +28,13 @@ const DemoRegisterModal = ({ isOpen, onClose }) => {
       }]);
 
       if (error) throw error;
+
+      // Kirim email selamat datang/konfirmasi pendaftaran
+      await sendDemoWelcomeEmail({
+        email: formData.email,
+        name: formData.name
+      });
+
       setSuccess(true);
     } catch (err) {
       alert("Gagal mendaftar: " + err.message);

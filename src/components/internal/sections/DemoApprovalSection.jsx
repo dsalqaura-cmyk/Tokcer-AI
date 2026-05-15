@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase.js';
+import { sendDemoApprovalEmail } from '../../../utils/email.js';
 
 const DemoApprovalSection = ({ t }) => {
   const [demos, setDemos] = useState([]);
@@ -47,6 +48,9 @@ const DemoApprovalSection = ({ t }) => {
       });
 
       if (error) throw error;
+
+      // Kirim email approval dari frontend
+      await sendDemoApprovalEmail(demo.email, password);
 
       alert(`✅ Akun Demo ${demo.name} Berhasil Diaktifkan!\n\nEmail: ${demo.email}\nPassword Sementara: ${password}\n\nEmail notifikasi telah dikirimkan ke user.`);
       fetchDemos();
