@@ -1,34 +1,40 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase.js';
 
+const MARKETPLACES = ['Shopee', 'Tokopedia', 'TikTok Shop', 'Lazada', 'Blibli', 'Lainnya'];
+
 const DemoRegisterModal = ({ isOpen, onClose }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    marketplace: ''
-  });
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '' });
+  const [selectedMarketplaces, setSelectedMarketplaces] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   if (!isOpen) return null;
 
+  const toggleMarketplace = (mp) => {
+    setSelectedMarketplaces(prev =>
+      prev.includes(mp) ? prev.filter(m => m !== mp) : [...prev, mp]
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (selectedMarketplaces.length === 0) {
+      alert('Pilih minimal 1 marketplace.');
+      return;
+    }
     setLoading(true);
-
     try {
       const { error } = await supabase.from('demo_applications').insert([{
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
-        marketplace: formData.marketplace,
+        marketplace: selectedMarketplaces.join(', '),
         status: 'pending'
       }]);
-
       if (error) throw error;
 
-      // Kirim welcome email via RPC (server-side) agar tidak kena CORS block
+      // Kirim welcome email via RPC (server-side)
       await supabase.rpc('rpc_send_demo_welcome', {
         p_email: formData.email,
         p_name: formData.name
@@ -36,7 +42,7 @@ const DemoRegisterModal = ({ isOpen, onClose }) => {
 
       setSuccess(true);
     } catch (err) {
-      alert("Gagal mendaftar: " + err.message);
+      alert('Gagal mendaftar: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -72,16 +78,39 @@ const DemoRegisterModal = ({ isOpen, onClose }) => {
                 <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Email Aktif</label>
                 <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 outline-none transition-all text-white" placeholder="budi@example.com" />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Marketplace Utama</label>
-                <select required value={formData.marketplace} onChange={e => setFormData({...formData, marketplace: e.target.value})} className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 outline-none transition-all text-white">
-                  <option value="" disabled>Pilih Marketplace Utama...</option>
-                  <option value="Shopee">Shopee</option>
-                  <option value="Tokopedia">Tokopedia</option>
-                  <option value="TikTok Shop">TikTok Shop</option>
-                  <option value="Lazada">Lazada</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
+
+              {/* Multi-select Marketplace */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Marketplace Yang Digunakan <span className="text-indigo-400">(Bisa lebih dari 1)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {MARKETPLACES.map(mp => {
+                    const selected = selectedMarketplaces.includes(mp);
+                    return (
+                      <button
+                        key={mp}
+                        type="button"
+                        onClick={() => toggleMarketplace(mp)}
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold transition-all text-left ${
+                          selected
+                            ? 'bg-indigo-500/20 border-indigo-500/60 text-indigo-300'
+                            : 'bg-black/30 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center flex-shrink-0 transition-all ${
+                          selected ? 'bg-indigo-500 border-indigo-500' : 'border-zinc-700'
+                        }`}>
+                          {selected && <iconify-icon icon="solar:check-bold" className="text-[10px] text-white"></iconify-icon>}
+                        </div>
+                        {mp}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedMarketplaces.length > 0 && (
+                  <p className="text-[10px] text-indigo-400/70">Dipilih: {selectedMarketplaces.join(', ')}</p>
+                )}
               </div>
 
               <button disabled={loading} type="submit" className="w-full mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2">
