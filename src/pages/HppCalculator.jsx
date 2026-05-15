@@ -166,6 +166,58 @@ const HppCalculator = () => {
         }
     };
 
+    const downloadSkuCSV = (skuData, calcResults) => {
+        const rows = [
+            ['Field', 'Value'],
+            ['Nama SKU', skuData.sku_name],
+            ['Platform', skuData.platform],
+            ['Kategori', skuData.category],
+            [''],
+            ['=== INPUT BIAYA ===', ''],
+            ['Modal Beli (Rp)', skuData.modal_beli],
+            ['Biaya Packaging (Rp)', skuData.biaya_packaging],
+            ['Biaya Lain-lain (Rp)', skuData.biaya_lain_lain],
+            ['Biaya Inbound/Gudang (Rp)', skuData.biaya_ongkir_inbound],
+            [''],
+            ['=== BIAYA PLATFORM ===', ''],
+            ['Komisi Platform (%)', skuData.komisi_persen],
+            ['Logistik Flat (Rp)', skuData.logistik_flat],
+            ['Ads (%)', skuData.ads_persen],
+            ['Affiliator (%)', skuData.affiliator_persen],
+            ['Admin Fee Flat (Rp)', skuData.admin_fee_flat],
+            ['Diskon/Voucher (Rp)', skuData.diskon_voucher],
+            [''],
+            ['=== TARGET & HASIL ===', ''],
+            ['Target Margin (%)', skuData.target_margin_persen],
+            ['Harga Jual Aktual (Rp)', skuData.harga_jual_aktual],
+            ['Estimasi Order/Bulan (pcs)', skuData.estimasi_order_per_bulan],
+            [''],
+            ['=== HASIL KALKULASI ===', ''],
+            ['HPP per Unit (Rp)', Math.round(calcResults.hpp)],
+            ['BEP Price (Rp)', Math.round(calcResults.bep)],
+            ['Recommended Price (Rp)', Math.round(calcResults.recommendedPrice)],
+            ['Net Profit per Unit (Rp)', Math.round(calcResults.profit)],
+            ['Margin Bersih (%)', calcResults.margin.toFixed(2)],
+            ['ROI (%)', calcResults.roi.toFixed(2)],
+            ['Estimasi Omzet/Bulan (Rp)', Math.round(calcResults.omzet)],
+            ['Estimasi Net Profit/Bulan (Rp)', Math.round(calcResults.netProfit)],
+            [''],
+            ['Tanggal Simpan', new Date().toLocaleDateString('id-ID')],
+            ['Dibuat oleh', 'Tokcer AI - HPP & Margin Calculator'],
+        ];
+
+        const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `HPP_${(skuData.sku_name || 'SKU').replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     const handleSave = async () => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
@@ -181,7 +233,7 @@ const HppCalculator = () => {
             }
         }
 
-        const { error } = await supabase.from('sku_calculations').insert([{
+        const skuData = {
             user_id: user?.id,
             sku_name: skuName || 'Unnamed SKU',
             modal_beli: modalBeli,
@@ -199,15 +251,20 @@ const HppCalculator = () => {
             harga_jual_aktual: hargaJualAktual,
             diskon_voucher: diskonVoucher,
             estimasi_order_per_bulan: estimasiOrder
-        }]);
+        };
+
+        const { error } = await supabase.from('sku_calculations').insert([skuData]);
 
         if (error) {
             alert("Gagal menyimpan: " + error.message);
         } else {
             setSavedCount(prev => prev + 1);
-            alert("✅ SKU Berhasil Disimpan!");
+            // Auto-download CSV setelah berhasil simpan
+            downloadSkuCSV(skuData, calc);
+            alert("✅ SKU Berhasil Disimpan & CSV sedang diunduh!");
         }
     };
+
 
     const handlePremiumFeature = (feature) => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
