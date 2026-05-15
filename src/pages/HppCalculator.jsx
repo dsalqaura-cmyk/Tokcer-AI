@@ -29,6 +29,9 @@ const HppCalculator = () => {
         return false;
     }, [profile]);
 
+    // Mobile Sidebar State
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
     // Compare Mode States
     const [isCompareMode, setIsCompareMode] = useState(false);
     const [savedSkus, setSavedSkus] = useState([]);
@@ -534,8 +537,8 @@ const HppCalculator = () => {
                 t={t}
                 activeMenu="tab-calculator"
                 setActiveMenu={(menu) => navigate('/dashboard')}
-                isSidebarOpen={false}
-                setIsSidebarOpen={() => {}}
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
                 lang={lang}
                 setLang={() => {}}
                 profile={profile}
@@ -552,7 +555,7 @@ const HppCalculator = () => {
             />
             
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                <Header setIsSidebarOpen={() => {}} t={t} activeSection="HPP & Margin Calculator" />
+                <Header setIsSidebarOpen={setIsSidebarOpen} t={t} activeSection="HPP & Margin Calculator" />
                 
                 <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="max-w-6xl mx-auto space-y-8">
