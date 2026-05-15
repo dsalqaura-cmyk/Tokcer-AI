@@ -662,7 +662,7 @@ const HppCalculator = () => {
                                             <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-50"></div>
                                             <h3 className="text-xs font-black text-orange-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                 <iconify-icon icon="solar:box-bold-duotone"></iconify-icon>
-                                                Section A: Biaya Produksi (HPP)
+                                                Layer 1: Fixed Cost (Produksi & Logistik Awal)
                                             </h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-2">
@@ -670,7 +670,7 @@ const HppCalculator = () => {
                                                     <input type="text" value={skuName} onChange={(e) => setSkuName(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition-all" placeholder="Contoh: Kaos Polos Premium" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Modal Beli (Rp)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">HPP / Modal Beli (Rp)</label>
                                                     <input type="number" value={modalBeli} onChange={(e) => setModalBeli(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition-all" />
                                                 </div>
                                                 <div className="space-y-2">
@@ -678,7 +678,11 @@ const HppCalculator = () => {
                                                     <input type="number" value={biayaPackaging} onChange={(e) => setBiayaPackaging(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition-all" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Inbound Gudang (Rp/unit)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Ongkir Ditanggung Seller (Subsidi Rp)</label>
+                                                    <input type="number" value={logistikFlat} onChange={(e) => setLogistikFlat(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition-all" />
+                                                </div>
+                                                <div className="space-y-2 md:col-span-2">
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Biaya Lain-lain / Inbound (Rp)</label>
                                                     <input type="number" value={biayaInbound} onChange={(e) => setBiayaInbound(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition-all" />
                                                 </div>
                                             </div>
@@ -692,7 +696,7 @@ const HppCalculator = () => {
                                             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-50"></div>
                                             <h3 className="text-xs font-black text-blue-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                 <iconify-icon icon="solar:shop-2-bold-duotone"></iconify-icon>
-                                                Section B: Biaya Platform & Ads
+                                                Layer 2, 7 & 8: Platform Fee, Affiliate & Ads
                                             </h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-2">
@@ -714,35 +718,35 @@ const HppCalculator = () => {
                                                     </select>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Komisi Platform (%)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Layer 2: Platform Commission (%)</label>
                                                     <input type="number" value={komisiOverride || 0} onChange={(e) => setKomisiOverride(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Budgetting Ads (% Harga)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Layer 8: Ads Budget (% Harga)</label>
                                                     <input type="number" value={adsPersen} onChange={(e) => setAdsPersen(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Biaya Ongkir (Flat)</label>
-                                                    <input type="number" value={logistikFlat} onChange={(e) => setLogistikFlat(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Layer 7: Affiliate Commission (%)</label>
+                                                    <input type="number" value={affiliatorPersen} onChange={(e) => setAffiliatorPersen(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Biaya Admin (Rp Flat)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Layer 3: Per-Order Fixed Fee (Rp)</label>
                                                     <input type="number" value={adminFeeFlat} onChange={(e) => setAdminFeeFlat(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
-                                                    <p className="text-[8px] text-zinc-600 mt-1 italic">*Default Tokopedia/TikTok: Rp1.250</p>
+                                                    <p className="text-[8px] text-zinc-600 mt-1 italic">*Aturan 2026: Rp1.250 (Tokped/Shopee)</p>
                                                 </div>
                                                 
-                                                {/* Campaign Toggles */}
+                                                {/* Campaign Toggles (Layer 4 & 5) */}
                                                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-zinc-800/50 mt-2">
                                                     <button onClick={() => setIsPreorder(!isPreorder)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isPreorder ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
-                                                        <span className="text-[10px] font-bold uppercase">Pre-Order (+3%)</span>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 5: Pre-Order (+3%)</span>
                                                         <iconify-icon icon={isPreorder ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
                                                     </button>
                                                     <button onClick={() => setHasGmvMax(!hasGmvMax)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${hasGmvMax ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
-                                                        <span className="text-[10px] font-bold uppercase">GMV Max (Disc)</span>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 4: GMV Max</span>
                                                         <iconify-icon icon={hasGmvMax ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
                                                     </button>
                                                     <button onClick={() => setHasGrowthXtra(!hasGrowthXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${hasGrowthXtra ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
-                                                        <span className="text-[10px] font-bold uppercase">Growth Xtra</span>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 4: Growth Xtra</span>
                                                         <iconify-icon icon={hasGrowthXtra ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
                                                     </button>
                                                 </div>
@@ -754,16 +758,18 @@ const HppCalculator = () => {
                                             <div className="absolute top-0 left-0 w-1 h-full bg-rose-500 opacity-50"></div>
                                             <h3 className="text-xs font-black text-rose-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                 <iconify-icon icon="solar:shield-warning-bold-duotone"></iconify-icon>
-                                                Section D: Advanced Risk & non-refundable Fees (2026)
+                                                Layer 4 & 6: Advanced Risk & non-refundable Fees (2026)
                                             </h3>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Komisi Dinamis (%)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Layer 4: Komisi Dinamis (%)</label>
                                                     <input type="number" value={komisiDinamis} onChange={(e) => setKomisiDinamis(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-rose-500/50 outline-none transition-all" />
+                                                    <p className="text-[8px] text-zinc-600 mt-1 italic">*Aktif jika pake Promo Xtra (TikTok)</p>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Logistics Service Fee (Rp)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Layer 6: Logistics Service Fee (Rp)</label>
                                                     <input type="number" value={logisticsServiceFee} onChange={(e) => setLogisticsServiceFee(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-rose-500/50 outline-none transition-all" />
+                                                    <p className="text-[8px] text-zinc-600 mt-1 italic">*Input Berdasarkan Berat & Rute</p>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Est. Return Rate (%)</label>
@@ -786,19 +792,19 @@ const HppCalculator = () => {
                                                 <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-50"></div>
                                                 <h3 className="text-xs font-black text-orange-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                     <iconify-icon icon="solar:shop-bold-duotone"></iconify-icon>
-                                                    Section E: Shopee Program & Seller Status
+                                                    Layer 2 & 4: Shopee Program & Seller Status
                                                 </h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <button onClick={() => setIsStarSeller(!isStarSeller)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isStarSeller ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
-                                                        <span className="text-[10px] font-bold uppercase">Star / Star+ Seller</span>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 2: Star / Star+ Seller</span>
                                                         <iconify-icon icon={isStarSeller ? "solar:star-bold" : "solar:star-linear"}></iconify-icon>
                                                     </button>
                                                     <button onClick={() => setIsGoxXtra(!isGoxXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isGoxXtra ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
-                                                        <span className="text-[10px] font-bold uppercase">Gratis Ongkir XTRA</span>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 4: Gratis Ongkir XTRA</span>
                                                         <iconify-icon icon={isGoxXtra ? "solar:delivery-bold" : "solar:delivery-linear"}></iconify-icon>
                                                     </button>
                                                     <button onClick={() => setIsPromoXtra(!isPromoXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isPromoXtra ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
-                                                        <span className="text-[10px] font-bold uppercase">Promo XTRA</span>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 4: Promo XTRA</span>
                                                         <iconify-icon icon={isPromoXtra ? "solar:ticket-sale-bold" : "solar:ticket-sale-linear"}></iconify-icon>
                                                     </button>
                                                     <div className="space-y-2">
