@@ -485,7 +485,7 @@ const Dashboard = () => {
             
             const userPrompt = `Data: ${bizType} shop, ${lowStockCount} products low stock, ${highReturnOrders} returned orders, ${ordData.length} total orders.`;
             
-            const result = await callAiEngine(systemPrompt, userPrompt, null, 1024, 0.5);
+            const result = await callAiEngine(systemPrompt, userPrompt, null, 512, 0.5);
             const cleanJson = result.text.replace(/```json|```/g, '').trim();
             const data = JSON.parse(cleanJson);
             
@@ -776,8 +776,13 @@ const Dashboard = () => {
     
     // 1. SECURE TOKEN DEDUCTION (PRE-AI CALL)
     if (!isAdmin) {
-        const lastPrompt = localStorage.getItem('tokcer_last_prompt');
-        const isNewTopic = !lastPrompt || lastPrompt.trim().toLowerCase() !== aiPrompt.trim().toLowerCase();
+        const lastPrompt = (localStorage.getItem('tokcer_last_prompt') || '').trim().toLowerCase();
+        const currentPrompt = (aiPrompt || '').trim().toLowerCase();
+        
+        // 🛡️ TARJO LOGIC: Cek kesamaan topik (kopi vs kopi susu = masih 1 topik)
+        // Jika prompt baru mengandung prompt lama, atau prompt lama mengandung prompt baru, anggap topik sama.
+        const isSimilar = lastPrompt && (currentPrompt.includes(lastPrompt) || lastPrompt.includes(currentPrompt));
+        const isNewTopic = !isSimilar;
 
         if (isNewTopic) {
             // Pre-check state
@@ -842,7 +847,7 @@ const Dashboard = () => {
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
       // 3. Tentukan Max Tokens Dinamis (Biar Hemat)
-      let computedMaxTokens = 2048;
+      let computedMaxTokens = 1024; // Standard Video/Reels
       if (aiFormat.includes('Description') || aiFormat.includes('Deskripsi') || aiFormat.includes('Caption')) {
         computedMaxTokens = 500;
       }

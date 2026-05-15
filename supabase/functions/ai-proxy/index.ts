@@ -33,6 +33,9 @@ serve(async (req) => {
     // 2. Ambil parameter dari request
     const { systemPrompt, userMessage, maxTokens = 2048, temperature = 0.8 } = await req.json()
 
+    // 🔒 TARJO SECURITY: Hard limit max tokens untuk mencegah eksploitasi biaya
+    const safeMaxTokens = Math.min(maxTokens, 4096);
+
     // 3. Panggil API Deepseek secara rahasia di server
     const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY')
     if (!deepseekApiKey) {
@@ -52,13 +55,13 @@ serve(async (req) => {
           { role: 'user', content: userMessage }
         ],
         temperature: temperature,
-        max_tokens: maxTokens,
+        max_tokens: safeMaxTokens,
       })
     })
 
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}))
-      throw new Error(errData?.error?.message || `Deepseek API error: ${res.status}`)
+      throw new Error(errData?.error?.message || `Server AI Tokcer error: ${res.status}`)
     }
 
     const data = await res.json()
