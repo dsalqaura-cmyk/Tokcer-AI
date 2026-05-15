@@ -63,7 +63,6 @@ const Landing = () => {
       <Navbar 
         onOpenPartner={() => setIsPartnerOpen(true)} 
         onOpenWaitlist={() => openRegister()} 
-        onOpenDemo={() => setIsDemoOpen(true)}
       />
       
       {/* === SECTION 1: Hero / Above the Fold === */}
@@ -96,7 +95,6 @@ const Landing = () => {
 
       <RegisterModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} selectedPlan={selectedPlan} />
       <PartnerModal isOpen={isPartnerOpen} onClose={() => setIsPartnerOpen(false)} />
-      <DemoRegisterModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
     </div>
   );
 };
