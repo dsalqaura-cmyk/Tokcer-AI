@@ -1,63 +1,90 @@
-# 🏮 Laporan Update Logic HPP Calculator Tokcer AI v2.0
-**Status:** PRODUCTION & STAGING LIVE (Updated: 15 Mei 2026)
-**Engineer:** Tarjo (Tokcer Assistant)
+# 🏮 Dokumentasi Teknis: Upgrade HPP Calculator Tokcer AI v2.0
+**Status:** FULL PRODUCTION & STAGING DEPLOYED
+**Tanggal Update:** 15 Mei 2026
+**Engineer:** Tarjo (Tokcer AI Core Team)
 
 ---
 
-## 🚀 Ringkasan Perubahan Utama
-Update ini merombak total sistem perhitungan margin Tokcer AI untuk mematuhi regulasi marketplace terbaru (Tokopedia, TikTok Shop, dan Shopee) per **18 Mei 2026** serta mengimplementasikan **"THE PLAYBOOK" (Layer 1-8)** untuk standarisasi audit profit.
-
-### 1. 🏗️ Arsitektur "The Playbook" (Layer 1-8)
-UI Kalkulator sekarang terbagi menjadi 8 Layer sesuai standar audit operasional:
-- **Layer 1:** Fixed Cost (HPP + Packaging + Ongkir Subsidi).
-- **Layer 2:** Platform Commission (Otomatis per Kategori).
-- **Layer 3:** Per-Order Fixed Fee (Rp1.250 flat Tokped/Shopee).
-- **Layer 4:** Program Fee (Promo Xtra TikTok / Gratis Ongkir XTRA Shopee - Max Rp10rb).
-- **Layer 5:** Pre-order Fee (+3% jika produk PO).
-- **Layer 6:** Logistics Service Fee (TikTok 1 Mei 2026 - Berdasarkan berat & rute).
-- **Layer 7:** Affiliate Commission % (Opsional).
-- **Layer 8:** Ads Budget (% dari harga jual).
+## 🚀 I. Pendahuluan
+Dokumen ini merinci pembaruan besar pada modul **HPP & Margin Explorer** Tokcer AI. Update ini bukan sekadar perubahan UI, melainkan perombakan engine kalkulasi untuk mengantisipasi gejolak biaya marketplace (Tokopedia, TikTok Shop, Shopee) per Mei - Juni 2026.
 
 ---
 
-### 2. ⚡ Fitur Baru: Bulk Import CSV (Ultimate Only)
-Tokcer AI sekarang memiliki "Mesin Import Masal" untuk efisiensi input data SKU.
-- **Trigger:** Tombol "Bulk Import" di header (khusus paket Ultimate).
-- **Format CSV:** `Nama SKU, Platform, Modal Beli, Packaging, Biaya Lain, Ongkir Subsidi`.
-- **Logic:** Auto-parse & auto-save ke database Supabase secara masal.
+## 🏗️ II. Arsitektur "THE PLAYBOOK" (Layer 1-8)
+Sistem sekarang menggunakan arsitektur bertingkat (*Layered Input*) untuk memastikan tidak ada biaya "siluman" yang terlewat oleh seller.
+
+### Layer 1: Fixed Cost (HPP Dasar)
+- **Komponen:** Harga beli barang, biaya packaging (bubble wrap, box), dan subsidi ongkir yang ditanggung seller.
+- **Logic:** `Layer 1 = Modal + Packaging + Ongkir Subsidi + Biaya Lain`.
+
+### Layer 2: Platform Fee (Core Commission)
+- **Tokopedia/TikTok:** Otomatis mengikuti kategori produk. Update 18 Mei menerapkan **CAP Rp650.000** per item (PENTING untuk barang High-Ticket).
+- **Shopee:** Mengikuti kategori A-E.
+
+### Layer 3: Per-Order Fixed Fee
+- **Logic:** Biaya flat **Rp1.250** yang dipotong otomatis oleh sistem marketplace per pesanan berhasil. Berlaku universal di semua platform utama 2026.
+
+### Layer 4: Program Fee (Dynamic Marketing)
+- **TikTok Shop:** Komisi Dinamis (Dynamic Commission) jika seller mengikuti promo Xtra.
+- **Shopee:** Biaya program Gratis Ongkir XTRA & Promo XTRA.
+- **Safety Logic:** Shopee Program Fee otomatis di-**CAP di angka Rp10.000** per produk untuk menjaga margin seller.
+
+### Layer 5: Pre-Order Fee
+- **Logic:** Tambahan biaya administrasi sebesar **+3%** jika produk diset sebagai Pre-Order (PO).
+
+### Layer 6: Logistics Service Fee (1 Mei 2026)
+- **Khusus TikTok:** Biaya layanan logistik baru yang dihitung manual berdasarkan berat dan rute. Sifat biaya ini adalah **NON-REFUNDABLE** (tidak kembali jika terjadi retur).
+
+### Layer 7 & 8: Affiliate & Ads
+- **Layer 7:** Komisi yang dibayarkan ke konten kreator/affiliator.
+- **Layer 8:** Budget pemasaran internal (internal ads) yang dihitung dari persentase harga jual.
 
 ---
 
-### 3. 🟠 Shopee & Tokopedia Compliance 2026
-Penyesuaian batas atas (Cap) untuk melindungi margin seller pada barang mahal:
-| Marketplace | Komponen | Update Logic 2026 |
+## 📉 III. Engine "True Net Profit" (Risk-Adjusted)
+Ini adalah fitur inovasi terbaru Tokcer AI. Sistem tidak lagi hanya menghitung untung di atas kertas, tapi menghitung risiko di lapangan.
+
+**Rumus Profit Bersih Standar:**
+> `Profit = Harga Jual - HPP - Platform Fee - Diskon`
+
+**Rumus TRUE NET PROFIT (Tokcer AI Exclusive):**
+> `True Net Profit = Profit - (Return Rate % * Lost per Return)`
+
+**Lost per Return mencakup:**
+- Biaya Admin & Logistik yang hangus (Non-refundable).
+- Biaya pengemasan yang sudah terpakai.
+- **Biaya Gagal Kirim (Antisipasi 1 Juni):** Estimasi Rp5.000 per paket gagal.
+
+---
+
+## ⚡ IV. Fitur Bulk Import & Database
+Untuk pengguna paket **ULTIMATE**, sistem kini mendukung penginputan masal.
+
+### Skema Database (`sku_calculations`):
+| Field | Tipe Data | Deskripsi |
 |---|---|---|
-| **Tokopedia/TikTok** | Commission Cap | **Rp650.000** (Naik dari Rp40rb) |
-| **Shopee** | Program Fee Cap | **Rp10.000** (Max per item) |
-| **Keduanya** | Fixed Admin Fee | **Rp1.250** per pesanan |
-| **Antisipasi 1 Juni** | Failed Delivery | **Rp5.000** (Dihitung dalam True Profit) |
+| `sku_name` | String | Nama identitas produk |
+| `modal_beli` | Numeric | Harga beli unit |
+| `platform` | Enum | Tokopedia, Shopee, TikTok, Website |
+| `komisi_dinamis` | Numeric | Persentase Layer 4 |
+| `is_preorder` | Boolean | Flag Layer 5 |
+| `return_rate_persen`| Numeric | Variabel risiko retur |
+
+### Mekanisme CSV Import:
+Mesin pembaca file CSV menggunakan `FileReader API` di sisi klien untuk memproses data secara asinkron sebelum dikirim ke Supabase via `insert()`. Hal ini mencegah *server-timeout* saat mengunggah ribuan baris data sekaligus.
 
 ---
 
-### 4. 🎨 UI Refactoring: Minimalist & Premium
-Berdasarkan arahan Pak Iman, tampilan header dibersihkan (Minimalist Mode):
-- **Hidden:** Banner "Pantauan Menteri UMKM" (tetap berjalan di background logic).
-- **Hidden:** Subtitle real-time optimization.
-- **Focus:** Judul dominan **"HPP & MARGIN EXPLORER"** untuk kesan lebih premium dan bersih.
+## 🎨 V. Filosofi Desain: Minimalist & Focused
+UI Refactoring dilakukan untuk menghilangkan *cognitive load* pada user:
+1. **Minimalist Header:** Menghilangkan banner regulasi agar user fokus pada data angka.
+2. **Contextual Section:** Field Shopee hanya muncul jika platform Shopee dipilih.
+3. **Real-time Memoization:** Menggunakan React `useMemo` untuk memastikan setiap perubahan angka (bahkan saat mengetik) langsung meng-update profit tanpa *re-render* yang berat.
 
 ---
 
-### 🛡️ True Net Profit (Advanced Risk Logic)
-Kalkulator sekarang menghitung **"Untung Bersih Asli"** dengan memperhitungkan:
-- Biaya yang **hangus** saat retur (Admin Fee, Logistics Fee 1 Mei).
-- Estimasi kerugian berdasarkan **Return Rate (%)**.
-- Biaya gagal kirim COD yang tidak tertagih.
+## 📅 VI. Road Map & Maintenance
+- **18 Mei 2026:** Validasi otomatis kenaikan CAP Tokopedia ke Rp650.000.
+- **1 Juni 2026:** Aktivasi field "Biaya Gagal Kirim" secara default jika regulasi resmi diberlakukan.
 
----
-
-## 📂 Lokasi File & Deployment
-- **Core Logic:** `src/pages/HppCalculator.jsx`
-- **AEO Engine:** `/aeo-engine/`
-- **Deployment:** Sudah tersinkronisasi di branch `main` (Production) dan `staging`.
-
-**Laporan ini dibuat sebagai panduan resmi pengembangan Tokcer AI sesi Mei 2026.** 🫡🔥✨
+**Dokumen ini adalah aset intelektual Tokcer AI.** 🫡🔥✨
