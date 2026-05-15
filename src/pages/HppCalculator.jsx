@@ -209,33 +209,52 @@ const HppCalculator = () => {
         const komisiP = Number(item.komisi_persen || 0);
         const adsP = Number(item.ads_persen || 0);
         const affP = Number(item.affiliator_persen || 0);
-        const totalPersenFee = (komisiP + adsP + affP) / 100;
+        
+        // 2026 Discount Multiplier
+        let discountMultiplier = 1;
+        if (item.has_gmv_max && item.has_growth_xtra) discountMultiplier = 0.9182;
+        else if (item.has_gmv_max || item.has_growth_xtra) discountMultiplier = 0.95;
+
+        const totalPersenFee = (komisiP * discountMultiplier + adsP + affP) / 100;
+        const preOrderAddon = item.is_preorder ? 0.03 : 0;
         
         const price = Number(item.harga_jual_aktual) || 0;
-        const bep = (hpp + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0) + Number(item.diskon_voucher || 0)) / (1 - totalPersenFee);
-        const recommendedPrice = (hpp + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0) + Number(item.diskon_voucher || 0)) / (1 - totalPersenFee - (Number(item.target_margin_persen || 20) / 100));
+        const bep = (hpp + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0) + Number(item.diskon_voucher || 0)) / (1 - totalPersenFee - preOrderAddon);
+        const recommendedPrice = (hpp + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0) + Number(item.diskon_voucher || 0)) / (1 - totalPersenFee - preOrderAddon - (Number(item.target_margin_persen || 20) / 100));
 
         const finalPrice = price || recommendedPrice;
         
-        // 2026 Commission Calculation (WITH CAP)
+        // --- 2026 Commission Calculation (WITH CAP) ---
         let platformCommission = (komisiP * discountMultiplier / 100) * finalPrice;
         if (item.platform === 'tokopedia' || item.platform === 'tiktok_shop') {
             platformCommission = Math.min(platformCommission, 650000);
+            if (item.is_mall_seller) platformCommission *= 1.25;
+        }
+
+        // --- SHOPEE SPECIFIC ---
+        let shopeeProgramFee = 0;
+        if (item.platform === 'shopee') {
+            let goxAmount = item.is_gox_xtra ? Math.min(finalPrice * 0.04, 10000) : 0;
+            let cbxAmount = item.is_cbx_xtra ? Math.min(finalPrice * 0.014, 10000) : 0;
+            let promoVal = item.is_promo_xtra ? Math.min(finalPrice * 0.02, 10000) : 0;
+            shopeeProgramFee = goxAmount + cbxAmount + promoVal;
+            if (item.spaylater_tenor) shopeeProgramFee += (item.spaylater_tenor / 100) * finalPrice;
         }
 
         const dinamisVal = (Number(item.komisi_dinamis || 0) / 100) * finalPrice;
         const otherFees = ( (adsP + affP) / 100 * finalPrice ) + (preOrderAddon * finalPrice) + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0) + dinamisVal + Number(item.logistics_service_fee || 0);
         
-        const platformFeeVal = platformCommission + otherFees;
+        const platformFeeVal = platformCommission + otherFees + shopeeProgramFee;
         const profit = finalPrice - hpp - platformFeeVal - Number(item.diskon_voucher || 0);
 
-        // Return Risk Logic
-        const lostPerReturn = Number(item.admin_fee_flat || 0) + Number(item.logistics_service_fee || 0) + dinamisVal + Number(item.biaya_packaging || 0);
+        // Return Risk Logic (1 June 2026 Ready)
+        const failedDeliveryFee = 5000;
+        const lostPerReturn = Number(item.admin_fee_flat || 0) + Number(item.logistics_service_fee || 0) + dinamisVal + Number(item.biaya_packaging || 0) + failedDeliveryFee;
         const returnRiskCost = (Number(item.return_rate_persen || 0) / 100) * lostPerReturn;
         const trueNetProfit = profit - returnRiskCost;
 
-        const margin = finalPrice > 0 ? (profit / finalPrice) * 100 : 0;
-        const roi = hpp > 0 ? (profit / hpp) * 100 : 0;
+        const margin = finalPrice > 0 ? (trueNetProfit / finalPrice) * 100 : 0;
+        const roi = hpp > 0 ? (trueNetProfit / hpp) * 100 : 0;
 
         return {
             hpp,
@@ -346,6 +365,12 @@ const HppCalculator = () => {
             is_preorder: isPreorder,
             has_gmv_max: hasGmvMax,
             has_growth_xtra: hasGrowthXtra,
+            is_mall_seller: isMallSeller,
+            is_gox_xtra: isGoxXtra,
+            is_cbx_xtra: isCbxXtra,
+            is_promo_xtra: isPromoXtra,
+            export_fee: exportFee,
+            spaylater_tenor: spaylaterTenor,
             target_margin_persen: targetMargin,
             harga_jual_aktual: hargaJualAktual,
             diskon_voucher: diskonVoucher,
