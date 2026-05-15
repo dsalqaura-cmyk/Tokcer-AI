@@ -63,7 +63,9 @@ const HppCalculator = () => {
     const [isStarSeller, setIsStarSeller] = useState(false);
     const [isMallSeller, setIsMallSeller] = useState(false); // Common for Shopee and TikTok
     const [isGoxXtra, setIsGoxXtra] = useState(false);
+    const [isCbxXtra, setIsCbxXtra] = useState(false);
     const [isPromoXtra, setIsPromoXtra] = useState(false);
+    const [exportFee, setExportFee] = useState(0);
     const [spaylaterTenor, setSpaylaterTenor] = useState(0); // 0, 2.5, 4
 
     const [targetMargin, setTargetMargin] = useState(20);
@@ -164,10 +166,13 @@ const HppCalculator = () => {
         // --- SHOPEE SPECIFIC LOGIC (Program Fees & Caps) ---
         let shopeeProgramFee = 0;
         if (platform === 'shopee') {
-            // Program Fee Cap is Rp 10.000 per product
-            const goxVal = isGoxXtra ? Math.min(finalPrice * 0.04, 10000) : 0; 
+            // Program Fee Cap Rp 10.000 per item
+            let goxAmount = isGoxXtra ? Math.min(finalPrice * 0.04, 10000) : 0;
+            let cbxAmount = isCbxXtra ? Math.min(finalPrice * 0.014, 10000) : 0;
+            platformCommission += goxAmount + cbxAmount + Number(exportFee);
+            
             const promoVal = isPromoXtra ? Math.min(finalPrice * 0.02, 10000) : 0;
-            shopeeProgramFee = goxVal + promoVal;
+            shopeeProgramFee = goxAmount + cbxAmount + promoVal;
             
             // Add SPayLater Fee
             if (spaylaterTenor > 0) {
@@ -797,10 +802,18 @@ const HppCalculator = () => {
                                                         <span className="text-[10px] font-bold uppercase">Layer 4: Gratis Ongkir XTRA</span>
                                                         <iconify-icon icon={isGoxXtra ? "solar:delivery-bold" : "solar:delivery-linear"}></iconify-icon>
                                                     </button>
+                                                    <button onClick={() => setIsCbxXtra(!isCbxXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isCbxXtra ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 4: Cashback XTRA</span>
+                                                        <iconify-icon icon={isCbxXtra ? "solar:ticket-bold" : "solar:ticket-linear"}></iconify-icon>
+                                                    </button>
                                                     <button onClick={() => setIsPromoXtra(!isPromoXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isPromoXtra ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
                                                         <span className="text-[10px] font-bold uppercase">Layer 4: Promo XTRA</span>
                                                         <iconify-icon icon={isPromoXtra ? "solar:ticket-sale-bold" : "solar:ticket-sale-linear"}></iconify-icon>
                                                     </button>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Biaya Program Ekspor (Rp)</label>
+                                                        <input type="number" value={exportFee} onChange={(e) => setExportFee(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition-all" />
+                                                    </div>
                                                     <div className="space-y-2">
                                                         <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">SPayLater Fee</label>
                                                         <select value={spaylaterTenor} onChange={(e) => setSpaylaterTenor(Number(e.target.value))} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-zinc-400 focus:border-orange-500 outline-none">
