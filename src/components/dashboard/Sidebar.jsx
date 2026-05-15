@@ -145,6 +145,10 @@ const Sidebar = ({
               };
               
               const conf = planConfigs[plan] || planConfigs.starter;
+
+              // Max quota per plan
+              const planMaxQuota = { demo: 30, starter: 50, pro: 200, elite: 500, ultimate: Infinity };
+              const maxQuota = planMaxQuota[plan] ?? 50;
               
               return (
                 <div className={`bg-gradient-to-br ${conf.color} border ${conf.border} rounded-xl p-3 relative overflow-hidden`}>
@@ -174,11 +178,11 @@ const Sidebar = ({
                           Unlimited
                         </span>
                       ) : (
-                        <span className="text-zinc-400 font-semibold">{profile?.tokens || 0} / {profile?.totalQuota || 50}</span>
+                        <span className="text-zinc-400 font-semibold">{profile?.tokens || 0} / {maxQuota}</span>
                       )}
                     </div>
                     <div className="w-full bg-zinc-800/80 rounded-full h-1">
-                      <div className={`h-1 rounded-full ${isUltimate ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-orange-500'}`} style={{width: `${isUltimate ? 100 : Math.min(100, ((profile?.tokens || 0) / (profile?.totalQuota || 50)) * 100)}%`}}></div>
+                      <div className={`h-1 rounded-full ${isUltimate ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-orange-500'}`} style={{width: `${isUltimate ? 100 : Math.min(100, ((profile?.tokens || 0) / maxQuota) * 100)}%`}}></div>
                     </div>
                   </div>
                   <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
