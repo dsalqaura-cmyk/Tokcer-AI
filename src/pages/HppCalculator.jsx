@@ -522,20 +522,6 @@ const HppCalculator = () => {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
                                 <h1 className="text-3xl font-black tracking-tighter uppercase text-white">HPP <span className="text-orange-500">& Margin</span> Explorer</h1>
-                                <p className="text-zinc-500 text-sm font-medium mt-1 uppercase tracking-widest">Optimasi Profit Real-time Mei 2026</p>
-                            </div>
-
-                            {/* Government Regulation Alert */}
-                            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center gap-4 animate-pulse">
-                                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 shrink-0">
-                                    <iconify-icon icon="solar:shield-warning-bold-duotone" className="text-2xl"></iconify-icon>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Pantauan Regulasi (Menteri UMKM)</p>
-                                    <p className="text-[9px] text-zinc-400 mt-0.5 leading-relaxed">
-                                        Pemerintah sedang meninjau ulang kenaikan biaya admin 18 Mei. Tokcer AI tetap memantau update Permendag 31/2023. Aturan 1 Juni (Biaya Gagal Kirim Rp5rb) tetap dihitung sebagai antisipasi.
-                                    </p>
-                                </div>
                             </div>
                             <div className="flex flex-wrap items-center gap-3">
                                 <button onClick={() => handlePremiumFeature('bulk')} className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase rounded-lg hover:border-amber-500 transition-all flex items-center gap-2 group">
