@@ -16,6 +16,19 @@ const HppCalculator = () => {
     const [savedCount, setSavedCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Demo expiry check — dihitung SEBELUM conditional return agar tidak melanggar Rules of Hooks
+    const isDemoExpired = useMemo(() => {
+        if (!profile) return false;
+        const currentPlan = (profile.subscription_plan || 'starter').toLowerCase();
+        if (currentPlan === 'demo' && profile.created_at) {
+            const createdAt = new Date(profile.created_at);
+            const now = new Date();
+            const diffDays = Math.ceil(Math.abs(now - createdAt) / (1000 * 60 * 60 * 24));
+            return diffDays > 14;
+        }
+        return false;
+    }, [profile]);
+
     // Compare Mode States
     const [isCompareMode, setIsCompareMode] = useState(false);
     const [savedSkus, setSavedSkus] = useState([]);
@@ -231,18 +244,6 @@ const HppCalculator = () => {
     if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
     const plan = (profile?.subscription_plan || 'starter').toLowerCase();
-
-    const isDemoExpired = useMemo(() => {
-        if (!profile) return false;
-        if (plan === 'demo' && profile.created_at) {
-            const createdAt = new Date(profile.created_at);
-            const now = new Date();
-            const diffTime = Math.abs(now - createdAt);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            return diffDays > 14;
-        }
-        return false;
-    }, [profile, plan]);
 
     if (isDemoExpired) {
         return (
