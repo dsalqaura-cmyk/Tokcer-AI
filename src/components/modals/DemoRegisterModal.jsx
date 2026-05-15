@@ -5,7 +5,8 @@ const DemoRegisterModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    email: ''
+    email: '',
+    marketplace: ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -21,6 +22,7 @@ const DemoRegisterModal = ({ isOpen, onClose }) => {
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
+        marketplace: formData.marketplace,
         status: 'pending'
       }]);
 
@@ -62,6 +64,17 @@ const DemoRegisterModal = ({ isOpen, onClose }) => {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Email Aktif</label>
                 <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 outline-none transition-all text-white" placeholder="budi@example.com" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Marketplace Utama</label>
+                <select required value={formData.marketplace} onChange={e => setFormData({...formData, marketplace: e.target.value})} className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 outline-none transition-all text-white">
+                  <option value="" disabled>Pilih Marketplace Utama...</option>
+                  <option value="Shopee">Shopee</option>
+                  <option value="Tokopedia">Tokopedia</option>
+                  <option value="TikTok Shop">TikTok Shop</option>
+                  <option value="Lazada">Lazada</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
               </div>
 
               <button disabled={loading} type="submit" className="w-full mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2">

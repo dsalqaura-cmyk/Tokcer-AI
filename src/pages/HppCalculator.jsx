@@ -232,6 +232,33 @@ const HppCalculator = () => {
 
     const plan = (profile?.subscription_plan || 'starter').toLowerCase();
 
+    const isDemoExpired = useMemo(() => {
+        if (!profile) return false;
+        if (plan === 'demo' && profile.created_at) {
+            const createdAt = new Date(profile.created_at);
+            const now = new Date();
+            const diffTime = Math.abs(now - createdAt);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            return diffDays > 14;
+        }
+        return false;
+    }, [profile, plan]);
+
+    if (isDemoExpired) {
+        return (
+            <div className="flex h-screen bg-[#050505] text-white font-['Inter',sans-serif] items-center justify-center p-4">
+                <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl max-w-md text-center shadow-2xl relative z-50">
+                    <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <iconify-icon icon="solar:clock-circle-bold-duotone" className="text-3xl text-red-500"></iconify-icon>
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Masa Percobaan Berakhir</h2>
+                    <p className="text-zinc-400 text-sm mb-6">Masa aktif 14 hari akun Demo Anda telah berakhir. Terima kasih telah mencoba Tokcer AI! Silakan hubungi tim kami untuk konsultasi dan upgrade paket.</p>
+                    <button onClick={handleLogout} className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition-all text-sm w-full uppercase tracking-widest">Keluar Sistem</button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex h-screen bg-[#050505] text-white font-['Inter',sans-serif] overflow-hidden">
             <Sidebar 

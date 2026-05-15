@@ -84,7 +84,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
             <img src={logo} alt="Tokcer AI" className="h-8 w-auto" />
           </div>
           
-          <div className="hidden lg:flex ml-12 gap-8 items-center text-sm font-medium uppercase tracking-widest text-zinc-400">
+          <div className="hidden xl:flex ml-12 gap-8 items-center text-sm font-medium uppercase tracking-widest text-zinc-400">
             <a href="/#problem" className="hover:text-white transition-colors">{t('navProblem')}</a>
             <a href="/#ecosystem" className="hover:text-white transition-colors">{t('navEcosystem')}</a>
             <a href="/#dashboard" className="text-orange-500 font-bold">{t('navExplore')}</a>
@@ -92,7 +92,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
             <a href="/#pricing" className="hover:text-white transition-colors text-zinc-400">{t('navPricing')}</a>
           </div>
           
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden xl:flex items-center gap-4">
             <div className="hidden bg-zinc-900 rounded-lg p-1 border border-zinc-800 mr-2">
               <button 
                 onClick={() => toggleLang('id')}
@@ -140,7 +140,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
             )}
           </div>
 
-          <button onClick={toggleMobileMenu} className="lg:hidden flex items-center gap-2 text-zinc-300 hover:text-white p-2 focus:outline-none" aria-label="Toggle menu">
+          <button onClick={toggleMobileMenu} className="xl:hidden flex items-center gap-2 text-zinc-300 hover:text-white p-2 focus:outline-none" aria-label="Toggle menu">
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{mobileMenuOpen ? 'Close' : 'Menu'}</span>
             <iconify-icon icon={mobileMenuOpen ? "solar:close-square-bold-duotone" : "solar:hamburger-menu-bold-duotone"} className="text-3xl text-orange-500"></iconify-icon>
           </button>
@@ -149,7 +149,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
 
       {/* Mobile Menu Overlay - Moved OUTSIDE the nav container for absolute positioning safety */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[999] flex flex-col bg-zinc-950 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="xl:hidden fixed inset-0 z-[999] flex flex-col bg-zinc-950 animate-in fade-in slide-in-from-top-4 duration-300">
           {/* Mobile Header Duplicate for closure */}
           <div className="h-16 px-4 flex justify-between items-center border-b border-zinc-800/50 bg-black/80 backdrop-blur-md">
             <img src={logo} alt="Tokcer AI" className="h-8 w-auto" />

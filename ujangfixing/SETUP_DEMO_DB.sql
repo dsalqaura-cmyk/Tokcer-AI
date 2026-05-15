@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.demo_applications (
     name TEXT NOT NULL,
     phone TEXT NOT NULL,
     email TEXT NOT NULL,
+    marketplace TEXT NOT NULL,
     status TEXT DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

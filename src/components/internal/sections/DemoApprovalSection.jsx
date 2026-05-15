@@ -77,6 +77,7 @@ const DemoApprovalSection = ({ t }) => {
                 <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest">Tanggal</th>
                 <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest">Nama Lengkap</th>
                 <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest">Kontak</th>
+                <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest">Marketplace</th>
                 <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest">Status</th>
                 <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest text-right">Aksi</th>
               </tr>
@@ -84,7 +85,7 @@ const DemoApprovalSection = ({ t }) => {
             <tbody>
               {demos.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-zinc-500 text-sm">Tidak ada permohonan demo saat ini.</td>
+                  <td colSpan="6" className="p-8 text-center text-zinc-500 text-sm">Tidak ada permohonan demo saat ini.</td>
                 </tr>
               ) : (
                 demos.map(demo => (
@@ -98,6 +99,9 @@ const DemoApprovalSection = ({ t }) => {
                     <td className="p-4">
                       <p className="text-xs text-zinc-400 font-mono">{demo.email}</p>
                       <p className="text-[10px] text-zinc-500">{demo.phone}</p>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-xs font-medium text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">{demo.marketplace || '-'}</span>
                     </td>
                     <td className="p-4">
                       <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${
