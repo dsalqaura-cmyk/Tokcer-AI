@@ -8,6 +8,7 @@ import InternalSidebar from '../components/internal/InternalSidebar.jsx';
 import InternalHeader from '../components/internal/InternalHeader.jsx';
 import OverviewSection from '../components/internal/sections/OverviewSection.jsx';
 import ApprovalSection from '../components/internal/sections/ApprovalSection.jsx';
+import DemoApprovalSection from '../components/internal/sections/DemoApprovalSection.jsx';
 import UserSection from '../components/internal/sections/UserSection.jsx';
 import PartnerSection from '../components/internal/sections/PartnerSection.jsx';
 import TicketSection from '../components/internal/sections/TicketSection.jsx';
@@ -484,6 +485,8 @@ const InternalDashboard = () => {
         return <OverviewSection t={t} revenuePeriod={revenuePeriod} setRevenuePeriod={setRevenuePeriod} chartRef={chartRef} RECENT_ACTIVITY={recentActivityData} adminClients={adminClients} adminPartners={adminPartners} globalStats={globalStats} />;
       case 'approvals':
         return <ApprovalSection t={t} activeAppTab={activeAppTab} setActiveAppTab={setActiveAppTab} adminClients={adminClients} partnerApps={partnerApps} MOCK_USERS={[]} getTierBadgeClass={getTierBadgeClass} setSelectedPartnerApp={setSelectedPartnerApp} handleOpenApproveModal={handleOpenApproveModal} setShowApproveModal={setShowApproveModal} handleApprove={handleApprove} handleReject={handleReject} handleRemindPartner={handleRemindPartner} />;
+      case 'demo-approvals':
+        return <DemoApprovalSection t={t} />;
       case 'users':
         return <UserSection t={t} adminClients={adminClients} allUsers={allUsers} getTierBadgeClass={getTierBadgeClass} setShowUserStats={setShowUserStats} />;
       case 'partners':

@@ -60,6 +60,7 @@ const InternalSidebar = ({
               icon: 'solar:check-circle-bold-duotone', 
               badge: (adminClients.filter(c => !c.status || c.status.toLowerCase() === 'pending').length + partnerApps.length) || null 
             },
+            { id: 'demo-approvals', label: 'Demo Approvals', icon: 'solar:user-check-bold-duotone' },
             { id: 'users', label: t('users'), icon: 'solar:users-group-rounded-bold-duotone' },
             { id: 'partners', label: t('partners'), icon: 'solar:users-group-two-rounded-bold-duotone' },
             { id: 'payouts', label: 'Pembayaran Partner', icon: 'solar:wallet-money-bold-duotone' },

@@ -11,11 +11,13 @@ import WaitlistCTA from '../components/landing/WaitlistCTA.jsx';
 import Footer from '../components/Footer.jsx';
 import RegisterModal from '../components/modals/RegisterModal.jsx';
 import PartnerModal from '../components/modals/PartnerModal.jsx';
+import DemoRegisterModal from '../components/modals/DemoRegisterModal.jsx';
 
 const Landing = () => {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isPartnerOpen, setIsPartnerOpen] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   const openRegister = (plan = null) => {
     setSelectedPlan(plan);
@@ -61,6 +63,7 @@ const Landing = () => {
       <Navbar 
         onOpenPartner={() => setIsPartnerOpen(true)} 
         onOpenWaitlist={() => openRegister()} 
+        onOpenDemo={() => setIsDemoOpen(true)}
       />
       
       {/* === SECTION 1: Hero / Above the Fold === */}
@@ -93,6 +96,7 @@ const Landing = () => {
 
       <RegisterModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} selectedPlan={selectedPlan} />
       <PartnerModal isOpen={isPartnerOpen} onClose={() => setIsPartnerOpen(false)} />
+      <DemoRegisterModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
     </div>
   );
 };

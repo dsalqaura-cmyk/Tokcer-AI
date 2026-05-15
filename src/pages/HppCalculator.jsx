@@ -16,6 +16,19 @@ const HppCalculator = () => {
     const [savedCount, setSavedCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Demo expiry check — dihitung SEBELUM conditional return agar tidak melanggar Rules of Hooks
+    const isDemoExpired = useMemo(() => {
+        if (!profile) return false;
+        const currentPlan = (profile.subscription_plan || 'starter').toLowerCase();
+        if (currentPlan === 'demo' && profile.created_at) {
+            const createdAt = new Date(profile.created_at);
+            const now = new Date();
+            const diffDays = Math.ceil(Math.abs(now - createdAt) / (1000 * 60 * 60 * 24));
+            return diffDays > 14;
+        }
+        return false;
+    }, [profile]);
+
     // Compare Mode States
     const [isCompareMode, setIsCompareMode] = useState(false);
     const [savedSkus, setSavedSkus] = useState([]);
@@ -28,13 +41,30 @@ const HppCalculator = () => {
     const [biayaLain, setBiayaLain] = useState(0);
     const [biayaInbound, setBiayaInbound] = useState(0);
 
-    const [platform, setPlatform] = useState('shopee');
+    const [platform, setPlatform] = useState('tokopedia');
     const [category, setCategory] = useState('umum');
     const [komisiOverride, setKomisiOverride] = useState(null);
     const [logistikFlat, setLogistikFlat] = useState(0);
     const [adsPersen, setAdsPersen] = useState(0);
     const [affiliatorPersen, setAffiliatorPersen] = useState(0);
-    const [adminFeeFlat, setAdminFeeFlat] = useState(0);
+    const [adminFeeFlat, setAdminFeeFlat] = useState(1250); // Default Tokopedia/TikTok 2026
+
+    // New 2026 Specific States
+    const [isPreorder, setIsPreorder] = useState(false);
+    const [hasGmvMax, setHasGmvMax] = useState(false);
+    const [hasGrowthXtra, setHasGrowthXtra] = useState(false);
+    
+    const [komisiDinamis, setKomisiDinamis] = useState(0); // New 2026
+    const [logisticsServiceFee, setLogisticsServiceFee] = useState(0); // New 2026
+    const [returnRate, setReturnRate] = useState(2); // Default 2% return rate risk
+    const [failedDeliveryFee, setFailedDeliveryFee] = useState(5000); // 1 June 2026 Prep
+
+    // Shopee Specific States
+    const [isStarSeller, setIsStarSeller] = useState(false);
+    const [isMallSeller, setIsMallSeller] = useState(false);
+    const [isGoxXtra, setIsGoxXtra] = useState(false);
+    const [isPromoXtra, setIsPromoXtra] = useState(false);
+    const [spaylaterTenor, setSpaylaterTenor] = useState(0); // 0, 2.5, 4
 
     const [targetMargin, setTargetMargin] = useState(20);
     const [hargaJualAktual, setHargaJualAktual] = useState(0);
@@ -87,34 +117,82 @@ const HppCalculator = () => {
         const komisiP = Number(komisiOverride || 0);
         const adsP = Number(adsPersen);
         const affP = Number(affiliatorPersen);
-        const totalPersenFee = (komisiP + adsP + affP) / 100;
+        
+        // 2026 Discount Logic (Simplified from Tokopedia University)
+        let discountMultiplier = 1;
+        if (hasGmvMax && hasGrowthXtra) discountMultiplier = 0.9182; // Max 8.18% reduction
+        else if (hasGmvMax || hasGrowthXtra) discountMultiplier = 0.95; // Approx 5% reduction
+
+        const totalPersenFee = (komisiP * discountMultiplier + adsP + affP) / 100;
+        const preOrderAddon = isPreorder ? 0.03 : 0;
         
         const price = Number(hargaJualAktual) || 0;
         
-        // BEP Calc: (HPP + logistik + admin + diskon) / (1 - komisi% - ads% - affiliator%)
-        const bep = (hpp + Number(logistikFlat) + Number(adminFeeFlat) + Number(diskonVoucher)) / (1 - totalPersenFee);
-        
-        // Recommended Price based on target margin
-        const recommendedPrice = (hpp + Number(logistikFlat) + Number(adminFeeFlat) + Number(diskonVoucher)) / (1 - totalPersenFee - (Number(targetMargin) / 100));
+        // BEP & Recommended logic updated with CAP and Processing Fees
+        // For simple BEP we ignore the CAP first, then refine
+        const bep = (hpp + Number(logistikFlat) + Number(adminFeeFlat) + Number(diskonVoucher)) / (1 - totalPersenFee - preOrderAddon);
+        const recommendedPrice = (hpp + Number(logistikFlat) + Number(adminFeeFlat) + Number(diskonVoucher)) / (1 - totalPersenFee - preOrderAddon - (Number(targetMargin) / 100));
 
         const finalPrice = price || recommendedPrice;
-        const platformFeeVal = (totalPersenFee * finalPrice) + Number(logistikFlat) + Number(adminFeeFlat);
+        
+        // --- 2026 Commission Calculation (WITH CAP) ---
+        let platformCommission = (komisiP * discountMultiplier / 100) * finalPrice;
+        
+        // Apply Rp 650.000 CAP for Tokopedia/TikTok
+        if (platform === 'tokopedia' || platform === 'tiktok_shop') {
+            platformCommission = Math.min(platformCommission, 650000);
+        }
+
+        const otherFees = ( (adsP + affP) / 100 * finalPrice ) + (preOrderAddon * finalPrice) + Number(logistikFlat) + Number(adminFeeFlat);
+        
+        // Add Dynamic Commission & Logistics Service Fee
+        const dinamisVal = (Number(komisiDinamis) / 100) * finalPrice;
+        const platformFeeVal = platformCommission + otherFees + dinamisVal + Number(logisticsServiceFee);
+
         const profit = finalPrice - hpp - platformFeeVal - Number(diskonVoucher);
-        const margin = finalPrice > 0 ? (profit / finalPrice) * 100 : 0;
-        const roi = hpp > 0 ? (profit / hpp) * 100 : 0;
+        
+        // Return Risk Simulation (Mei 2026 Rules: Dynamic Comm & Logistics Fee are non-refundable)
+        // 1 June 2026 Rule: Added Failed/Return Delivery Fee (up to Rp 5,000)
+        const lostPerReturn = Number(adminFeeFlat) + Number(logisticsServiceFee) + dinamisVal + Number(biayaPackaging) + Number(failedDeliveryFee);
+        const returnRiskCost = (Number(returnRate) / 100) * lostPerReturn;
+
+        // --- SHOPEE SPECIFIC LOGIC (Program Fees & Caps) ---
+        let shopeeProgramFee = 0;
+        if (platform === 'shopee') {
+            // Program Fee Cap is Rp 10.000 per product
+            const goxVal = isGoxXtra ? Math.min(finalPrice * 0.04, 10000) : 0; 
+            const promoVal = isPromoXtra ? Math.min(finalPrice * 0.02, 10000) : 0;
+            shopeeProgramFee = goxVal + promoVal;
+            
+            // Add SPayLater Fee
+            if (spaylaterTenor > 0) {
+                shopeeProgramFee += (spaylaterTenor / 100) * finalPrice;
+            }
+            
+            // Add Star Seller Fee (Approx 1% extra)
+            if (isStarSeller) shopeeProgramFee += (0.01 * finalPrice);
+        }
+
+        const trueNetProfit = profit - returnRiskCost - shopeeProgramFee;
+        const totalFinalFee = platformFeeVal + shopeeProgramFee;
+
+        const margin = finalPrice > 0 ? (trueNetProfit / finalPrice) * 100 : 0;
+        const roi = hpp > 0 ? (trueNetProfit / hpp) * 100 : 0;
 
         return {
             hpp,
-            platformFeeVal,
+            platformFeeVal: totalFinalFee,
             profit,
+            trueNetProfit,
             margin,
             roi,
             bep,
             recommendedPrice,
             omzet: finalPrice * estimasiOrder,
-            netProfit: profit * estimasiOrder
+            netProfit: profit * estimasiOrder,
+            netProfitWithRisk: trueNetProfit * estimasiOrder
         };
-    }, [modalBeli, biayaPackaging, biayaLain, biayaInbound, komisiOverride, adsPersen, affiliatorPersen, logistikFlat, adminFeeFlat, hargaJualAktual, diskonVoucher, targetMargin, estimasiOrder]);
+    }, [modalBeli, biayaPackaging, biayaLain, biayaInbound, komisiOverride, adsPersen, affiliatorPersen, logistikFlat, adminFeeFlat, hargaJualAktual, diskonVoucher, targetMargin, estimasiOrder, isPreorder, hasGmvMax, hasGrowthXtra, platform, komisiDinamis, logisticsServiceFee, returnRate, failedDeliveryFee, isStarSeller, isMallSeller, isGoxXtra, isPromoXtra, spaylaterTenor]);
 
     const calculateSkuResults = (item) => {
         const hpp = Number(item.modal_beli || 0) + Number(item.biaya_packaging || 0) + Number(item.biaya_lain_lain || 0) + Number(item.biaya_ongkir_inbound || 0);
@@ -128,20 +206,38 @@ const HppCalculator = () => {
         const recommendedPrice = (hpp + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0) + Number(item.diskon_voucher || 0)) / (1 - totalPersenFee - (Number(item.target_margin_persen || 20) / 100));
 
         const finalPrice = price || recommendedPrice;
-        const platformFeeVal = (totalPersenFee * finalPrice) + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0);
+        
+        // 2026 Commission Calculation (WITH CAP)
+        let platformCommission = (komisiP * discountMultiplier / 100) * finalPrice;
+        if (item.platform === 'tokopedia' || item.platform === 'tiktok_shop') {
+            platformCommission = Math.min(platformCommission, 650000);
+        }
+
+        const dinamisVal = (Number(item.komisi_dinamis || 0) / 100) * finalPrice;
+        const otherFees = ( (adsP + affP) / 100 * finalPrice ) + (preOrderAddon * finalPrice) + Number(item.logistik_flat || 0) + Number(item.admin_fee_flat || 0) + dinamisVal + Number(item.logistics_service_fee || 0);
+        
+        const platformFeeVal = platformCommission + otherFees;
         const profit = finalPrice - hpp - platformFeeVal - Number(item.diskon_voucher || 0);
+
+        // Return Risk Logic
+        const lostPerReturn = Number(item.admin_fee_flat || 0) + Number(item.logistics_service_fee || 0) + dinamisVal + Number(item.biaya_packaging || 0);
+        const returnRiskCost = (Number(item.return_rate_persen || 0) / 100) * lostPerReturn;
+        const trueNetProfit = profit - returnRiskCost;
+
         const margin = finalPrice > 0 ? (profit / finalPrice) * 100 : 0;
         const roi = hpp > 0 ? (profit / hpp) * 100 : 0;
 
         return {
             hpp,
             profit,
+            trueNetProfit,
             margin,
             roi,
             bep,
             recommendedPrice,
             omzet: finalPrice * (item.estimasi_order_per_bulan || 200),
-            netProfit: profit * (item.estimasi_order_per_bulan || 200)
+            netProfit: profit * (item.estimasi_order_per_bulan || 200),
+            netProfitWithRisk: trueNetProfit * (item.estimasi_order_per_bulan || 200)
         };
     };
 
@@ -153,11 +249,63 @@ const HppCalculator = () => {
         }
     };
 
+    const downloadSkuCSV = (skuData, calcResults) => {
+        const rows = [
+            ['Field', 'Value'],
+            ['Nama SKU', skuData.sku_name],
+            ['Platform', skuData.platform],
+            ['Kategori', skuData.category],
+            [''],
+            ['=== INPUT BIAYA ===', ''],
+            ['Modal Beli (Rp)', skuData.modal_beli],
+            ['Biaya Packaging (Rp)', skuData.biaya_packaging],
+            ['Biaya Lain-lain (Rp)', skuData.biaya_lain_lain],
+            ['Biaya Inbound/Gudang (Rp)', skuData.biaya_ongkir_inbound],
+            [''],
+            ['=== BIAYA PLATFORM ===', ''],
+            ['Komisi Platform (%)', skuData.komisi_persen],
+            ['Logistik Flat (Rp)', skuData.logistik_flat],
+            ['Ads (%)', skuData.ads_persen],
+            ['Affiliator (%)', skuData.affiliator_persen],
+            ['Admin Fee Flat (Rp)', skuData.admin_fee_flat],
+            ['Diskon/Voucher (Rp)', skuData.diskon_voucher],
+            [''],
+            ['=== TARGET & HASIL ===', ''],
+            ['Target Margin (%)', skuData.target_margin_persen],
+            ['Harga Jual Aktual (Rp)', skuData.harga_jual_aktual],
+            ['Estimasi Order/Bulan (pcs)', skuData.estimasi_order_per_bulan],
+            [''],
+            ['=== HASIL KALKULASI ===', ''],
+            ['HPP per Unit (Rp)', Math.round(calcResults.hpp)],
+            ['BEP Price (Rp)', Math.round(calcResults.bep)],
+            ['Recommended Price (Rp)', Math.round(calcResults.recommendedPrice)],
+            ['Net Profit per Unit (Rp)', Math.round(calcResults.profit)],
+            ['Margin Bersih (%)', calcResults.margin.toFixed(2)],
+            ['ROI (%)', calcResults.roi.toFixed(2)],
+            ['Estimasi Omzet/Bulan (Rp)', Math.round(calcResults.omzet)],
+            ['Estimasi Net Profit/Bulan (Rp)', Math.round(calcResults.netProfit)],
+            [''],
+            ['Tanggal Simpan', new Date().toLocaleDateString('id-ID')],
+            ['Dibuat oleh', 'Tokcer AI - HPP & Margin Calculator'],
+        ];
+
+        const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `HPP_${(skuData.sku_name || 'SKU').replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     const handleSave = async () => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
 
-        if (!isAdmin) {
+        if (!isAdmin && plan !== 'demo') {
             if (plan === 'starter') {
                 alert("🏮 Fitur Simpan SKU hanya tersedia untuk paket PRO ke atas. Silakan upgrade paket Anda!");
                 return;
@@ -168,7 +316,7 @@ const HppCalculator = () => {
             }
         }
 
-        const skuDataToSave = {
+        const skuData = {
             user_id: user?.id,
             sku_name: skuName || 'Unnamed SKU',
             modal_beli: modalBeli,
@@ -182,45 +330,39 @@ const HppCalculator = () => {
             ads_persen: adsPersen,
             affiliator_persen: affiliatorPersen,
             admin_fee_flat: adminFeeFlat,
+            komisi_dinamis: komisiDinamis,
+            logistics_service_fee: logisticsServiceFee,
+            return_rate_persen: returnRate,
+            is_preorder: isPreorder,
+            has_gmv_max: hasGmvMax,
+            has_growth_xtra: hasGrowthXtra,
             target_margin_persen: targetMargin,
             harga_jual_aktual: hargaJualAktual,
             diskon_voucher: diskonVoucher,
             estimasi_order_per_bulan: estimasiOrder
         };
 
-        const { error } = await supabase.from('sku_calculations').insert([skuDataToSave]);
+        const { error } = await supabase.from('sku_calculations').insert([skuData]);
 
         if (error) {
             alert("Gagal menyimpan: " + error.message);
         } else {
             setSavedCount(prev => prev + 1);
-            
-            // --- Auto Download CSV ---
-            const headers = "SKU Name,Platform,Modal Beli,HPP Total,Komisi %,Ads %,Harga Jual Aktual,Profit/Unit,Margin %,BEP Price,Recommended Price\n";
-            const row = `${skuDataToSave.sku_name},${platform},${modalBeli},${calc.hpp},${komisiOverride},${adsPersen},${hargaJualAktual},${calc.profit},${calc.margin.toFixed(2)},${calc.bep},${calc.recommendedPrice}\n`;
-            
-            const blob = new Blob([headers + row], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `SKU_${skuDataToSave.sku_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            alert("✅ SKU Berhasil Disimpan & Diunduh!");
+            // Auto-download CSV setelah berhasil simpan
+            downloadSkuCSV(skuData, calc);
+            alert("✅ SKU Berhasil Disimpan & CSV sedang diunduh!");
         }
     };
 
-    const handlePremiumFeature = async (feature) => {
+
+    const handlePremiumFeature = (feature) => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
 
         const requirements = {
-            'export': ['pro', 'elite', 'ultimate'],
-            'compare': ['elite', 'ultimate'],
-            'bulk': ['ultimate']
+            'export': ['pro', 'elite', 'ultimate', 'demo'],
+            'compare': ['elite', 'ultimate', 'demo'],
+            'bulk': ['ultimate', 'demo']
         };
 
         if (!isAdmin && !requirements[feature].includes(plan)) {
@@ -236,32 +378,35 @@ const HppCalculator = () => {
         }
         
         if (feature === 'export') {
-            let dataToExport = savedSkus;
-            if (dataToExport.length === 0 && user) {
-                const { data, error } = await supabase.from('sku_calculations').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-                if (!error && data) dataToExport = data;
-            }
+            const exportData = async () => {
+                let dataToExport = savedSkus;
+                if (dataToExport.length === 0 && user) {
+                    const { data, error } = await supabase.from('sku_calculations').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+                    if (!error && data) dataToExport = data;
+                }
 
-            if (dataToExport.length === 0) {
-                alert("Belum ada SKU yang disimpan untuk diekspor.");
-                return;
-            }
-            
-            let csvContent = "SKU Name,Platform,Modal Beli,HPP Total,Profit/Unit,Margin %,BEP Price,Recommended Price\n";
-            dataToExport.forEach(sku => {
-                const res = calculateSkuResults(sku);
-                csvContent += `${sku.sku_name},${sku.platform},${sku.modal_beli},${res.hpp},${res.profit},${res.margin.toFixed(2)},${res.bep},${res.recommendedPrice}\n`;
-            });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Semua_SKU_HPP_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                if (dataToExport.length === 0) {
+                    alert("Belum ada SKU yang disimpan untuk diekspor.");
+                    return;
+                }
+                
+                let csvContent = "SKU Name,Platform,Modal Beli,HPP Total,Profit/Unit,Margin %,BEP Price,Recommended Price\n";
+                dataToExport.forEach(sku => {
+                    const res = calculateSkuResults(sku);
+                    csvContent += `${sku.sku_name},${sku.platform},${sku.modal_beli},${res.hpp},${res.profit},${res.margin.toFixed(2)},${res.bep},${res.recommendedPrice}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `Semua_SKU_HPP_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            exportData();
             return;
         }
 
@@ -277,6 +422,21 @@ const HppCalculator = () => {
     if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
     const plan = (profile?.subscription_plan || 'starter').toLowerCase();
+
+    if (isDemoExpired) {
+        return (
+            <div className="flex h-screen bg-[#050505] text-white font-['Inter',sans-serif] items-center justify-center p-4">
+                <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl max-w-md text-center shadow-2xl relative z-50">
+                    <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <iconify-icon icon="solar:clock-circle-bold-duotone" className="text-3xl text-red-500"></iconify-icon>
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Masa Percobaan Berakhir</h2>
+                    <p className="text-zinc-400 text-sm mb-6">Masa aktif 14 hari akun Demo Anda telah berakhir. Terima kasih telah mencoba Tokcer AI! Silakan hubungi tim kami untuk konsultasi dan upgrade paket.</p>
+                    <button onClick={handleLogout} className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition-all text-sm w-full uppercase tracking-widest">Keluar Sistem</button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-screen bg-[#050505] text-white font-['Inter',sans-serif] overflow-hidden">
@@ -304,6 +464,19 @@ const HppCalculator = () => {
                             <div>
                                 <h1 className="text-3xl font-black tracking-tighter uppercase text-white">HPP <span className="text-orange-500">& Margin</span> Explorer</h1>
                                 <p className="text-zinc-500 text-sm font-medium mt-1 uppercase tracking-widest">Optimasi Profit Real-time Mei 2026</p>
+                            </div>
+
+                            {/* Government Regulation Alert */}
+                            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center gap-4 animate-pulse">
+                                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 shrink-0">
+                                    <iconify-icon icon="solar:shield-warning-bold-duotone" className="text-2xl"></iconify-icon>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Pantauan Regulasi (Menteri UMKM)</p>
+                                    <p className="text-[9px] text-zinc-400 mt-0.5 leading-relaxed">
+                                        Pemerintah sedang meninjau ulang kenaikan biaya admin 18 Mei. Tokcer AI tetap memantau update Permendag 31/2023. Aturan 1 Juni (Biaya Gagal Kirim Rp5rb) tetap dihitung sebagai antisipasi.
+                                    </p>
+                                </div>
                             </div>
                             <div className="flex flex-wrap items-center gap-3">
                                 <button onClick={() => handlePremiumFeature('bulk')} className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase rounded-lg hover:border-amber-500 transition-all flex items-center gap-2 group">
@@ -391,6 +564,10 @@ const HppCalculator = () => {
                                                                     <span className="text-[10px] text-zinc-500 font-bold uppercase">Profit/Unit</span>
                                                                     <span className={`text-sm font-black ${res.profit < 0 ? 'text-red-500' : 'text-white'}`}>{formatRp(res.profit)}</span>
                                                                 </div>
+                                                                <div className="flex justify-between items-center pt-2 border-t border-zinc-800/30">
+                                                                    <span className="text-[10px] text-rose-500 font-bold uppercase">True Profit</span>
+                                                                    <span className={`text-sm font-black ${res.trueNetProfit < 0 ? 'text-red-500' : 'text-white'}`}>{formatRp(res.trueNetProfit)}</span>
+                                                                </div>
                                                                 <div className="flex justify-between items-center">
                                                                     <span className="text-[10px] text-zinc-500 font-bold uppercase">ROI Modal</span>
                                                                     <span className="text-sm font-bold text-blue-400">{res.roi.toFixed(1)}%</span>
@@ -461,9 +638,9 @@ const HppCalculator = () => {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Pilih Platform</label>
-                                                    <div className="flex gap-2 p-1 bg-black/40 border border-zinc-800 rounded-xl">
-                                                        {['shopee', 'tiktok_shop', 'website'].map(p => (
-                                                            <button key={p} onClick={() => setPlatform(p)} className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${platform === p ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>
+                                                    <div className="flex gap-2 p-1 bg-black/40 border border-zinc-800 rounded-xl overflow-x-auto">
+                                                        {['tokopedia', 'tiktok_shop', 'shopee', 'website'].map(p => (
+                                                            <button key={p} onClick={() => setPlatform(p)} className={`flex-1 min-w-[80px] py-2 text-[10px] font-black uppercase rounded-lg transition-all ${platform === p ? 'bg-zinc-800 text-white border border-zinc-700' : 'text-zinc-600 hover:text-zinc-400'}`}>
                                                                 {p.replace('_', ' ')}
                                                             </button>
                                                         ))}
@@ -486,15 +663,99 @@ const HppCalculator = () => {
                                                     <input type="number" value={adsPersen} onChange={(e) => setAdsPersen(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Logistik Platform (Rp Flat)</label>
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Biaya Ongkir (Flat)</label>
                                                     <input type="number" value={logistikFlat} onChange={(e) => setLogistikFlat(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Komisi Affiliate (%)</label>
-                                                    <input type="number" value={affiliatorPersen} onChange={(e) => setAffiliatorPersen(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Biaya Admin (Rp Flat)</label>
+                                                    <input type="number" value={adminFeeFlat} onChange={(e) => setAdminFeeFlat(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all" />
+                                                    <p className="text-[8px] text-zinc-600 mt-1 italic">*Default Tokopedia/TikTok: Rp1.250</p>
+                                                </div>
+                                                
+                                                {/* Campaign Toggles */}
+                                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-zinc-800/50 mt-2">
+                                                    <button onClick={() => setIsPreorder(!isPreorder)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isPreorder ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">Pre-Order (+3%)</span>
+                                                        <iconify-icon icon={isPreorder ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
+                                                    </button>
+                                                    <button onClick={() => setHasGmvMax(!hasGmvMax)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${hasGmvMax ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">GMV Max (Disc)</span>
+                                                        <iconify-icon icon={hasGmvMax ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
+                                                    </button>
+                                                    <button onClick={() => setHasGrowthXtra(!hasGrowthXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${hasGrowthXtra ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">Growth Xtra</span>
+                                                        <iconify-icon icon={hasGrowthXtra ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* Section D: Advanced Risk Analysis (Mei 2026) */}
+                                        <div className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 relative overflow-hidden group">
+                                            <div className="absolute top-0 left-0 w-1 h-full bg-rose-500 opacity-50"></div>
+                                            <h3 className="text-xs font-black text-rose-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                <iconify-icon icon="solar:shield-warning-bold-duotone"></iconify-icon>
+                                                Section D: Advanced Risk & non-refundable Fees (2026)
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Komisi Dinamis (%)</label>
+                                                    <input type="number" value={komisiDinamis} onChange={(e) => setKomisiDinamis(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-rose-500/50 outline-none transition-all" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Logistics Service Fee (Rp)</label>
+                                                    <input type="number" value={logisticsServiceFee} onChange={(e) => setLogisticsServiceFee(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-rose-500/50 outline-none transition-all" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Est. Return Rate (%)</label>
+                                                    <input type="number" value={returnRate} onChange={(e) => setReturnRate(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-rose-500/50 outline-none transition-all" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Biaya Gagal Kirim/COD (1 Juni)</label>
+                                                    <input type="number" value={failedDeliveryFee} onChange={(e) => setFailedDeliveryFee(e.target.value)} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-rose-500/50 outline-none transition-all" />
+                                                    <p className="text-[8px] text-rose-500/70 mt-1 italic font-bold">Limit Rp5.000 per pesanan gagal</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-[9px] text-zinc-600 mt-4 italic font-medium">
+                                                *Berdasarkan aturan 1 Mei 2026: Komisi Dinamis & Biaya Logistik tidak dikembalikan jika terjadi retur setelah pengiriman berhasil.
+                                            </p>
+                                        </div>
+
+                                        {/* Section E: Shopee Specific Settings */}
+                                        {platform === 'shopee' && (
+                                            <div className="bg-zinc-900/40 backdrop-blur-xl border border-orange-500/20 rounded-3xl p-6 relative overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-50"></div>
+                                                <h3 className="text-xs font-black text-orange-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                    <iconify-icon icon="solar:shop-bold-duotone"></iconify-icon>
+                                                    Section E: Shopee Program & Seller Status
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <button onClick={() => setIsStarSeller(!isStarSeller)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isStarSeller ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">Star / Star+ Seller</span>
+                                                        <iconify-icon icon={isStarSeller ? "solar:star-bold" : "solar:star-linear"}></iconify-icon>
+                                                    </button>
+                                                    <button onClick={() => setIsGoxXtra(!isGoxXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isGoxXtra ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">Gratis Ongkir XTRA</span>
+                                                        <iconify-icon icon={isGoxXtra ? "solar:delivery-bold" : "solar:delivery-linear"}></iconify-icon>
+                                                    </button>
+                                                    <button onClick={() => setIsPromoXtra(!isPromoXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isPromoXtra ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">Promo XTRA</span>
+                                                        <iconify-icon icon={isPromoXtra ? "solar:ticket-sale-bold" : "solar:ticket-sale-linear"}></iconify-icon>
+                                                    </button>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">SPayLater Fee</label>
+                                                        <select value={spaylaterTenor} onChange={(e) => setSpaylaterTenor(Number(e.target.value))} className="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-zinc-400 focus:border-orange-500 outline-none">
+                                                            <option value={0}>Tidak Aktif</option>
+                                                            <option value={2.5}>Cicilan 3 Bln (2.5%)</option>
+                                                            <option value={4}>Cicilan 6 Bln (4.0%)</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <p className="text-[8px] text-zinc-600 mt-4 italic font-medium">
+                                                    *Biaya Program Shopee dibatasi maksimal Rp10.000 per produk sesuai aturan 2025.
+                                                </p>
+                                            </div>
+                                        )}
 
                                         {/* Section C: Pricing Strategy */}
                                         <div className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 relative overflow-hidden group">
@@ -532,6 +793,16 @@ const HppCalculator = () => {
                                             <div className="space-y-1 mb-8">
                                                 <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Net Profit per Unit</p>
                                                 <h2 className={`text-4xl font-black tracking-tighter ${calc.profit < 0 ? 'text-red-500' : 'text-white'}`}>{formatRp(calc.profit)}</h2>
+                                            </div>
+
+                                            {/* True Profit Analysis (Post-Return) */}
+                                            <div className="mb-6 p-4 bg-black/40 rounded-2xl border border-rose-500/20">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">True Profit (Post-Return Risk)</p>
+                                                    <span className="bg-rose-500/20 text-rose-500 px-1.5 py-0.5 rounded text-[8px] font-bold">2026 LOGIC</span>
+                                                </div>
+                                                <p className="text-xl font-black text-white">{formatRp(calc.trueNetProfit)}</p>
+                                                <p className="text-[8px] text-zinc-500 italic mt-1">*Profit bersih setelah dikurangi risiko biaya hangus saat retur ({returnRate}%)</p>
                                             </div>
                                             
                                             <div className="grid grid-cols-2 gap-4">

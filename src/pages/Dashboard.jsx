@@ -496,7 +496,7 @@ const Dashboard = () => {
             
             const userPrompt = `Data: ${bizType} shop, ${lowStockCount} products low stock, ${highReturnOrders} returned orders, ${ordData.length} total orders.`;
             
-            const result = await callAiEngine(systemPrompt, userPrompt, null, 1024, 0.5);
+            const result = await callAiEngine(systemPrompt, userPrompt, null, 512, 0.5);
             const cleanJson = result.text.replace(/```json|```/g, '').trim();
             const data = JSON.parse(cleanJson);
             
@@ -546,9 +546,9 @@ const Dashboard = () => {
 
         if (prof || clientData) {
             const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
-            const quotaMap = { 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
-            const totalQuota = quotaMap[plan] || 50;
-            const activeTokens = prof?.ai_tokens ?? 0;
+            const quotaMap = { 'demo': 30, 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
+            const totalQuota = quotaMap[plan] ?? 50;
+            const activeTokens = prof?.tokens ?? prof?.ai_tokens ?? 0;
             
             setProfile({ 
                 ...(prof || {}), 
@@ -757,11 +757,11 @@ const Dashboard = () => {
     const checkPlanPermission = (feature, silent = false) => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const permissions = {
-            'video_gen': ['pro', 'elite', 'ultimate'],
+            'video_gen': ['pro', 'elite', 'ultimate', 'demo'],
             'health_check': ['pro', 'elite', 'ultimate'],
             'analytics': ['starter', 'pro', 'elite', 'ultimate'],
-            'market_intel': ['elite', 'ultimate'],
-            'price_optimizer': ['elite', 'ultimate'],
+            'market_intel': ['elite', 'ultimate', 'demo'],
+            'price_optimizer': ['elite', 'ultimate', 'demo'],
             'competitor_analysis': ['ultimate']
         };
         
@@ -787,8 +787,13 @@ const Dashboard = () => {
     
     // 1. SECURE TOKEN DEDUCTION (PRE-AI CALL)
     if (!isAdmin) {
-        const lastPrompt = localStorage.getItem('tokcer_last_prompt');
-        const isNewTopic = !lastPrompt || lastPrompt.trim().toLowerCase() !== aiPrompt.trim().toLowerCase();
+        const lastPrompt = (localStorage.getItem('tokcer_last_prompt') || '').trim().toLowerCase();
+        const currentPrompt = (aiPrompt || '').trim().toLowerCase();
+        
+        // 🛡️ TARJO LOGIC: Cek kesamaan topik (kopi vs kopi susu = masih 1 topik)
+        // Jika prompt baru mengandung prompt lama, atau prompt lama mengandung prompt baru, anggap topik sama.
+        const isSimilar = lastPrompt && (currentPrompt.includes(lastPrompt) || lastPrompt.includes(currentPrompt));
+        const isNewTopic = !isSimilar;
 
         if (isNewTopic) {
             // Pre-check state
@@ -853,7 +858,7 @@ const Dashboard = () => {
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
       // 3. Tentukan Max Tokens Dinamis (Biar Hemat)
-      let computedMaxTokens = 2048;
+      let computedMaxTokens = 1024; // Standard Video/Reels
       if (aiFormat.includes('Description') || aiFormat.includes('Deskripsi') || aiFormat.includes('Caption')) {
         computedMaxTokens = 500;
       }
@@ -1332,6 +1337,34 @@ const Dashboard = () => {
         return null;
     }
   };
+
+  const isDemoExpired = useMemo(() => {
+    if (!profile) return false;
+    const plan = (profile.subscription_plan || 'starter').toLowerCase();
+    if (plan === 'demo' && profile.created_at) {
+      const createdAt = new Date(profile.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now - createdAt);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      return diffDays > 14;
+    }
+    return false;
+  }, [profile]);
+
+  if (isDemoExpired) {
+    return (
+        <div className="flex h-screen bg-[#050505] text-white font-['Inter',sans-serif] items-center justify-center p-4">
+            <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl max-w-md text-center shadow-2xl relative z-50">
+                <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <iconify-icon icon="solar:clock-circle-bold-duotone" className="text-3xl text-red-500"></iconify-icon>
+                </div>
+                <h2 className="text-xl font-bold text-white mb-2">Masa Percobaan Berakhir</h2>
+                <p className="text-zinc-400 text-sm mb-6">Masa aktif 14 hari akun Demo Anda telah berakhir. Terima kasih telah mencoba Tokcer AI! Silakan hubungi tim kami untuk konsultasi dan upgrade paket.</p>
+                <button onClick={handleLogout} className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition-all text-sm w-full uppercase tracking-widest">Keluar Sistem</button>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-black text-white font-['Inter',sans-serif] overflow-hidden">
