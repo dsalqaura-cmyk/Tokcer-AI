@@ -378,7 +378,58 @@ const HppCalculator = () => {
             return;
         }
 
+        if (feature === 'bulk') {
+            document.getElementById('bulk-import-input').click();
+            return;
+        }
+
         alert(`Feature ${feature} is coming soon for ${plan.toUpperCase()} users!`);
+    };
+
+    const handleBulkFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const content = event.target.result;
+            const lines = content.split('\n');
+            const headers = lines[0].toLowerCase().split(',');
+            
+            const dataToInsert = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const cols = lines[i].split(',');
+                
+                // Map columns dynamically or use fixed order
+                const sku = {
+                    user_id: user?.id,
+                    sku_name: cols[0]?.replace(/"/g, '') || 'Bulk SKU',
+                    platform: cols[1]?.replace(/"/g, '') || platform,
+                    modal_beli: Number(cols[2]) || 0,
+                    biaya_packaging: Number(cols[3]) || 0,
+                    biaya_lain_lain: Number(cols[4]) || 0,
+                    biaya_ongkir_inbound: Number(cols[5]) || 0,
+                    category: 'umum',
+                    target_margin_persen: Number(targetMargin) || 20,
+                    estimasi_order_per_bulan: Number(estimasiOrder) || 200,
+                    admin_fee_flat: platform === 'shopee' ? 1250 : 1250 // 2026 Default
+                };
+                dataToInsert.push(sku);
+            }
+
+            if (dataToInsert.length > 0) {
+                const { error } = await supabase.from('sku_calculations').insert(dataToInsert);
+                if (error) {
+                    alert("Gagal impor: " + error.message);
+                } else {
+                    alert(`✅ Berhasil mengimpor ${dataToInsert.length} SKU!`);
+                    setSavedCount(prev => prev + dataToInsert.length);
+                    if (isCompareMode) fetchSavedSkus();
+                }
+            }
+        };
+        reader.readAsText(file);
     };
 
     const handleLogout = async () => {
@@ -419,6 +470,14 @@ const HppCalculator = () => {
                 profile={profile}
                 user={user}
                 handleLogout={handleLogout}
+            />
+
+            <input 
+                type="file" 
+                id="bulk-import-input" 
+                className="hidden" 
+                accept=".csv" 
+                onChange={handleBulkFileChange}
             />
             
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
