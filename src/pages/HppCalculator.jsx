@@ -61,7 +61,7 @@ const HppCalculator = () => {
 
     // Shopee Specific States
     const [isStarSeller, setIsStarSeller] = useState(false);
-    const [isMallSeller, setIsMallSeller] = useState(false);
+    const [isMallSeller, setIsMallSeller] = useState(false); // Common for Shopee and TikTok
     const [isGoxXtra, setIsGoxXtra] = useState(false);
     const [isPromoXtra, setIsPromoXtra] = useState(false);
     const [spaylaterTenor, setSpaylaterTenor] = useState(0); // 0, 2.5, 4
@@ -141,6 +141,11 @@ const HppCalculator = () => {
         // Apply Rp 650.000 CAP for Tokopedia/TikTok
         if (platform === 'tokopedia' || platform === 'tiktok_shop') {
             platformCommission = Math.min(platformCommission, 650000);
+            
+            // Layer 2: Mall Fee Adjustment (Usually higher)
+            if (isMallSeller) {
+                platformCommission *= 1.25; // Estimate 25% higher fee for Mall
+            }
         }
 
         const otherFees = ( (adsP + affP) / 100 * finalPrice ) + (preOrderAddon * finalPrice) + Number(logistikFlat) + Number(adminFeeFlat);
@@ -721,10 +726,9 @@ const HppCalculator = () => {
                                                     <p className="text-[8px] text-zinc-600 mt-1 italic">*Aturan 2026: Rp1.250 (Tokped/Shopee)</p>
                                                 </div>
                                                 
-                                                {/* Campaign Toggles (Layer 4 & 5) */}
-                                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-zinc-800/50 mt-2">
+                                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-zinc-800/50 mt-2">
                                                     <button onClick={() => setIsPreorder(!isPreorder)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isPreorder ? 'bg-orange-500/10 border-orange-500/50 text-orange-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
-                                                        <span className="text-[10px] font-bold uppercase">Layer 5: Pre-Order (+3%)</span>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 5: PO (+3%)</span>
                                                         <iconify-icon icon={isPreorder ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
                                                     </button>
                                                     <button onClick={() => setHasGmvMax(!hasGmvMax)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${hasGmvMax ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
@@ -734,6 +738,10 @@ const HppCalculator = () => {
                                                     <button onClick={() => setHasGrowthXtra(!hasGrowthXtra)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${hasGrowthXtra ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
                                                         <span className="text-[10px] font-bold uppercase">Layer 4: Growth Xtra</span>
                                                         <iconify-icon icon={hasGrowthXtra ? "solar:check-circle-bold" : "solar:circle-linear"}></iconify-icon>
+                                                    </button>
+                                                    <button onClick={() => setIsMallSeller(!isMallSeller)} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isMallSeller ? 'bg-amber-500/10 border-amber-500/50 text-amber-500' : 'bg-black/20 border-zinc-800 text-zinc-500'}`}>
+                                                        <span className="text-[10px] font-bold uppercase">Layer 2: MALL</span>
+                                                        <iconify-icon icon={isMallSeller ? "solar:crown-bold" : "solar:crown-linear"}></iconify-icon>
                                                     </button>
                                                 </div>
                                             </div>
