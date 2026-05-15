@@ -157,7 +157,7 @@ const HppCalculator = () => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
 
-        if (!isAdmin) {
+        if (!isAdmin && plan !== 'demo') {
             if (plan === 'starter') {
                 alert("🏮 Fitur Simpan SKU hanya tersedia untuk paket PRO ke atas. Silakan upgrade paket Anda!");
                 return;
@@ -202,9 +202,9 @@ const HppCalculator = () => {
         if (isAdmin) { alert(`Feature ${feature} activated (Admin Mode)`); return; }
 
         const requirements = {
-            'export': ['pro', 'elite', 'ultimate'],
-            'compare': ['elite', 'ultimate'],
-            'bulk': ['ultimate']
+            'export': ['pro', 'elite', 'ultimate', 'demo'],
+            'compare': ['elite', 'ultimate', 'demo'],
+            'bulk': ['ultimate', 'demo']
         };
 
         if (!requirements[feature].includes(plan)) {

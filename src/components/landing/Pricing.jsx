@@ -69,115 +69,123 @@ const Pricing = ({ onOpenWaitlist }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto relative">
-        {/* Glow effect background */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-          <div className="w-full h-full rounded-full bg-orange-600/5 blur-[120px]"></div>
+      <div className="relative">
+        {/* Pricing Locked Overlay */}
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md rounded-3xl">
+          <iconify-icon icon="solar:lock-password-bold-duotone" className="text-6xl text-zinc-500 mb-4"></iconify-icon>
+          <h3 className="text-2xl font-bold text-white mb-2">Pricing is Currently Locked</h3>
+          <p className="text-zinc-400 text-sm">Please register for a demo account to explore our features.</p>
         </div>
 
-        {/* Card 1 - Starter */}
-        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-zinc-700 transition-all group shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <iconify-icon icon="solar:star-linear" className="text-2xl text-zinc-400"></iconify-icon>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto relative opacity-50 select-none pointer-events-none filter blur-sm">
+          {/* Glow effect background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
+            <div className="w-full h-full rounded-full bg-orange-600/5 blur-[120px]"></div>
           </div>
-          <div>
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Starter</p>
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-3xl font-black text-white uppercase tracking-tighter">Gratis</span>
+
+          {/* Card 1 - Starter */}
+          <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 group shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center">
+              <iconify-icon icon="solar:star-linear" className="text-2xl text-zinc-400"></iconify-icon>
             </div>
-
-          </div>
-          <div className="w-full space-y-3 text-left">
-            {starterFeatures.map((feat, i) => (
-              <div key={i} className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
-                <iconify-icon icon="solar:check-circle-bold" className="text-zinc-800 shrink-0"></iconify-icon>
-                <span>{feat}</span>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => onOpenWaitlist('starter')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Beli Paket</button>
-        </div>
-
-        {/* Card 2 - Pro */}
-        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-zinc-700 transition-all group shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <iconify-icon icon="solar:box-linear" className="text-2xl text-zinc-400"></iconify-icon>
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Pro Edition</p>
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '7.139.000' : '649.000'}</span>
+            <div>
+              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Starter</p>
               <div className="flex items-baseline justify-center gap-1">
-                <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-                <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '5.489' : '499'}</span>
-                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
+                <span className="text-3xl font-black text-white uppercase tracking-tighter">Gratis</span>
               </div>
             </div>
+            <div className="w-full space-y-3 text-left">
+              {starterFeatures.map((feat, i) => (
+                <div key={i} className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-zinc-800 shrink-0"></iconify-icon>
+                  <span>{feat}</span>
+                </div>
+              ))}
+            </div>
+            <button disabled className="w-full py-4 bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-zinc-700">Beli Paket</button>
           </div>
-          <div className="w-full space-y-3 text-left">
-            {proFeatures.map((feat, i) => (
-              <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
-                <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span className="text-zinc-400">{feat}</span>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => onOpenWaitlist('pro')} className="w-full py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-lg">Beli Paket</button>
-        </div>
 
-        {/* Card 3 - Elite */}
-        <div className="relative bg-orange-950/20 backdrop-blur-md border border-orange-500/30 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-orange-500/50 transition-all group shadow-2xl z-10">
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">Most Popular</div>
-          <div className="w-12 h-12 rounded-2xl bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-600/30">
-            <iconify-icon icon="solar:crown-bold" className="text-2xl text-white"></iconify-icon>
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2">Elite Edition</p>
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-bold text-orange-800/60 line-through tracking-tighter">Rp {isYearly ? '13.739.000' : '1.249.000'}</span>
-              <div className="flex items-baseline justify-center gap-1">
-                <span className="text-[10px] font-black text-orange-800 mb-1">RP</span>
-                <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '10.989' : '999'}</span>
-                <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
+          {/* Card 2 - Pro */}
+          <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 group shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center">
+              <iconify-icon icon="solar:box-linear" className="text-2xl text-zinc-400"></iconify-icon>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Pro Edition</p>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '7.139.000' : '649.000'}</span>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
+                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '5.489' : '499'}</span>
+                  <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
+                </div>
               </div>
             </div>
+            <div className="w-full space-y-3 text-left">
+              {proFeatures.map((feat, i) => (
+                <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
+                  <span className="text-zinc-400">{feat}</span>
+                </div>
+              ))}
+            </div>
+            <button disabled className="w-full py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-lg">Beli Paket</button>
           </div>
-          <div className="w-full space-y-3 text-left">
-            {eliteFeatures.map((feat, i) => (
-              <div key={i} className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
-                <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span className="text-zinc-300">{feat}</span>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => onOpenWaitlist('elite')} className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20 transition-all">Beli Paket</button>
-        </div>
 
-        {/* Card 4 - Ultimate */}
-        <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 hover:border-zinc-700 transition-all group shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <iconify-icon icon="solar:magic-stick-3-bold" className="text-2xl text-zinc-400"></iconify-icon>
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Ultimate Edition</p>
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '27.489.000' : '2.499.000'}</span>
-              <div className="flex items-baseline justify-center gap-1">
-                <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-                <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '21.989' : '1.999'}</span>
-                <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
+          {/* Card 3 - Elite */}
+          <div className="relative bg-orange-950/20 backdrop-blur-md border border-orange-500/30 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 group shadow-2xl z-10">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">Most Popular</div>
+            <div className="w-12 h-12 rounded-2xl bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-600/30">
+              <iconify-icon icon="solar:crown-bold" className="text-2xl text-white"></iconify-icon>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2">Elite Edition</p>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-xs font-bold text-orange-800/60 line-through tracking-tighter">Rp {isYearly ? '13.739.000' : '1.249.000'}</span>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-[10px] font-black text-orange-800 mb-1">RP</span>
+                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '10.989' : '999'}</span>
+                  <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
+                </div>
               </div>
             </div>
+            <div className="w-full space-y-3 text-left">
+              {eliteFeatures.map((feat, i) => (
+                <div key={i} className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
+                  <span className="text-zinc-300">{feat}</span>
+                </div>
+              ))}
+            </div>
+            <button disabled className="w-full py-4 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20">Beli Paket</button>
           </div>
-          <div className="w-full space-y-3 text-left">
-            {ultimateFeatures.map((feat, i) => (
-              <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
-                <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
-                <span className="text-zinc-400">{feat}</span>
+
+          {/* Card 4 - Ultimate */}
+          <div className="relative bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col items-center text-center gap-4 sm:gap-6 group shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center">
+              <iconify-icon icon="solar:magic-stick-3-bold" className="text-2xl text-zinc-400"></iconify-icon>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Ultimate Edition</p>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '27.489.000' : '2.499.000'}</span>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
+                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '21.989' : '1.999'}</span>
+                  <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
+                </div>
               </div>
-            ))}
+            </div>
+            <div className="w-full space-y-3 text-left">
+              {ultimateFeatures.map((feat, i) => (
+                <div key={i} className="flex items-center gap-3 text-xs text-zinc-400 font-medium">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-orange-500 shrink-0"></iconify-icon>
+                  <span className="text-zinc-400">{feat}</span>
+                </div>
+              ))}
+            </div>
+            <button disabled className="w-full py-4 bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-zinc-700">Beli Paket</button>
           </div>
-          <button onClick={() => onOpenWaitlist('ultimate')} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all border border-zinc-700">Beli Paket</button>
         </div>
       </div>
     </section>

@@ -21,6 +21,13 @@ const Sidebar = ({
     // Admin bypass
     if (plan === 'ultimate' || user?.email === 'admin@tokcer-ai.com' || localStorage.getItem('tokcer_admin_auth') === 'true') return false;
     
+    // Demo Plan Restriction
+    if (plan === 'demo') {
+      const allowedDemoTabs = ['tab-ai', 'tab-market'];
+      if (!allowedDemoTabs.includes(tab)) return true;
+      return false;
+    }
+
     const permissions = {
       // 'tab-ai': ['pro', 'elite', 'ultimate'],
       // 'tab-health': ['pro', 'elite', 'ultimate'],
@@ -130,6 +137,7 @@ const Sidebar = ({
               const isUltimate = plan === 'ultimate';
               
               const planConfigs = {
+                demo: { color: 'from-indigo-950/60 to-purple-950/40', border: 'border-indigo-700/40', text: 'text-indigo-400', icon: 'solar:user-check-bold', bgIcon: 'bg-indigo-500', glow: 'bg-indigo-500/10' },
                 starter: { color: 'from-zinc-950/60 to-zinc-900/40', border: 'border-zinc-700/40', text: 'text-zinc-400', icon: 'solar:box-linear', bgIcon: 'bg-zinc-500', glow: 'bg-zinc-500/10' },
                 pro: { color: 'from-blue-950/60 to-indigo-950/40', border: 'border-blue-700/40', text: 'text-blue-400', icon: 'solar:medal-star-bold', bgIcon: 'bg-blue-500', glow: 'bg-blue-500/10' },
                 elite: { color: 'from-indigo-950/60 to-purple-950/40', border: 'border-indigo-700/40', text: 'text-indigo-400', icon: 'solar:crown-bold', bgIcon: 'bg-indigo-500', glow: 'bg-indigo-500/10' },

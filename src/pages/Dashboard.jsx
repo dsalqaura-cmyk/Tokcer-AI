@@ -746,11 +746,11 @@ const Dashboard = () => {
     const checkPlanPermission = (feature, silent = false) => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const permissions = {
-            'video_gen': ['pro', 'elite', 'ultimate'],
+            'video_gen': ['pro', 'elite', 'ultimate', 'demo'],
             'health_check': ['pro', 'elite', 'ultimate'],
             'analytics': ['starter', 'pro', 'elite', 'ultimate'],
-            'market_intel': ['elite', 'ultimate'],
-            'price_optimizer': ['elite', 'ultimate'],
+            'market_intel': ['elite', 'ultimate', 'demo'],
+            'price_optimizer': ['elite', 'ultimate', 'demo'],
             'competitor_analysis': ['ultimate']
         };
         
