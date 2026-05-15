@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase.js';
-import { sendDemoWelcomeEmail } from '../../utils/email.js';
 
 const DemoRegisterModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -29,10 +28,10 @@ const DemoRegisterModal = ({ isOpen, onClose }) => {
 
       if (error) throw error;
 
-      // Kirim email selamat datang/konfirmasi pendaftaran
-      await sendDemoWelcomeEmail({
-        email: formData.email,
-        name: formData.name
+      // Kirim welcome email via RPC (server-side) agar tidak kena CORS block
+      await supabase.rpc('rpc_send_demo_welcome', {
+        p_email: formData.email,
+        p_name: formData.name
       });
 
       setSuccess(true);
