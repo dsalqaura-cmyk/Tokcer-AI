@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase.js';
 import logo from '../assets/logo.png';
 import { useLandingTranslation } from '../hooks/useLandingTranslation.js';
 
-const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
+const Navbar = ({ onOpenPartner, onOpenWaitlist }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pricingModalOpen, setPricingModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
             <img src={logo} alt="Tokcer AI" className="h-8 w-auto" />
           </div>
           
-          <div className="hidden xl:flex ml-12 gap-8 items-center text-sm font-medium uppercase tracking-widest text-zinc-400">
+          <div className="hidden lg:flex ml-12 gap-8 items-center text-sm font-medium uppercase tracking-widest text-zinc-400">
             <a href="/#problem" className="hover:text-white transition-colors">{t('navProblem')}</a>
             <a href="/#ecosystem" className="hover:text-white transition-colors">{t('navEcosystem')}</a>
             <a href="/#dashboard" className="text-orange-500 font-bold">{t('navExplore')}</a>
@@ -92,7 +92,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
             <a href="/#pricing" className="hover:text-white transition-colors text-zinc-400">{t('navPricing')}</a>
           </div>
           
-          <div className="hidden xl:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             <div className="hidden bg-zinc-900 rounded-lg p-1 border border-zinc-800 mr-2">
               <button 
                 onClick={() => toggleLang('id')}
@@ -133,14 +133,13 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
             ) : (
               <>
                 <button onClick={() => navigate('/login')} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors uppercase tracking-widest px-4">{t('navLogin')}</button>
-                <button onClick={onOpenDemo} className="bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-indigo-500 hover:bg-indigo-500 transition-all active:scale-95 uppercase tracking-widest">Register Demo User</button>
-                <button disabled className="bg-yellow-500/20 text-yellow-700 px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-yellow-400/20 cursor-not-allowed uppercase tracking-widest">{t('navPartner')}</button>
-                <button disabled className="bg-orange-600/20 text-orange-800 px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-orange-500/20 cursor-not-allowed uppercase tracking-widest">{t('navWaitlist')}</button>
+                <button onClick={onOpenPartner} className="bg-yellow-500 text-black px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-yellow-400 hover:bg-yellow-400 transition-all active:scale-95">{t('navPartner')}</button>
+                <button onClick={onOpenWaitlist} className="bg-orange-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-orange-500 hover:bg-orange-500 transition-all active:scale-95">{t('navWaitlist')}</button>
               </>
             )}
           </div>
 
-          <button onClick={toggleMobileMenu} className="xl:hidden flex items-center gap-2 text-zinc-300 hover:text-white p-2 focus:outline-none" aria-label="Toggle menu">
+          <button onClick={toggleMobileMenu} className="lg:hidden flex items-center gap-2 text-zinc-300 hover:text-white p-2 focus:outline-none" aria-label="Toggle menu">
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{mobileMenuOpen ? 'Close' : 'Menu'}</span>
             <iconify-icon icon={mobileMenuOpen ? "solar:close-square-bold-duotone" : "solar:hamburger-menu-bold-duotone"} className="text-3xl text-orange-500"></iconify-icon>
           </button>
@@ -149,7 +148,7 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
 
       {/* Mobile Menu Overlay - Moved OUTSIDE the nav container for absolute positioning safety */}
       {mobileMenuOpen && (
-        <div className="xl:hidden fixed inset-0 z-[999] flex flex-col bg-zinc-950 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="lg:hidden fixed inset-0 z-[999] flex flex-col bg-zinc-950 animate-in fade-in slide-in-from-top-4 duration-300">
           {/* Mobile Header Duplicate for closure */}
           <div className="h-16 px-4 flex justify-between items-center border-b border-zinc-800/50 bg-black/80 backdrop-blur-md">
             <img src={logo} alt="Tokcer AI" className="h-8 w-auto" />
@@ -214,17 +213,13 @@ const Navbar = ({ onOpenPartner, onOpenWaitlist, onOpenDemo }) => {
                 <iconify-icon icon="solar:user-linear" className="text-xl"></iconify-icon>
                 {t('navLogin')}
               </button>
-              <button onClick={() => { onOpenDemo(); toggleMobileMenu(); }} className="w-full py-3 sm:py-4 bg-indigo-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-xl shadow-indigo-600/10 border border-indigo-500 flex items-center justify-center gap-3">
-                <iconify-icon icon="solar:user-plus-bold" className="text-xl"></iconify-icon>
-                Register Demo User
-              </button>
               
-              <button disabled className="w-full py-3 sm:py-4 bg-yellow-500/20 text-yellow-700 rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] border border-yellow-400/20 flex items-center justify-center gap-3 cursor-not-allowed">
+              <button onClick={() => { onOpenPartner(); toggleMobileMenu(); }} className="w-full py-3 sm:py-4 bg-yellow-500 text-black rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-xl shadow-yellow-500/10 border border-yellow-400 flex items-center justify-center gap-3">
                 <iconify-icon icon="solar:hand-stars-bold" className="text-xl"></iconify-icon>
                 {t('navPartner')}
               </button>
               
-              <button disabled className="w-full py-3 sm:py-4 bg-orange-600/20 text-orange-800 rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] border border-orange-500/20 flex items-center justify-center gap-3 cursor-not-allowed">
+              <button onClick={() => { onOpenWaitlist(); toggleMobileMenu(); }} className="w-full py-3 sm:py-4 bg-orange-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-xl shadow-orange-600/10 border border-orange-500 flex items-center justify-center gap-3">
                 <iconify-icon icon="solar:rocket-bold" className="text-xl"></iconify-icon>
                 {t('navWaitlist')}
               </button>
