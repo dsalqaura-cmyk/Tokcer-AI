@@ -23,7 +23,7 @@ const Sidebar = ({
     
     // Demo Plan Restriction
     if (plan === 'demo') {
-      const allowedDemoTabs = ['tab-ai', 'tab-market'];
+      const allowedDemoTabs = ['tab-ai', 'tab-market', 'tab-support', 'tab-billing', 'tab-account'];
       if (!allowedDemoTabs.includes(tab)) return true;
       return false;
     }
