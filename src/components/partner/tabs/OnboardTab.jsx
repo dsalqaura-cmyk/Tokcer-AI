@@ -8,6 +8,7 @@ const OnboardTab = ({
   isSubmitting,
   partnerData
 }) => {
+  const isProduction = !window.location.hostname.includes('staging') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
   const [isBusinessVerified, setIsBusinessVerified] = useState(false);
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -108,15 +109,15 @@ const OnboardTab = ({
                   className="w-full appearance-none bg-black/40 border border-zinc-800 focus:border-orange-500/50 rounded-2xl px-5 py-4 text-sm text-white transition-all outline-none"
                 >
                   <option value="starter">Starter Edition (Early Stage)</option>
-                  <optgroup label="Monthly Plans (Bulanan) - Terkunci">
-                    <option value="pro_monthly" disabled>Pro Edition (Locked / Segera Hadir)</option>
-                    <option value="elite_monthly" disabled>Elite Edition (Locked / Segera Hadir)</option>
-                    <option value="ultimate_monthly" disabled>Ultimate Edition (Locked / Segera Hadir)</option>
+                  <optgroup label={`Monthly Plans (Bulanan)${isProduction ? ' - Terkunci' : ''}`}>
+                    <option value="pro_monthly" disabled={isProduction}>Pro Edition (Rp 499.000/bln{isProduction ? ' - Terkunci' : ''})</option>
+                    <option value="elite_monthly" disabled={isProduction}>Elite Edition (Rp 999.000/bln{isProduction ? ' - Terkunci' : ''})</option>
+                    <option value="ultimate_monthly" disabled={isProduction}>Ultimate Edition (Rp 1.999.000/bln{isProduction ? ' - Terkunci' : ''})</option>
                   </optgroup>
-                  <optgroup label="Yearly Plans (Tahunan) - Terkunci">
-                    <option value="pro_yearly" disabled>Pro Edition (Locked / Segera Hadir)</option>
-                    <option value="elite_yearly" disabled>Elite Edition (Locked / Segera Hadir)</option>
-                    <option value="ultimate_yearly" disabled>Ultimate Edition (Locked / Segera Hadir)</option>
+                  <optgroup label={`Yearly Plans (Tahunan)${isProduction ? ' - Terkunci' : ''}`}>
+                    <option value="pro_yearly" disabled={isProduction}>Pro Edition (Rp 5.489.000/thn{isProduction ? ' - Terkunci' : ''})</option>
+                    <option value="elite_yearly" disabled={isProduction}>Elite Edition (Rp 10.989.000/thn{isProduction ? ' - Terkunci' : ''})</option>
+                    <option value="ultimate_yearly" disabled={isProduction}>Ultimate Edition (Rp 21.989.000/thn{isProduction ? ' - Terkunci' : ''})</option>
                   </optgroup>
                 </select>
                 <iconify-icon icon="solar:alt-arrow-down-bold" className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></iconify-icon>
