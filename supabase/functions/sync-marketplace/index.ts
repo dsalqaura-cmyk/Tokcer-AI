@@ -16,7 +16,7 @@ async function generateTikTokSignature(appSecret: string, path: string, params: 
     }
   }
 
-  const baseString = appSecret + path + paramString + body;
+  const baseString = appSecret + path + paramString + body + appSecret;
 
   const encoder = new TextEncoder();
   const keyData = encoder.encode(appSecret);
@@ -135,9 +135,7 @@ serve(async (req) => {
     };
 
     const requestBody = JSON.stringify({
-      page_size: 50,
-      page_size: 50,
-      PageSize: 50
+      page_size: 50
     });
 
     const signature = await generateTikTokSignature(appSecret, path, queryParams, requestBody);
