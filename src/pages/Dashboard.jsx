@@ -592,6 +592,19 @@ const Dashboard = () => {
         const { products: pData, orders: oData } = await fetchOperationalData(session.user.id, session.user);
         fetchMarketplaceConnections(session.user.id);
         fetchSystemBriefing(pData, oData);
+
+        // [AUTO-SYNC ON-MOUNT]: Silently sync latest store data in background on dashboard load
+        supabase.functions.invoke('sync-marketplace', {
+            body: { user_id: session.user.id }
+        }).then(({ data }) => {
+            if (data?.success) {
+                // Silently refresh the visual operational data with latest API changes!
+                fetchOperationalData(session.user.id, session.user).then(({ products: p, orders: o }) => {
+                    fetchSystemBriefing(p, o);
+                });
+                fetchMarketplaceConnections(session.user.id);
+            }
+        }).catch(err => console.warn("Background auto-sync warn:", err));
       } else if (isAdmin) {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);

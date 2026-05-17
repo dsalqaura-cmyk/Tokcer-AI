@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok, connectedStores = [] }) => {
+const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok, connectedStores = [], onSyncStore, isSyncingStore }) => {
   const platforms = [
     { 
       id: 'tiktok', 
