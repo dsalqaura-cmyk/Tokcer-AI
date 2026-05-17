@@ -103,12 +103,19 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
     try {
       // 2. IF STARTER (FREE) -> Just insert to clients table as usual
       if (planValue === 'starter') {
-        const { error } = await supabase.from('clients').insert([{
-          shop_name: nama, email, whatsapp: phone, plan: 'starter',
-          status: 'pending', ref: affiliateId || 'Direct',
-          metadata: { store_links: storeLinks }
-        }]);
-        if (error) throw error;
+        const { data, error } = await supabase.functions.invoke('register-starter', {
+          body: { 
+            nama, 
+            email, 
+            phone, 
+            platforms: selectedPlatforms, 
+            storeLinks, 
+            affiliateId 
+          }
+        });
+        if (error || !data?.success) {
+          throw new Error(error?.message || data?.error || "Gagal mengaktifkan akun Starter Anda secara otomatis.");
+        }
         setStatus('success');
         return;
       }
