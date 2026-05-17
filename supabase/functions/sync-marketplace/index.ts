@@ -203,9 +203,47 @@ serve(async (req) => {
       apiErrorLog = fetchErr.message;
     }
 
+    // Get detailed orders to fetch line_items, payments, and true order_status
+    const orderIds = ordersFetched.map((o: any) => o.id).filter(Boolean);
+    let detailedOrders = [];
+
+    if (orderIds.length > 0) {
+      const idsParam = orderIds.join(",");
+      const detailPath = "/order/202309/orders";
+      const detailQueryParams = {
+        app_key: appKey,
+        timestamp: timestamp,
+        shop_cipher: shopCipher,
+        ids: idsParam
+      };
+      
+      const detailSignature = await generateTikTokSignature(appSecret, detailPath, detailQueryParams, "");
+      const detailSearchParams = new URLSearchParams(detailQueryParams);
+      detailSearchParams.append("sign", detailSignature);
+      const detailApiUrl = `https://open-api.tiktokglobalshop.com${detailPath}?${detailSearchParams.toString()}`;
+      
+      try {
+        const detailResponse = await fetch(detailApiUrl, {
+          method: "GET",
+          headers: {
+            "x-tts-access-token": access_token
+          }
+        });
+        const detailData = await detailResponse.json();
+        if (detailData.code === 0 && detailData.data?.orders) {
+          detailedOrders = detailData.data.orders;
+          console.log(`Successfully fetched details for ${detailedOrders.length} orders.`);
+        } else {
+          apiErrorLog = detailData.message || `Detail API returned code: ${detailData.code}`;
+        }
+      } catch (detailErr) {
+        apiErrorLog = detailErr.message;
+      }
+    }
+
     // 5. Clean Handling (If no orders found or API empty, do NOT insert garbage mock data!)
-    if (ordersFetched.length === 0) {
-      console.warn("TikTok API Fetch Warning: " + apiErrorLog + ". No real orders fetched.");
+    if (detailedOrders.length === 0) {
+      console.warn("TikTok API Fetch Warning: " + apiErrorLog + ". No detailed orders fetched.");
 
       await supabaseClient
         .from('marketplace_connections')
@@ -223,15 +261,20 @@ serve(async (req) => {
     }
 
     // 6. Map and Insert Real TikTok Orders to Supabase
-    const ordersToInsert = ordersFetched.map((o: any) => ({
-      user_id: user_id,
-      order_number: o.id || o.order_id,
-      customer_name: o.buyer_email || o.buyer_uid || "TikTok Buyer",
-      platform: 'tiktok',
-      total_amount: Number(o.payment_info?.original_total_amount || o.payment_info?.total_amount || 0),
-      status: (o.order_status === 'COMPLETED' || o.order_status === 'DELIVERED') ? 'completed' : 'pending',
-      order_date: o.create_time ? new Date(Number(o.create_time) * 1000).toISOString() : new Date().toISOString()
-    }));
+    const ordersToInsert = detailedOrders.map((o: any) => {
+      const itemsList = o.line_items || [];
+      const productSold = itemsList.map((li: any) => li.product_name || li.sku_name || "Produk TikTok").join(", ") || "Produk TikTok";
+      
+      return {
+        user_id: user_id,
+        order_number: o.id || o.order_id,
+        customer_name: productSold,
+        platform: 'tiktok',
+        total_amount: Number(o.payment?.total_amount || 0),
+        status: (o.order_status === 'COMPLETED' || o.order_status === 'DELIVERED') ? 'completed' : 'pending',
+        order_date: o.create_time ? new Date(Number(o.create_time) * 1000).toISOString() : new Date().toISOString()
+      };
+    });
 
     // Perform upsert of real orders to avoid duplicates
     for (const ord of ordersToInsert) {
