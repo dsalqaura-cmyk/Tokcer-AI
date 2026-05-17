@@ -225,12 +225,8 @@ const Dashboard = () => {
                 return;
             }
 
-            // 3. Redirect (Bypass ke Mock Page kalau ID-nya mock/placeholder atau ID fallback staging)
-            if (finalIdForAuth.includes('mock') || finalIdForAuth.includes('6db7a') || finalIdForAuth.includes('6js3f')) {
-                navigate('/tiktok-auth-mock');
-            } else {
-                window.location.href = getTikTokAuthUrl(finalIdForAuth);
-            }
+            // 3. Redirect langsung ke Halaman Otorisasi Resmi TikTok Shop (Production-Ready)
+            window.location.href = getTikTokAuthUrl(finalIdForAuth);
         } catch (err) {
             console.error("TikTok Auth Error:", err);
             // Jika database error, gunakan fallback dari .env agar tidak mati total
