@@ -161,16 +161,23 @@ serve(async (req) => {
       throw new Error("Gagal mengidentifikasi target toko karena shop_cipher tidak ditemukan.");
     }
 
-    // 5. Request Real Orders from TikTok Open API
+    // 5. Request Real Orders from TikTok Open API (Newest first, filtered to last 120 days)
     const path = "/order/202309/orders/search";
     const queryParams = {
       app_key: appKey,
       timestamp: timestamp,
       shop_cipher: shopCipher,
-      page_size: "50"
+      page_size: "50",
+      sort_field: "create_time",
+      sort_order: "DESC"
     };
 
-    const requestBody = "{}";
+    // Filter to last 120 days to ensure we get the recent 3 months of orders
+    const ninetyFiveDaysAgo = Math.floor((Date.now() - 120 * 24 * 60 * 60 * 1000) / 1000);
+    const requestBodyObj = {
+      create_time_ge: ninetyFiveDaysAgo
+    };
+    const requestBody = JSON.stringify(requestBodyObj);
 
     const signature = await generateTikTokSignature(appSecret, path, queryParams, requestBody);
     const searchParams = new URLSearchParams(queryParams);
