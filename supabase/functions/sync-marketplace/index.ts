@@ -267,10 +267,27 @@ serve(async (req) => {
       )
     }
 
+    // Purge old 2024 orders for this user to clean up the dashboard
+    const { error: purgeError } = await supabaseClient
+      .from('orders')
+      .delete()
+      .eq('user_id', user_id)
+      .lt('order_date', '2026-01-01T00:00:00Z');
+
+    if (purgeError) {
+      console.error("Error purging old 2024 orders:", purgeError.message);
+    } else {
+      console.log("Successfully purged old 2024 orders from database.");
+    }
+
     // 6. Map and Insert Real TikTok Orders to Supabase
     const ordersToInsert = detailedOrders.map((o: any) => {
       const itemsList = o.line_items || [];
       const productSold = itemsList.map((li: any) => li.product_name || li.sku_name || "Produk TikTok").join(", ") || "Produk TikTok";
+      
+      // TikTok Shop API v202309 returns order status in the 'status' field (e.g., 'COMPLETED', 'DELIVERED')
+      const tiktokStatus = o.status || o.order_status || "";
+      const isCompleted = (tiktokStatus === 'COMPLETED' || tiktokStatus === 'DELIVERED');
       
       return {
         user_id: user_id,
@@ -278,7 +295,7 @@ serve(async (req) => {
         customer_name: productSold,
         platform: 'tiktok',
         total_amount: Number(o.payment?.total_amount || 0),
-        status: (o.order_status === 'COMPLETED' || o.order_status === 'DELIVERED') ? 'completed' : 'pending',
+        status: isCompleted ? 'completed' : 'pending',
         order_date: o.create_time ? new Date(Number(o.create_time) * 1000).toISOString() : new Date().toISOString()
       };
     });
