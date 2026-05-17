@@ -27,5 +27,6 @@ jobs:
           supabase functions deploy ai-proxy --project-ref "gejccutabxtyxsveczvd"
           supabase functions deploy send-partner-reminder --project-ref "gejccutabxtyxsveczvd"
           supabase functions deploy tiktok-auth --project-ref "gejccutabxtyxsveczvd" --no-verify-jwt
+          supabase functions deploy register-starter --project-ref "gejccutabxtyxsveczvd" --no-verify-jwt
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
