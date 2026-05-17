@@ -38,7 +38,9 @@ const TikTokCallback = () => {
         });
 
         if (exchangeError) throw exchangeError;
-        if (exchangeData?.error) throw new Error(exchangeData.error);
+        if (exchangeData?.error || exchangeData?.success === false) {
+          throw new Error(exchangeData?.error || "Gagal melakukan penukaran token dengan server TikTok.");
+        }
 
         setStatus(`Berhasil terhubung ke toko: ${exchangeData?.store_name || 'TikTok Shop'}! Mengalihkan...`);
         setTimeout(() => navigate('/dashboard'), 2000);
