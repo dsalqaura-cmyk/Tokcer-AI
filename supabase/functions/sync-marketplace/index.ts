@@ -131,15 +131,16 @@ serve(async (req) => {
     const queryParams = {
       app_key: appKey,
       timestamp: timestamp,
-      shop_id: shop_id
+      shop_id: shop_id,
+      page_size: "50"
     };
 
-    const requestBody = JSON.stringify({
-      page_size: 50
-    });
+    const requestBody = "{}";
 
     const signature = await generateTikTokSignature(appSecret, path, queryParams, requestBody);
-    const apiUrl = `https://open-api.tiktokglobalshop.com${path}?app_key=${appKey}&timestamp=${timestamp}&shop_id=${shop_id}&sign=${signature}`;
+    const searchParams = new URLSearchParams(queryParams);
+    searchParams.append("sign", signature);
+    const apiUrl = `https://open-api.tiktokglobalshop.com${path}?${searchParams.toString()}`;
 
     let ordersFetched = [];
     let apiErrorLog = "";
