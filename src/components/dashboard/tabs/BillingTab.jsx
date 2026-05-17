@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 
 const BillingTab = ({ profile, clientData, supabase, t }) => {
   const [loading, setLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(clientData?.plan || profile?.subscription_plan || 'pro');
+
+  // Default plan: hindari 'demo' atau 'starter' karena tidak ada di daftar plans
+  const currentActivePlan = (clientData?.plan || profile?.subscription_plan || 'starter').toLowerCase();
+  const validUpgradePlans = ['pro', 'elite', 'ultimate'];
+  const defaultSelectedPlan = validUpgradePlans.includes(currentActivePlan) ? currentActivePlan : 'pro';
+
+  const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
   const [billingCycle, setBillingCycle] = useState(clientData?.billing_cycle || 'Monthly');
   const [isSnapLoaded, setIsSnapLoaded] = useState(false);
 
@@ -193,6 +199,41 @@ const BillingTab = ({ profile, clientData, supabase, t }) => {
                 </div>
             </div>
         </div>
+
+        {/* === PRICE PREVIEW CARD === */}
+        {(() => {
+          const planData = plans.find(p => p.id === selectedPlan);
+          if (!planData) return null;
+          const amount = billingCycle === 'Monthly' ? planData.monthly : planData.yearly;
+          const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+          const cycleLabel = billingCycle === 'Monthly' ? 'bulan' : 'tahun';
+          const yearlySavings = billingCycle === 'Yearly' ? Math.round(((planData.monthly * 12) - planData.yearly) / (planData.monthly * 12) * 100) : 0;
+
+          return (
+            <div className="bg-zinc-950 border border-zinc-700 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in duration-300">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                  <iconify-icon icon="solar:wallet-money-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
+                </div>
+                <div>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-0.5">Total Tagihan</p>
+                  <p className="text-2xl font-black text-white tracking-tight">{formatIDR(amount)}</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">
+                    {planData.name} · {billingCycle === 'Monthly' ? 'Bulanan' : 'Tahunan'}
+                    {billingCycle === 'Yearly' && (
+                      <span className="ml-2 text-emerald-400 font-bold">Hemat {yearlySavings}% vs Bulanan</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-xs text-zinc-500">Per {cycleLabel}</p>
+                <p className="text-xs font-bold text-zinc-300 mt-0.5">{formatIDR(billingCycle === 'Monthly' ? amount : Math.round(amount / 12))}/bln</p>
+              </div>
+            </div>
+          );
+        })()}
+        {/* === END PRICE PREVIEW CARD === */}
 
         <div className="flex justify-end pt-4 border-t border-zinc-800">
             <button 
