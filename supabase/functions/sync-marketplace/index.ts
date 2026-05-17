@@ -355,6 +355,122 @@ serve(async (req) => {
       }
     }
 
+    // ==========================================
+    // NEW STEP: Fetch and Upsert Live Products & Inventory
+    // ==========================================
+    console.log(`[PRODUCTS SYNC] Starting product synchronization for user ${user_id}...`);
+    const productSearchPath = "/product/202309/products/search";
+    const productSearchParamsObj = {
+      app_key: appKey,
+      timestamp: timestamp,
+      shop_cipher: shopCipher,
+      page_size: "50"
+    };
+    const productSearchSignature = await generateTikTokSignature(appSecret, productSearchPath, productSearchParamsObj, "{}");
+    const productSearchParams = new URLSearchParams(productSearchParamsObj);
+    productSearchParams.append("sign", productSearchSignature);
+    const productSearchApiUrl = `https://open-api.tiktokglobalshop.com${productSearchPath}?${productSearchParams.toString()}`;
+
+    let retrievedProducts = [];
+    try {
+      const prodSearchResponse = await fetch(productSearchApiUrl, {
+        method: "POST",
+        headers: {
+          "x-tts-access-token": access_token,
+          "content-type": "application/json"
+        },
+        body: "{}"
+      });
+      const prodSearchData = await prodSearchResponse.json();
+      if (prodSearchData.code === 0 && prodSearchData.data?.products?.length > 0) {
+        retrievedProducts = prodSearchData.data.products;
+        console.log(`Successfully retrieved ${retrievedProducts.length} product entries from Search API.`);
+      } else {
+        console.warn(`No products or failed to search products from TikTok: ${JSON.stringify(prodSearchData)}`);
+      }
+    } catch (err) {
+      console.error(`Error calling Search Products: ${err.message}`);
+    }
+
+    const productsToInsert = [];
+    for (const p of retrievedProducts) {
+      const productId = p.id;
+      const detailPath = `/product/202309/products/${productId}`;
+      const detailParamsObj = {
+        app_key: appKey,
+        timestamp: timestamp,
+        shop_cipher: shopCipher
+      };
+      const detailSignature = await generateTikTokSignature(appSecret, detailPath, detailParamsObj, "");
+      const detailSearchParams = new URLSearchParams(detailParamsObj);
+      detailSearchParams.append("sign", detailSignature);
+      const detailApiUrl = `https://open-api.tiktokglobalshop.com${detailPath}?${detailSearchParams.toString()}`;
+
+      try {
+        const detailResponse = await fetch(detailApiUrl, {
+          method: "GET",
+          headers: {
+            "x-tts-access-token": access_token
+          }
+        });
+        const detailData = await detailResponse.json();
+        if (detailData.code === 0 && detailData.data) {
+          const detail = detailData.data;
+          const productName = detail.product_name || detail.title || p.title || "Produk TikTok";
+          const skus = detail.skus || [];
+          
+          for (const sku of skus) {
+            const skuCode = sku.seller_sku || sku.id || "SKU-TIKTOK";
+            const priceVal = Number(sku.price?.amount || 0);
+            const totalStock = (sku.inventory || []).reduce((sum: number, inv: any) => sum + Number(inv.quantity || 0), 0);
+
+            productsToInsert.push({
+              user_id: user_id,
+              name: productName,
+              sku: skuCode,
+              stock: totalStock,
+              price: priceVal,
+              cost: Math.round(priceVal * 0.5), // Estimate HPP/cost as 50% of selling price by default
+              description: `Produk TikTok Shop (${productName}). ID: ${productId}, SKU ID: ${sku.id}`
+            });
+          }
+        }
+      } catch (err) {
+        console.error(`Error fetching product details for ${productId}: ${err.message}`);
+      }
+    }
+
+    console.log(`[PRODUCTS SYNC] Total SKU count to upsert: ${productsToInsert.length}`);
+    for (const prod of productsToInsert) {
+      const { data: existingProd, error: selectProdErr } = await supabaseClient
+        .from('products')
+        .select('id')
+        .eq('user_id', user_id)
+        .eq('sku', prod.sku)
+        .maybeSingle();
+
+      if (selectProdErr) {
+        console.error(`Select product error for ${prod.sku}:`, selectProdErr.message);
+      }
+
+      if (existingProd) {
+        const { error: updateProdErr } = await supabaseClient
+          .from('products')
+          .update(prod)
+          .eq('id', existingProd.id);
+        if (updateProdErr) {
+          console.error(`Update product error for ${prod.sku}:`, updateProdErr.message);
+        }
+      } else {
+        const { error: insertProdErr } = await supabaseClient
+          .from('products')
+          .insert(prod);
+        if (insertProdErr) {
+          console.error(`Insert product error for ${prod.sku}:`, insertProdErr.message);
+        }
+      }
+    }
+
     // 7. Update connection status back to active
     await supabaseClient
       .from('marketplace_connections')
