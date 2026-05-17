@@ -98,21 +98,27 @@ serve(async (req) => {
       throw new Error("Kredensial API TikTok (App ID/Secret) belum diset di tabel ai_configs.");
     }
 
-    // 2. Fetch Active TikTok Store Connection
-    const { data: connection, error: connError } = await supabaseClient
+    // 2. Fetch Active TikTok Store Connection safely (supporting multiple connections)
+    const { data: connections, error: connError } = await supabaseClient
       .from('marketplace_connections')
       .select('*')
       .eq('user_id', user_id)
-      .eq('platform', 'tiktok')
-      .maybeSingle()
+      .eq('platform', 'tiktok');
 
     if (connError) throw new Error("Gagal membaca koneksi marketplace: " + connError.message)
-    if (!connection) {
+    
+    // Filter to get any active, idle or currently syncing connections
+    const activeConnections = connections?.filter((c: any) => c.sync_status === 'active' || c.sync_status === 'syncing' || c.sync_status === 'idle') || [];
+    
+    if (activeConnections.length === 0) {
       return new Response(
         JSON.stringify({ success: false, error: "Tidak ada koneksi TikTok yang aktif untuk akun ini." }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
+
+    // Safely pick the first active connection to process
+    const connection = activeConnections[0];
 
     const { access_token, shop_id } = connection;
     if (!access_token || !shop_id) {
