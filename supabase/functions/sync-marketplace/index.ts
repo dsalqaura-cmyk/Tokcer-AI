@@ -118,6 +118,7 @@ serve(async (req) => {
     if (!access_token || !shop_id) {
       throw new Error("Koneksi TikTok tidak memiliki access_token atau shop_id yang valid.");
     }
+    const timestamp = Math.floor(Date.now() / 1000).toString();
 
     // 3. Initiate Live Syncing status
     await supabaseClient
@@ -125,13 +126,47 @@ serve(async (req) => {
       .update({ sync_status: 'syncing' })
       .eq('id', connection.id);
 
-    // 4. Request Real Orders from TikTok Open API
+    // 4. Fetch Authorized Shops dynamically to obtain the mandatory shop_cipher
+    const shopPath = "/authorization/202309/shops";
+    const shopQueryParams = {
+      app_key: appKey,
+      timestamp: timestamp
+    };
+    const shopSignature = await generateTikTokSignature(appSecret, shopPath, shopQueryParams, "");
+    const shopSearchParams = new URLSearchParams(shopQueryParams);
+    shopSearchParams.append("sign", shopSignature);
+    const shopApiUrl = `https://open-api.tiktokglobalshop.com${shopPath}?${shopSearchParams.toString()}`;
+
+    let shopCipher = "";
+    try {
+      const shopResponse = await fetch(shopApiUrl, {
+        method: "GET",
+        headers: {
+          "x-tts-access-token": access_token
+        }
+      });
+      const shopData = await shopResponse.json();
+      if (shopData.code === 0 && shopData.data?.shops?.length > 0) {
+        const matchedShop = shopData.data.shops.find((s: any) => s.id === shop_id) || shopData.data.shops[0];
+        shopCipher = matchedShop.cipher || "";
+        console.log(`Successfully retrieved shop_cipher: ${shopCipher} for shop: ${matchedShop.name}`);
+      } else {
+        console.error(`Failed to fetch shop_cipher from TikTok: ${JSON.stringify(shopData)}`);
+      }
+    } catch (err) {
+      console.error(`Error calling Get Authorized Shops: ${err.message}`);
+    }
+
+    if (!shopCipher) {
+      throw new Error("Gagal mengidentifikasi target toko karena shop_cipher tidak ditemukan.");
+    }
+
+    // 5. Request Real Orders from TikTok Open API
     const path = "/order/202309/orders/search";
-    const timestamp = Math.floor(Date.now() / 1000).toString();
     const queryParams = {
       app_key: appKey,
       timestamp: timestamp,
-      shop_id: shop_id,
+      shop_cipher: shopCipher,
       page_size: "50"
     };
 
