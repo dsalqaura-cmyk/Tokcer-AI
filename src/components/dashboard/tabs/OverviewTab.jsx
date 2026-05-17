@@ -62,32 +62,13 @@ const OverviewTab = ({
   const totalRev = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const totalProfit = totalRev * 0.2;
   
-  // REAL DATA VISITOR CALCULATIONS (REACTIVE & DETERMINISTIC)
-  const isTikTokConnected = orders.some(o => (o.platform || '').toLowerCase() === 'tiktok');
-  const isShopeeConnected = orders.some(o => (o.platform || '').toLowerCase() === 'shopee');
-
-  const showTikTok = platformFilter === 'all' || platformFilter.toLowerCase() === 'tiktok';
-  const showShopee = platformFilter === 'all' || platformFilter.toLowerCase() === 'shopee';
-
   const filteredTikTokOrders = filteredOrders.filter(o => (o.platform || '').toLowerCase() === 'tiktok');
   const filteredShopeeOrders = filteredOrders.filter(o => (o.platform || '').toLowerCase() === 'shopee');
 
-  const tiktokLive = showTikTok 
-    ? (filteredTikTokOrders.length > 0 
-        ? filteredTikTokOrders.reduce((sum, o) => sum + 30 + ((o.id ? o.id.charCodeAt(0) + (o.id.charCodeAt(1) || 0) : 10) % 10), 0)
-        : (isTikTokConnected ? 15 : 0))
-    : 0;
+  const tiktokGMV = filteredTikTokOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const shopeeGMV = filteredShopeeOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
 
-  const shopeeLive = showShopee
-    ? (filteredShopeeOrders.length > 0 
-        ? filteredShopeeOrders.reduce((sum, o) => sum + 25 + ((o.id ? o.id.charCodeAt(0) + (o.id.charCodeAt(1) || 0) : 10) % 10), 0)
-        : (isShopeeConnected ? 12 : 0))
-    : 0;
-
-  const totalVisitors = tiktokLive + shopeeLive;
-  const convRate = totalVisitors > 0 
-    ? Number(((filteredOrders.length / totalVisitors) * 100).toFixed(1)) 
-    : 0;
+  const averageOrderValue = filteredOrders.length > 0 ? Math.round(totalRev / filteredOrders.length) : 0;
 
   const healthScore = products.length > 0 
     ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
@@ -209,31 +190,17 @@ const OverviewTab = ({
 
       {/* Row 1: Top Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Live Visitors Card */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm">
+        {/* Total Orders Card */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-emerald-500/30 transition-all">
           <div className="flex items-center justify-between mb-6">
-             <div className="text-xs font-medium text-zinc-400">{t('visitors')}</div>
-             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+             <div className="text-xs font-medium text-zinc-400">Total Pesanan ({getFilterLabel()})</div>
+             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <iconify-icon icon="solar:bag-3-bold" className="text-lg text-emerald-500"></iconify-icon>
+             </div>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-zinc-400">
-                <iconify-icon icon="ri:tiktok-fill" className="text-lg"></iconify-icon>
-                <span className="text-[10px]">TikTok Shop</span>
-              </div>
-              <div className="text-lg font-bold text-white">{tiktokLive}</div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-zinc-400">
-                <iconify-icon icon="simple-icons:shopee" className="text-lg text-orange-500"></iconify-icon>
-                <span className="text-[10px]">Shopee</span>
-              </div>
-              <div className="text-lg font-bold text-white">{shopeeLive}</div>
-            </div>
-            <div className="pt-3 border-t border-zinc-800 flex items-center justify-between">
-               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Total</span>
-               <span className="text-sm font-bold text-zinc-600">{totalVisitors}</span>
-            </div>
+          <div className="text-3xl font-bold text-white tracking-tight mb-2">{filteredOrders.length}</div>
+          <div className="text-[10px] text-zinc-500 flex items-center gap-1">
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Volume transaksi terverifikasi API
           </div>
         </div>
 
@@ -254,12 +221,17 @@ const OverviewTab = ({
           </div>
         </div>
 
-        {/* Conversion Rate */}
+        {/* Average Order Value (AOV) Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-blue-500/30 transition-all">
-          <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
-          <div className={`text-3xl font-bold tracking-tight mb-2 ${convRate > 0 ? 'text-white' : 'text-zinc-600'}`}>{convRate}%</div>
-          <div className="text-[10px] text-zinc-600 flex items-center gap-1">
-             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> {t('basedOnVisitors')}
+          <div className="flex items-center justify-between mb-6">
+             <div className="text-xs font-medium text-zinc-400">Nilai Transaksi (AOV) ({getFilterLabel()})</div>
+             <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                <iconify-icon icon="solar:calculator-minimalistic-bold" className="text-lg text-blue-500"></iconify-icon>
+             </div>
+          </div>
+          <div className="text-2xl font-bold text-white tracking-tight mb-2">{formatIDR(averageOrderValue)}</div>
+          <div className="text-[10px] text-zinc-500 flex items-center gap-1">
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Rata-rata belanja per pesanan
           </div>
         </div>
 
@@ -324,28 +296,40 @@ const OverviewTab = ({
         </div>
 
         <div className="space-y-4">
-          {/* Live Traffic Reach Widget */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm">
+          {/* Platform Performance Widget */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm hover:border-orange-500/10 transition-all">
              <div className="flex items-center justify-between mb-6">
                 <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                   LIVE TRAFFIC REACH
+                   <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                   KINERJA PLATFORM
                 </h3>
              </div>
              <div className="space-y-4">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       <iconify-icon icon="ri:tiktok-fill" className="text-zinc-400"></iconify-icon>
-                       <span className="text-[10px] text-zinc-500">TikTok Shop</span>
+                 <div className="flex flex-col gap-1 pb-3 border-b border-zinc-800/50">
+                    <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                          <iconify-icon icon="ri:tiktok-fill" className="text-zinc-400 text-sm"></iconify-icon>
+                          <span className="text-[10px] font-bold text-white">TikTok Shop</span>
+                       </div>
+                       <span className="text-[10px] text-zinc-400 font-semibold">{filteredTikTokOrders.length} Pesanan</span>
                     </div>
-                    <span className="text-sm font-bold text-white">{tiktokLive}</span>
+                    <div className="flex justify-between items-center pl-6">
+                       <span className="text-[8px] text-zinc-500 font-medium">GMV Terverifikasi</span>
+                       <span className="text-xs font-bold text-emerald-400">{formatIDR(tiktokGMV)}</span>
+                    </div>
                  </div>
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       <iconify-icon icon="simple-icons:shopee" className="text-orange-500"></iconify-icon>
-                       <span className="text-[10px] text-zinc-500">Shopee</span>
+                 <div className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                          <iconify-icon icon="simple-icons:shopee" className="text-orange-500 text-sm"></iconify-icon>
+                          <span className="text-[10px] font-bold text-white">Shopee</span>
+                       </div>
+                       <span className="text-[10px] text-zinc-400 font-semibold">{filteredShopeeOrders.length} Pesanan</span>
                     </div>
-                    <span className="text-sm font-bold text-white">{shopeeLive}</span>
+                    <div className="flex justify-between items-center pl-6">
+                       <span className="text-[8px] text-zinc-500 font-medium">GMV Terverifikasi</span>
+                       <span className="text-xs font-bold text-emerald-400">{formatIDR(shopeeGMV)}</span>
+                    </div>
                  </div>
              </div>
           </div>
