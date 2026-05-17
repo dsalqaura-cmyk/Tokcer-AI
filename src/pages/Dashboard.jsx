@@ -548,7 +548,7 @@ const Dashboard = () => {
             const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
             const quotaMap = { 'demo': 30, 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
             const totalQuota = quotaMap[plan] ?? 50;
-            const activeTokens = prof?.tokens ?? prof?.ai_tokens ?? 0;
+            const activeTokens = prof?.ai_tokens ?? prof?.tokens ?? 0;
             
             setProfile({ 
                 ...(prof || {}), 
