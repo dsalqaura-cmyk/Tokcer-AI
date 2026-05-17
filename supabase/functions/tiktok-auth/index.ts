@@ -50,14 +50,15 @@ serve(async (req) => {
     const { access_token, refresh_token, access_token_expire_in, seller_name, open_id } = data.data;
 
     // 3. Save to database (Idempotent: check for existing connection first)
-    const { data: existingConnection, error: findError } = await supabaseClient
+    const { data: existingConnections, error: findError } = await supabaseClient
         .from('marketplace_connections')
         .select('id')
         .eq('user_id', user_id)
         .eq('platform', 'tiktok')
-        .maybeSingle();
+        .limit(1);
 
     if (findError) throw new Error("Gagal mencari koneksi lama: " + findError.message);
+    const existingConnection = existingConnections?.[0];
 
     let dbResult;
     const tokenExpiryDate = new Date(Date.now() + (access_token_expire_in || 0) * 1000).toISOString();
