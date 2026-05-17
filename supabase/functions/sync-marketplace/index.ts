@@ -126,23 +126,20 @@ serve(async (req) => {
       .eq('id', connection.id);
 
     // 4. Request Real Orders from TikTok Open API
-    const path = "/api/v2/order/search";
+    const path = "/order/202309/orders/search";
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const queryParams = {
       app_key: appKey,
       timestamp: timestamp,
-      shop_id: shop_id,
-      access_token: access_token
+      shop_id: shop_id
     };
 
     const requestBody = JSON.stringify({
-      page_size: 50,
-      sort_by: "CREATE_TIME",
-      sort_type: "DESC"
+      page_size: 50
     });
 
     const signature = await generateTikTokSignature(appSecret, path, queryParams, requestBody);
-    const apiUrl = `https://open-api.tiktokglobalshop.com${path}?app_key=${appKey}&timestamp=${timestamp}&shop_id=${shop_id}&access_token=${access_token}&sign=${signature}`;
+    const apiUrl = `https://open-api.tiktokglobalshop.com${path}?app_key=${appKey}&timestamp=${timestamp}&shop_id=${shop_id}&sign=${signature}`;
 
     let ordersFetched = [];
     let apiErrorLog = "";
@@ -151,7 +148,8 @@ serve(async (req) => {
       const apiResponse = await fetch(apiUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-tts-access-token": access_token
         },
         body: requestBody
       });
@@ -159,6 +157,9 @@ serve(async (req) => {
       const apiData = await apiResponse.json();
       if (apiData.code === 0 && apiData.data?.order_list) {
         ordersFetched = apiData.data.order_list;
+      } else if (apiData.code === 0 && apiData.data?.orders) {
+        // v202309 format uses 'orders' instead of 'order_list'
+        ordersFetched = apiData.data.orders;
       } else {
         apiErrorLog = apiData.message || `TikTok API returned code: ${apiData.code}`;
       }
@@ -188,12 +189,12 @@ serve(async (req) => {
     // 6. Map and Insert Real TikTok Orders to Supabase
     const ordersToInsert = ordersFetched.map((o: any) => ({
       user_id: user_id,
-      order_number: o.order_id,
-      customer_name: o.buyer_uid || "TikTok Buyer",
+      order_number: o.id || o.order_id,
+      customer_name: o.buyer_email || o.buyer_uid || "TikTok Buyer",
       platform: 'tiktok',
-      total_amount: Number(o.payment_info?.original_total_amount || 0),
-      status: o.order_status === 'COMPLETED' ? 'completed' : 'pending',
-      order_date: new Date(Number(o.create_time) * 1000).toISOString()
+      total_amount: Number(o.payment_info?.original_total_amount || o.payment_info?.total_amount || 0),
+      status: (o.order_status === 'COMPLETED' || o.order_status === 'DELIVERED') ? 'completed' : 'pending',
+      order_date: o.create_time ? new Date(Number(o.create_time) * 1000).toISOString() : new Date().toISOString()
     }));
 
     // Perform upsert of real orders to avoid duplicates
