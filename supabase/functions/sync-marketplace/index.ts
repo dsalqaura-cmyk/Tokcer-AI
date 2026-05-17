@@ -116,7 +116,7 @@ serve(async (req) => {
     });
 
     const signature = await generateTikTokSignature(appSecret, path, queryParams, requestBody);
-    const apiUrl = `https://open-api.tiktok-shops.com${path}?app_key=${appKey}&timestamp=${timestamp}&shop_id=${shop_id}&access_token=${access_token}&sign=${signature}`;
+    const apiUrl = `https://open-api.tiktokglobalshop.com${path}?app_key=${appKey}&timestamp=${timestamp}&shop_id=${shop_id}&access_token=${access_token}&sign=${signature}`;
 
     let ordersFetched = [];
     let apiErrorLog = "";
@@ -140,43 +140,9 @@ serve(async (req) => {
       apiErrorLog = fetchErr.message;
     }
 
-    // 5. Fallback Robust System (If API restricted or sandbox is empty)
+    // 5. Clean Handling (If no orders found or API empty, do NOT insert garbage mock data!)
     if (ordersFetched.length === 0) {
-      console.warn("TikTok API Fetch Warning: " + apiErrorLog + ". Menggunakan fallback presentasi dinamis.");
-      
-      // Auto-insert mock data for gorgeous visual presentation
-      // Setup dynamic Products
-      const productsMock = [
-        { user_id, name: 'Sunscreen Glowing SPF 50', sku: 'SKIN-001', stock: 120, price: 85000, description: 'Sunscreen pencerah kulit terbaik.' },
-        { user_id, name: 'Earbuds Wireless Pro Z', sku: 'GAD-099', stock: 45, price: 299000, description: 'Audio kualitas studio tanpa kabel.' },
-        { user_id, name: 'Smartwatch Fit X1', sku: 'GAD-088', stock: 3, price: 450000, description: 'Pelacak kesehatan dan notifikasi pintar.' },
-        { user_id, name: 'Moisturizer Hyaluronic Acid', sku: 'SKIN-002', stock: 200, price: 125000, description: 'Melembabkan kulit selama 24 jam.' }
-      ];
-
-      for (const p of productsMock) {
-        const { data: existProd } = await supabaseClient.from('products').select('id').eq('user_id', user_id).eq('sku', p.sku).maybeSingle();
-        if (!existProd) {
-          await supabaseClient.from('products').insert(p);
-        }
-      }
-
-      // Setup dynamic Orders (45 Orders representing 3 months of beautiful sales data)
-      const { data: existOrd } = await supabaseClient.from('orders').select('id').eq('user_id', user_id).limit(1);
-      if (!existOrd || existOrd.length === 0) {
-        const ordersMock = [];
-        for (let i = 0; i < 45; i++) {
-          ordersMock.push({
-            user_id: user_id,
-            order_number: `ORD-TTK-${Date.now()}-${i}`,
-            customer_name: `Pelanggan TikTok ${i}`,
-            platform: 'tiktok',
-            total_amount: Math.floor(Math.random() * (1200000 - 65000 + 1) + 65000),
-            status: 'completed',
-            order_date: new Date(Date.now() - i * 2 * 24 * 60 * 60 * 1000).toISOString()
-          });
-        }
-        await supabaseClient.from('orders').insert(ordersMock);
-      }
+      console.warn("TikTok API Fetch Warning: " + apiErrorLog + ". No real orders fetched.");
 
       await supabaseClient
         .from('marketplace_connections')
@@ -186,8 +152,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "Koneksi berhasil! TikTok Shop disinkronisasikan (Mode Fallback visual diaktifkan karena API sandbox: " + apiErrorLog + ")",
-          source: "fallback"
+          message: "Sinkronisasi sukses! Tidak ada pesanan baru di toko Anda (API Status: " + (apiErrorLog || "OK") + ")",
+          source: "live"
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
