@@ -99,6 +99,43 @@ const OverviewTab = ({
           <p className="text-xs text-zinc-400 mt-1">{t('monitorShop')}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto z-50">
+          {/* Admin Clean Dummy Data Button */}
+          {profile?.email === 'admin@tokcer-ai.com' && (
+            <button
+              onClick={async (e) => {
+                if (window.confirm("Bapak yakin ingin menghapus SELURUH data dummy (order, produk, koneksi) di akun admin Bapak? Tindakan ini 100% aman dan tidak memengaruhi akun user lain.")) {
+                  try {
+                    const target = e.currentTarget;
+                    if (target) target.disabled = true;
+                    
+                    const { supabase } = await import('../../../lib/supabase.js');
+                    
+                    // Delete orders, products, and marketplace connections for this admin user id
+                    const { error: e1 } = await supabase.from('orders').delete().eq('user_id', profile.id);
+                    const { error: e2 } = await supabase.from('products').delete().eq('user_id', profile.id);
+                    const { error: e3 } = await supabase.from('marketplace_connections').delete().eq('user_id', profile.id);
+                    
+                    if (e1 || e2 || e3) {
+                      alert("Gagal menghapus data: " + (e1?.message || e2?.message || e3?.message));
+                      if (target) target.disabled = false;
+                    } else {
+                      alert("Semua data dummy admin sukses dibersihkan! Halaman akan dimuat ulang.");
+                      window.location.reload();
+                    }
+                  } catch (err) {
+                    alert("Error: " + err.message);
+                    const target = e.currentTarget;
+                    if (target) target.disabled = false;
+                  }
+                }
+              }}
+              className="w-full sm:w-auto px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-400 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm uppercase tracking-wider"
+            >
+              <iconify-icon icon="solar:trash-bin-trash-bold" className="text-sm text-rose-500"></iconify-icon>
+              Bersihkan Dummy
+            </button>
+          )}
+
           {/* Platform Filter */}
           <div className="relative w-full sm:w-auto">
             <div

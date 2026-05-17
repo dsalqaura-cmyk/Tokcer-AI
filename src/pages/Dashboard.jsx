@@ -525,6 +525,8 @@ const Dashboard = () => {
         if (session.user.email === 'admin@tokcer-ai.com') {
             localStorage.setItem('tokcer_admin_auth', 'true');
             setProfile({
+                id: session.user.id,
+                email: session.user.email,
                 full_name: 'Administrator',
                 subscription_plan: 'ultimate',
                 tokens: 9999,
@@ -566,6 +568,8 @@ const Dashboard = () => {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);
         setProfile({ 
+            id: 'admin-bypass',
+            email: 'admin@tokcer-ai.com',
             full_name: 'Administrator', 
             tokens: 9999, 
             role: 'admin',
