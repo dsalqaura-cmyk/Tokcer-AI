@@ -1379,6 +1379,7 @@ const Dashboard = () => {
         profile={profile}
         user={user}
         handleLogout={handleLogout}
+        clientData={clientData}
       />
 
 

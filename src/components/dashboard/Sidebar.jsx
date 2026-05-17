@@ -12,7 +12,8 @@ const Sidebar = ({
   setLang, 
   profile, 
   user,
-  handleLogout 
+  handleLogout,
+  clientData
 }) => {
   const navigate = useNavigate();
   const plan = (profile?.subscription_plan || 'starter').toLowerCase();
@@ -146,9 +147,24 @@ const Sidebar = ({
               
               const conf = planConfigs[plan] || planConfigs.starter;
 
-              // Max quota per plan
-              const planMaxQuota = { demo: 30, starter: 50, pro: 200, elite: 500, ultimate: Infinity };
+              // Max quota per plan (SYNCED with System Specifications)
+              const planMaxQuota = { demo: 30, starter: 50, pro: 300, elite: 1000, ultimate: Infinity };
               const maxQuota = planMaxQuota[plan] ?? 50;
+
+              const formatDate = (dateStr) => {
+                if (!dateStr) return 'Selamanya';
+                try {
+                  const date = new Date(dateStr);
+                  if (isNaN(date.getTime())) return 'Selamanya';
+                  const months = [
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                  ];
+                  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+                } catch (e) {
+                  return 'Selamanya';
+                }
+              };
               
               return (
                 <div className={`bg-gradient-to-br ${conf.color} border ${conf.border} rounded-xl p-3 relative overflow-hidden`}>
@@ -185,7 +201,9 @@ const Sidebar = ({
                       <div className={`h-1 rounded-full ${isUltimate ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-orange-500'}`} style={{width: `${isUltimate ? 100 : Math.min(100, ((profile?.tokens || 0) / maxQuota) * 100)}%`}}></div>
                     </div>
                   </div>
-                  <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">{t('validUntil')} 30 Mei 2025</p>
+                  <p className="text-[8px] text-zinc-600 mt-1.5 text-center italic">
+                    {t('validUntil')} {formatDate(clientData?.expires_at || clientData?.expired_at || profile?.expired_at || profile?.expires_at)}
+                  </p>
                 </div>
               );
             })()}
