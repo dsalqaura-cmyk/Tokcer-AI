@@ -303,6 +303,9 @@ serve(async (req) => {
     // Perform upsert of real orders to avoid duplicates and log errors
     const syncResults = [];
     for (const ord of ordersToInsert) {
+      const originalOrder = detailedOrders.find((x: any) => (x.id || x.order_id) === ord.order_number);
+      const rawTikTokStatus = originalOrder ? (originalOrder.status || originalOrder.order_status || "UNKNOWN") : "UNKNOWN";
+
       const { data: existing, error: selectErr } = await supabaseClient
         .from('orders')
         .select('id')
@@ -319,7 +322,14 @@ serve(async (req) => {
           console.error(`Update error for order ${ord.order_number}:`, updateErr.message);
           syncResults.push({ order_number: ord.order_number, status: "failed", error: updateErr.message });
         } else {
-          syncResults.push({ order_number: ord.order_number, status: "updated", amount: ord.total_amount, customer: ord.customer_name });
+          syncResults.push({ 
+            order_number: ord.order_number, 
+            status: "updated", 
+            amount: ord.total_amount, 
+            customer: ord.customer_name,
+            tiktok_status: rawTikTokStatus,
+            mapped_status: ord.status
+          });
         }
       } else {
         const { error: insertErr } = await supabaseClient.from('orders').insert(ord);
@@ -327,7 +337,14 @@ serve(async (req) => {
           console.error(`Insert error for order ${ord.order_number}:`, insertErr.message);
           syncResults.push({ order_number: ord.order_number, status: "failed", error: insertErr.message });
         } else {
-          syncResults.push({ order_number: ord.order_number, status: "inserted", amount: ord.total_amount, customer: ord.customer_name });
+          syncResults.push({ 
+            order_number: ord.order_number, 
+            status: "inserted", 
+            amount: ord.total_amount, 
+            customer: ord.customer_name,
+            tiktok_status: rawTikTokStatus,
+            mapped_status: ord.status
+          });
         }
       }
     }
