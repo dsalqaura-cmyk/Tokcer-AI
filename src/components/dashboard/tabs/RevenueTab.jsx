@@ -26,24 +26,47 @@ const RevenueTab = ({
   const getFilteredByTime = (data, filter) => {
     const today = new Date();
     today.setHours(0,0,0,0);
+    
     if (filter === 'Today') {
       const todayStr = today.toISOString().split('T')[0];
-      return data.filter(o => (o.created_at || '').startsWith(todayStr));
+      return data.filter(o => (o.order_date || o.created_at || '').startsWith(todayStr));
+    } else if (filter === 'Yesterday') {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      return data.filter(o => (o.order_date || o.created_at || '').startsWith(yesterdayStr));
+    } else if (filter === 'Week') {
+      const cutoff = new Date(today);
+      cutoff.setDate(cutoff.getDate() - 7);
+      return data.filter(o => {
+        const dateStr = o.order_date || o.created_at;
+        return dateStr && new Date(dateStr) >= cutoff;
+      });
     } else if (filter === 'Month') {
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
       return data.filter(o => {
-        if (!o.created_at) return false;
-        const d = new Date(o.created_at);
+        const dateStr = o.order_date || o.created_at;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
       });
+    } else if (filter.includes('Month')) {
+      const months = parseInt(filter);
+      const cutoff = new Date(today);
+      cutoff.setMonth(cutoff.getMonth() - months);
+      return data.filter(o => {
+        const dateStr = o.order_date || o.created_at;
+        return dateStr && new Date(dateStr) >= cutoff;
+      });
     }
-    // Simplification for now
     return data;
   };
 
   const finalOrders = getFilteredByTime(filteredByPlatform, safeTimeFilter);
-  const totalIncome = finalOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  // Exclude cancelled orders from total income calculations (cancelled transactions produce Rp 0)
+  const nonCancelledFinalOrders = finalOrders.filter(o => o.status !== 'cancelled');
+  const totalIncome = nonCancelledFinalOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const activeOrdersCount = finalOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length;
   
   // Simulated trend for looks
