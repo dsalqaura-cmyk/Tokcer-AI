@@ -50,7 +50,33 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { user_id } = await req.json()
+    const body = await req.json()
+    const { user_id, action, target_user_id } = body
+
+    if (action === 'purge_mock_data' && target_user_id) {
+      console.log(`[PURGE] Purging mock data for target user ID: ${target_user_id}`);
+      
+      // 1. Delete all orders for target_user_id
+      const { error: errOrd } = await supabaseClient
+        .from('orders')
+        .delete()
+        .eq('user_id', target_user_id);
+        
+      // 2. Delete products for target_user_id
+      const { error: errProd } = await supabaseClient
+        .from('products')
+        .delete()
+        .eq('user_id', target_user_id);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Successfully purged mock data for ${target_user_id}. Orders delete error: ${errOrd?.message || 'none'}, Products delete error: ${errProd?.message || 'none'}` 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
     if (!user_id) throw new Error("Missing user_id")
 
     // 1. Get TikTok API Keys from database
