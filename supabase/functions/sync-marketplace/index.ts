@@ -135,7 +135,9 @@ serve(async (req) => {
     };
 
     const requestBody = JSON.stringify({
-      page_size: 50
+      page_size: 50,
+      page_size: 50,
+      PageSize: 50
     });
 
     const signature = await generateTikTokSignature(appSecret, path, queryParams, requestBody);
