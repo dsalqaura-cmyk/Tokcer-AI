@@ -10,7 +10,8 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   const [status, setStatus] = useState(null); 
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [storeLinks, setStoreLinks] = useState({});
-  const [formPlan, setFormPlan] = useState('starter');
+  const isProduction = !window.location.hostname.includes('staging') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+  const [formPlan, setFormPlan] = useState(isProduction ? 'starter' : (selectedPlan || 'starter'));
   const [dbPlans, setDbPlans] = useState([]);
   const [affiliateId, setAffiliateId] = useState(localStorage.getItem('tokcer_affiliate_id') || '');
   const [billingCycle, setBillingCycle] = useState('Monthly');
@@ -55,10 +56,14 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
   useEffect(() => {
     if (selectedPlan) {
       const planId = typeof selectedPlan === 'string' ? selectedPlan : (selectedPlan?.id || 'starter');
-      if (planId !== 'starter') {
-        alert("Paket Premium (Pro, Elite, Ultimate) saat ini sedang dikunci sementara untuk persiapan peluncuran fitur baru. Bapak/Ibu dialihkan ke Paket Starter (Gratis) terlebih dahulu!");
+      if (isProduction) {
+        if (planId !== 'starter') {
+          alert("Paket Premium (Pro, Elite, Ultimate) saat ini sedang dikunci sementara untuk persiapan peluncuran fitur baru. Bapak/Ibu dialihkan ke Paket Starter (Gratis) terlebih dahulu!");
+        }
+        setFormPlan('starter');
+      } else {
+        setFormPlan(planId);
       }
-      setFormPlan('starter');
     }
   }, [selectedPlan]);
 
@@ -254,9 +259,9 @@ const RegisterModal = ({ isOpen, onClose, selectedPlan }) => {
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Paket</label>
                     <select value={formPlan} onChange={(e) => { setFormPlan(e.target.value); if (e.target.value === 'starter') setBillingCycle('Monthly'); }} className="w-full px-4 py-2.5 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm appearance-none outline-none">
                         <option value="starter">Starter (Gratis)</option>
-                        <option value="pro" disabled>Pro Edition (Segera Hadir / Terkunci)</option>
-                        <option value="elite" disabled>Elite Edition (Segera Hadir / Terkunci)</option>
-                        <option value="ultimate" disabled>Ultimate Edition (Segera Hadir / Terkunci)</option>
+                        <option value="pro" disabled={isProduction}>Pro Edition ({billingCycle === 'Monthly' ? 'Rp 499k' : 'Rp 5.489k'}{isProduction ? ' - Terkunci' : ''})</option>
+                        <option value="elite" disabled={isProduction}>Elite Edition ({billingCycle === 'Monthly' ? 'Rp 999k' : 'Rp 10.989k'}{isProduction ? ' - Terkunci' : ''})</option>
+                        <option value="ultimate" disabled={isProduction}>Ultimate Edition ({billingCycle === 'Monthly' ? 'Rp 1.999k' : 'Rp 21.989k'}{isProduction ? ' - Terkunci' : ''})</option>
                     </select>
                 </div>
                 {formPlan !== 'starter' && (
