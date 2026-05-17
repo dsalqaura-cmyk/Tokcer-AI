@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { callAiEngine } from '../utils/ai.js';
@@ -24,6 +24,7 @@ import { getTikTokAuthUrl } from '../utils/tiktok.js';
 
 
 const Dashboard = () => {
+  const autoConnectingRef = useRef(false);
   const [activeMenu, setActiveMenu] = useState('tab-dash');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
@@ -118,6 +119,8 @@ const Dashboard = () => {
     };
 
     const autoConnectStores = async (userId, platforms, links) => {
+        if (autoConnectingRef.current) return;
+        autoConnectingRef.current = true;
         try {
             const { data: existing } = await supabase
                 .from('marketplace_connections')
