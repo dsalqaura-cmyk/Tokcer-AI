@@ -53,5 +53,17 @@ async function generateTikTokSignature(appSecret, path, params, body = "") {
  */
 export const getTikTokAuthUrl = (serviceId, state = "tokcer_secure_state") => {
   const baseUrl = "https://services.tiktokshop.com/open/authorize";
-  return `${baseUrl}?service_id=${serviceId}&state=${state}`;
+  
+  // [TARJO FIX]: Sandikan origin domain ke dalam state agar kita bisa mengalihkan balik dari Staging ke Production
+  let encodedState = state;
+  try {
+    encodedState = btoa(JSON.stringify({
+      origin: window.location.origin,
+      custom_state: state
+    }));
+  } catch (err) {
+    console.error("Failed to encode state:", err);
+  }
+  
+  return `${baseUrl}?service_id=${serviceId}&state=${encodedState}`;
 };
