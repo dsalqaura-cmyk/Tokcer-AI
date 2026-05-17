@@ -45,17 +45,15 @@ const Sidebar = ({
     return (
       <button 
         onClick={() => { 
-          if (!locked) {
-            setActiveMenu(tab); 
-            setIsSidebarOpen(false); 
-          }
+          // Semua menu bisa diklik — konten yang akan menampilkan blur overlay
+          setActiveMenu(tab); 
+          setIsSidebarOpen(false); 
         }} 
-        disabled={locked}
         className={`w-full flex items-center justify-between px-3 py-2 md:py-2.5 rounded-xl text-sm transition-all shrink-0 group relative ${
           active 
             ? 'font-medium bg-orange-950/50 text-orange-500 border border-orange-900/50 border-l-2' 
             : locked
-              ? 'font-normal text-zinc-600 cursor-not-allowed border border-transparent opacity-60'
+              ? 'font-normal text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 border border-transparent'
               : 'font-normal text-zinc-400 hover:text-white hover:bg-zinc-800 border border-transparent'
         }`}
       >

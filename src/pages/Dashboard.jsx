@@ -1394,7 +1394,38 @@ const Dashboard = () => {
                 </button>
             </div>
           )}
-          <div className={clientData?.status === 'expired' && activeMenu !== 'tab-billing' ? 'opacity-20 pointer-events-none blur-sm transition-all h-[70vh] overflow-hidden' : ''}>
+          <div className={`relative ${clientData?.status === 'expired' && activeMenu !== 'tab-billing' ? 'opacity-20 pointer-events-none blur-sm transition-all h-[70vh] overflow-hidden' : ''}`}>
+            {/* === DEMO CONTENT LOCK OVERLAY === */}
+            {(() => {
+              const currentPlan = (profile?.subscription_plan || 'starter').toLowerCase();
+              const isAdmin = user?.email === 'admin@tokcer-ai.com' || localStorage.getItem('tokcer_admin_auth') === 'true';
+              const allowedDemoTabs = ['tab-ai', 'tab-market', 'tab-support', 'tab-billing', 'tab-account'];
+              const isDemoLocked = currentPlan === 'demo' && !isAdmin && !allowedDemoTabs.includes(activeMenu);
+
+              if (!isDemoLocked) return null;
+
+              return (
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center rounded-2xl overflow-hidden" style={{backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(0,0,0,0.65)'}}>
+                  <div className="flex flex-col items-center text-center px-8 max-w-md animate-in fade-in zoom-in duration-500">
+                    <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center mb-5 shadow-xl">
+                      <iconify-icon icon="solar:lock-password-bold-duotone" className="text-4xl text-zinc-500"></iconify-icon>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2">Fitur Tidak Tersedia di Akun Demo</h3>
+                    <p className="text-sm text-zinc-400 leading-relaxed mb-6">
+                      Halaman ini hanya bisa diakses setelah upgrade ke paket berbayar. Akun Demo Anda memberikan akses ke <span className="text-orange-400 font-medium">AI Generator</span>, <span className="text-orange-400 font-medium">Market Intel</span>, <span className="text-orange-400 font-medium">Pusat Bantuan</span>, dan <span className="text-orange-400 font-medium">Billing</span>.
+                    </p>
+                    <button
+                      onClick={() => setActiveMenu('tab-billing')}
+                      className="px-6 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-orange-500/20 flex items-center gap-2"
+                    >
+                      <iconify-icon icon="solar:rocket-bold"></iconify-icon>
+                      Lihat Paket & Harga
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+            {/* === END DEMO CONTENT LOCK OVERLAY === */}
             {renderContent()}
           </div>
         </div>
