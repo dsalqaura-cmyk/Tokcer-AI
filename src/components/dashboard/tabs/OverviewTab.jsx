@@ -59,16 +59,19 @@ const OverviewTab = ({
       filteredOrders = platformFilteredOrders; // Fallback ke semua data untuk admin jika hari ini kosong
   }
 
-  const totalRev = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  // Exclude cancelled orders from financial and order volume calculations (cancelled transactions produce Rp 0 and don't count as successful orders)
+  const activeAndCompletedOrders = filteredOrders.filter(o => o.status !== 'cancelled');
+
+  const totalRev = activeAndCompletedOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const totalProfit = totalRev * 0.2;
   
-  const filteredTikTokOrders = filteredOrders.filter(o => (o.platform || '').toLowerCase() === 'tiktok');
-  const filteredShopeeOrders = filteredOrders.filter(o => (o.platform || '').toLowerCase() === 'shopee');
+  const filteredTikTokOrders = activeAndCompletedOrders.filter(o => (o.platform || '').toLowerCase() === 'tiktok');
+  const filteredShopeeOrders = activeAndCompletedOrders.filter(o => (o.platform || '').toLowerCase() === 'shopee');
 
   const tiktokGMV = filteredTikTokOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const shopeeGMV = filteredShopeeOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
 
-  const averageOrderValue = filteredOrders.length > 0 ? Math.round(totalRev / filteredOrders.length) : 0;
+  const averageOrderValue = activeAndCompletedOrders.length > 0 ? Math.round(totalRev / activeAndCompletedOrders.length) : 0;
 
   const healthScore = products.length > 0 
     ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
@@ -237,7 +240,7 @@ const OverviewTab = ({
                 <iconify-icon icon="solar:bag-3-bold" className="text-lg text-emerald-500"></iconify-icon>
              </div>
           </div>
-          <div className="text-3xl font-bold text-white tracking-tight mb-2">{filteredOrders.length}</div>
+          <div className="text-3xl font-bold text-white tracking-tight mb-2">{activeAndCompletedOrders.length}</div>
           <div className="text-[10px] text-zinc-500 flex items-center gap-1">
              <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Volume transaksi terverifikasi API
           </div>
