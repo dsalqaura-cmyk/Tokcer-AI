@@ -492,14 +492,15 @@ const Dashboard = () => {
         }
     };
     
-    const fetchSystemBriefing = async (currentProducts, currentOrders) => {
+    const fetchSystemBriefing = async (currentProducts, currentOrders, currentUser) => {
         const prodData = currentProducts || products;
         const ordData = currentOrders || orders;
+        const activeUser = currentUser || user;
         
-        if (!user || isFetchingBriefing) return;
+        if (!activeUser || isFetchingBriefing) return;
 
         const today = new Date().toISOString().split('T')[0];
-        const cacheKey = `tokcer_cache_briefing_${user.id}_${today}`;
+        const cacheKey = `tokcer_cache_briefing_${activeUser.id}_${today}`;
         const cachedData = localStorage.getItem(cacheKey);
 
         if (cachedData) {
@@ -591,7 +592,7 @@ const Dashboard = () => {
         // }
         const { products: pData, orders: oData } = await fetchOperationalData(session.user.id, session.user);
         fetchMarketplaceConnections(session.user.id);
-        fetchSystemBriefing(pData, oData);
+        fetchSystemBriefing(pData, oData, session.user);
 
         // [AUTO-SYNC ON-MOUNT]: Silently sync latest store data in background on dashboard load
         supabase.functions.invoke('sync-marketplace', {
@@ -600,7 +601,7 @@ const Dashboard = () => {
             if (data?.success) {
                 // Silently refresh the visual operational data with latest API changes!
                 fetchOperationalData(session.user.id, session.user).then(({ products: p, orders: o }) => {
-                    fetchSystemBriefing(p, o);
+                    fetchSystemBriefing(p, o, session.user);
                 });
                 fetchMarketplaceConnections(session.user.id);
             }
@@ -620,7 +621,9 @@ const Dashboard = () => {
             isUnlimited: true
         });
         setTimeFilter('Semua');
-        fetchOperationalData('admin-bypass', adminUser);
+        fetchOperationalData('admin-bypass', adminUser).then(({ products: p, orders: o }) => {
+            fetchSystemBriefing(p, o, adminUser);
+        });
         fetchMarketplaceConnections('admin-bypass');
       }
 
