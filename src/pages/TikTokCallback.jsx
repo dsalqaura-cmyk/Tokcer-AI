@@ -14,6 +14,20 @@ const TikTokCallback = () => {
         const authCode = params.get('code') || params.get('auth_code');
         const state = params.get('state');
 
+        // [TARJO FIX]: Lempar balik browser ke domain asal (Production) jika dideteksi domain asal berbeda
+        if (state) {
+          try {
+            const decoded = JSON.parse(atob(state));
+            if (decoded && decoded.origin && decoded.origin !== window.location.origin) {
+              setStatus('Mengalihkan kembali ke domain asal...');
+              window.location.href = `${decoded.origin}/tiktok-callback?code=${authCode}&state=${state}`;
+              return;
+            }
+          } catch (e) {
+            console.warn("State is not base64/JSON encoded, processing normally...", e);
+          }
+        }
+
         if (!authCode) {
           setStatus('Gagal: Kode otorisasi tidak ditemukan.');
           setTimeout(() => navigate('/dashboard'), 3000);
