@@ -560,10 +560,11 @@ const Dashboard = () => {
                 planName: plan.charAt(0).toUpperCase() + plan.slice(1)
             });
         }
-        const metadata = session.user.user_metadata;
-        if (metadata?.platforms && metadata?.store_links) {
-            await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
-        }
+        // [TARJO FIX]: Nonaktifkan pembuatan draf toko otomatis agar default-nya bersih kosong tanpa toko
+        // const metadata = session.user.user_metadata;
+        // if (metadata?.platforms && metadata?.store_links) {
+        //     await autoConnectStores(session.user.id, metadata.platforms, metadata.store_links);
+        // }
         const { products: pData, orders: oData } = await fetchOperationalData(session.user.id, session.user);
         fetchMarketplaceConnections(session.user.id);
         fetchSystemBriefing(pData, oData);
