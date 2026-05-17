@@ -39,5 +39,6 @@ jobs:
           supabase functions deploy send-partner-reminder --project-ref "${{ steps.vars.outputs.project_ref }}"
           supabase functions deploy tiktok-auth --project-ref "${{ steps.vars.outputs.project_ref }}" --no-verify-jwt
           supabase functions deploy register-starter --project-ref "${{ steps.vars.outputs.project_ref }}" --no-verify-jwt
+          supabase functions deploy sync-marketplace --project-ref "${{ steps.vars.outputs.project_ref }}" --no-verify-jwt
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

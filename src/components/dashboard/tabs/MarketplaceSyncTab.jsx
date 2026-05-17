@@ -74,9 +74,28 @@ const MarketplaceSyncTab = ({ t, lang, onConnectShopee, onConnectTikTok, connect
                     <span className="text-[9px] text-zinc-500 uppercase">{store.shop_id}</span>
                   </div>
                 ))}
+                
+                <button 
+                  onClick={onSyncStore}
+                  disabled={isSyncingStore}
+                  className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 disabled:opacity-50 mt-2"
+                >
+                  {isSyncingStore ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Sinkronisasi...</span>
+                    </>
+                  ) : (
+                    <>
+                      <iconify-icon icon="solar:refresh-bold" className="text-lg text-emerald-500 animate-spin-slow"></iconify-icon>
+                      <span>Tarik Data Toko</span>
+                    </>
+                  )}
+                </button>
+
                 <button 
                   onClick={() => p.id === 'tiktok' ? onConnectTikTok() : onConnectShopee()}
-                  className="w-full py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-400 border border-zinc-800 hover:bg-zinc-800 transition-colors"
+                  className="w-full py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-500 border border-zinc-800 hover:bg-zinc-800/40 transition-colors mt-1"
                 >
                   + Add More Store
                 </button>

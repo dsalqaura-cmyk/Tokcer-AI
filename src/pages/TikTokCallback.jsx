@@ -56,8 +56,18 @@ const TikTokCallback = () => {
           throw new Error(exchangeData?.error || "Gagal melakukan penukaran token dengan server TikTok.");
         }
 
-        setStatus(`Berhasil terhubung ke toko: ${exchangeData?.store_name || 'TikTok Shop'}! Mengalihkan...`);
-        setTimeout(() => navigate('/dashboard'), 2000);
+        setStatus(`Berhasil terhubung ke toko: ${exchangeData?.store_name || 'TikTok Shop'}! Sedang mensinkronisasikan data transaksi...`);
+        
+        try {
+          await supabase.functions.invoke('sync-marketplace', {
+            body: { user_id: session.user.id }
+          });
+        } catch (syncErr) {
+          console.warn("Initial sync warning:", syncErr.message);
+        }
+
+        setStatus('Sinkronisasi data awal sukses! Mengalihkan ke dashboard...');
+        setTimeout(() => navigate('/dashboard'), 1500);
 
       } catch (err) {
         console.error('TikTok Callback Error:', err);
