@@ -396,7 +396,6 @@ const HppCalculator = () => {
     const handlePremiumFeature = (feature) => {
         const plan = (profile?.subscription_plan || 'starter').toLowerCase();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
-        if (isAdmin) { alert(`Feature ${feature} activated (Admin Mode)`); return; }
 
         const requirements = {
             'export': ['pro', 'elite', 'ultimate'],
@@ -404,7 +403,7 @@ const HppCalculator = () => {
             'bulk': ['ultimate']
         };
 
-        if (!requirements[feature].includes(plan)) {
+        if (!isAdmin && !requirements[feature].includes(plan)) {
             const minPlan = requirements[feature][0].toUpperCase();
             alert(`🏮 Fitur ini eksklusif untuk paket ${minPlan} ke atas. Silakan upgrade akun Anda untuk menikmati fitur ini!`);
             return;
@@ -413,6 +412,39 @@ const HppCalculator = () => {
         if (feature === 'compare') {
             setIsCompareMode(true);
             fetchSavedSkus();
+            return;
+        }
+        
+        if (feature === 'export') {
+            const exportData = async () => {
+                let dataToExport = savedSkus;
+                if (dataToExport.length === 0 && user) {
+                    const { data, error } = await supabase.from('sku_calculations').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+                    if (!error && data) dataToExport = data;
+                }
+
+                if (dataToExport.length === 0) {
+                    alert("Belum ada SKU yang disimpan untuk diekspor.");
+                    return;
+                }
+                
+                let csvContent = "SKU Name,Platform,Modal Beli,HPP Total,Profit/Unit,Margin %,BEP Price,Recommended Price\n";
+                dataToExport.forEach(sku => {
+                    const res = calculateSkuResults(sku);
+                    csvContent += `${sku.sku_name},${sku.platform},${sku.modal_beli},${res.hpp},${res.profit},${res.margin.toFixed(2)},${res.bep},${res.recommendedPrice}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `Semua_SKU_HPP_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            exportData();
             return;
         }
 

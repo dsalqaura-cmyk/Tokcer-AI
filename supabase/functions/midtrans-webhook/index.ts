@@ -125,8 +125,43 @@ serve(async (req) => {
 
             console.log("Memanggil rpc_activate_account untuk:", email);
 
-            // 2. Panggil Fungsi Sakti Database untuk urus Komisi, Omzet, dan User (Pendaftaran Baru)
-            const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_activate_account', {
+            // 2. Panggil API Resmi Supabase untuk membuat User (100% AMAN dari perubahan schema GoTrue)
+            const { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
+                email: email,
+                password: generatedPassword,
+                email_confirm: true,
+                user_metadata: { full_name: nama }
+            });
+
+            if (authError) {
+                // Jika user sudah ada (misal dari percobaan sebelumnya), kita ambil ID-nya
+                console.error("Gagal createUser via Admin API:", authError.message);
+                if (authError.message.includes('already exists') || authError.message.includes('already registered')) {
+                     const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
+                     const existingUser = existingUsers.users.find(u => u.email === email);
+                     if (existingUser) {
+                         authData.user = existingUser;
+                         // Paksa update passwordnya
+                         await supabaseClient.auth.admin.updateUserById(existingUser.id, { password: generatedPassword });
+                     } else {
+                         throw new Error(`User exists but could not be retrieved: ${email}`);
+                     }
+                } else {
+                    throw new Error(`Gagal membuat user via Admin API: ${authError.message}`);
+                }
+            }
+            
+            const targetUserId = authData?.user?.id;
+
+            if (!targetUserId) {
+                throw new Error("Gagal mendapatkan User ID dari Admin API");
+            }
+
+            console.log("User berhasil dibuat/ditemukan dengan ID:", targetUserId);
+
+            // 3. Panggil Fungsi Database yang sudah di-Modular-kan (Hanya mengurus Komisi & Tabel Publik)
+            const { data: rpcData, error: rpcError } = await supabaseClient.rpc('rpc_setup_client_account', {
+                p_user_id: targetUserId,
                 p_email: email,
                 p_application_id: client.id,
                 p_full_name: nama,
@@ -134,28 +169,20 @@ serve(async (req) => {
                 p_role: 'user'
             });
 
-        if (rpcError) {
-            console.error("Gagal memanggil rpc_activate_account:", rpcError.message);
-            throw new Error(`Gagal aktivasi via RPC: ${rpcError.message}`);
-        }
+            if (rpcError) {
+                console.error("Gagal memanggil rpc_setup_client_account:", rpcError.message);
+                throw new Error(`Gagal aktivasi via RPC Modular: ${rpcError.message}`);
+            }
 
-        console.log("RPC Berhasil:", rpcData);
-        
-        // Ambil User ID yang baru dibuat/ditemukan oleh RPC
-        const targetUserId = rpcData.user_id;
+            console.log("RPC Modular Berhasil:", rpcData);
 
         // 3. Update Password agar user bisa login dengan password yang kita kirim di email
-        if (targetUserId) {
-            await supabaseClient.auth.admin.updateUserById(targetUserId, { password: generatedPassword });
-            console.log("Password updated for user:", targetUserId);
-
             // Update status transaksi
             await supabaseClient.from('transactions').update({ 
                 status: 'settlement', 
                 payment_type: payment_type,
                 user_id: targetUserId 
             }).eq('order_id', order_id);
-        }
 
         // 4. Kirim Email Password
         if (RESEND_API_KEY && email) {

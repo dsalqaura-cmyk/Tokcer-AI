@@ -70,14 +70,7 @@ const Pricing = ({ onOpenWaitlist }) => {
       </div>
 
       <div className="relative">
-        {/* Pricing Locked Overlay */}
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md rounded-3xl">
-          <iconify-icon icon="solar:lock-password-bold-duotone" className="text-6xl text-zinc-500 mb-4"></iconify-icon>
-          <h3 className="text-2xl font-bold text-white mb-2">Pricing is Currently Locked</h3>
-          <p className="text-zinc-400 text-sm">Please register for a demo account to explore our features.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto relative opacity-50 select-none pointer-events-none filter blur-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto relative">
           {/* Glow effect background */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
             <div className="w-full h-full rounded-full bg-orange-600/5 blur-[120px]"></div>
@@ -102,7 +95,7 @@ const Pricing = ({ onOpenWaitlist }) => {
                 </div>
               ))}
             </div>
-            <button disabled className="w-full py-4 bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-zinc-700">Beli Paket</button>
+            <button onClick={() => onOpenWaitlist('starter')} className="w-full py-4 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl border border-zinc-700 hover:bg-zinc-700 transition-all">Pilih Paket</button>
           </div>
 
           {/* Card 2 - Pro */}
@@ -129,7 +122,7 @@ const Pricing = ({ onOpenWaitlist }) => {
                 </div>
               ))}
             </div>
-            <button disabled className="w-full py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-lg">Beli Paket</button>
+            <button onClick={() => onOpenWaitlist('pro')} className="w-full py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-lg hover:scale-[1.02] transition-all">Beli Paket</button>
           </div>
 
           {/* Card 3 - Elite */}
@@ -157,7 +150,7 @@ const Pricing = ({ onOpenWaitlist }) => {
                 </div>
               ))}
             </div>
-            <button disabled className="w-full py-4 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20">Beli Paket</button>
+            <button onClick={() => onOpenWaitlist('elite')} className="w-full py-4 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20 hover:bg-orange-500 transition-all">Beli Paket</button>
           </div>
 
           {/* Card 4 - Ultimate */}
@@ -184,7 +177,7 @@ const Pricing = ({ onOpenWaitlist }) => {
                 </div>
               ))}
             </div>
-            <button disabled className="w-full py-4 bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-zinc-700">Beli Paket</button>
+            <button onClick={() => onOpenWaitlist('ultimate')} className="w-full py-4 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-600/20 hover:bg-orange-500 transition-all">Beli Paket</button>
           </div>
         </div>
       </div>

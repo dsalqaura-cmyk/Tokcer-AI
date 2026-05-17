@@ -71,18 +71,18 @@ const PartnerDashboard = () => {
   const getWeekInfo = () => {
     const now = new Date();
     const day = now.getDay(); // 0: Minggu, 1: Senin, ..., 6: Sabtu
-    
+
     // Hitung mundur ke hari Sabtu terdekat sebelumnya
     const diffToSaturday = day === 6 ? 0 : -(day + 1);
     const saturday = new Date(now);
     saturday.setDate(now.getDate() + diffToSaturday);
     saturday.setHours(0, 0, 0, 0);
-    
+
     // Hari Jumat adalah Sabtu + 6 hari
     const friday = new Date(saturday);
     friday.setDate(saturday.getDate() + 6);
     friday.setHours(23, 59, 59, 999);
-    
+
     return { saturday, friday };
   };
 
@@ -106,50 +106,50 @@ const PartnerDashboard = () => {
     );
   };
 
-    const fetchData = async (currentUser) => {
-      if (!currentUser) return;
-      try {
-        setLoading(true);
-        
-        // Query by email due to ID mismatch in some accounts
-        const { data: partner } = await supabase.from('partners').select('*').eq('email', currentUser.email).maybeSingle();
-        
-        // 🛡️ SECURITY PATCH UJANG: Tendang user biasa ke dashboard mereka!
-        if (!partner) {
-          console.warn("🛡️ SECURITY ALERT: Akses ditolak! User bukan Partner.");
-          navigate('/dashboard', { replace: true });
-          return null;
-        }
+  const fetchData = async (currentUser) => {
+    if (!currentUser) return;
+    try {
+      setLoading(true);
 
-        const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
-        const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
+      // Query by email due to ID mismatch in some accounts
+      const { data: partner } = await supabase.from('partners').select('*').eq('email', currentUser.email).maybeSingle();
 
-        if (partner) {
-          setPartnerData({
-            ...partner,
-            activeUsers: (subs || []).filter(s => s.status === 'active').length,
-            paymentHistory: (payoutsData || []).map(p => ({
-              ...p,
-              period: p.period || new Date(p.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-            }))
-          });
-          setProfileForm({
-            fullName: partner.full_name || '',
-            whatsapp: partner.whatsapp || '',
-            bankName: partner.bank_name || '',
-            bankAccount: partner.bank_account || ''
-          });
-        }
-
-        setSubscribers(subs || []);
-        return partner;
-
-      } catch (err) {
-        console.error("Fetch Data Error:", err);
-      } finally {
-        setLoading(false);
+      // 🛡️ SECURITY PATCH UJANG: Tendang user biasa ke dashboard mereka!
+      if (!partner) {
+        console.warn("🛡️ SECURITY ALERT: Akses ditolak! User bukan Partner.");
+        navigate('/dashboard', { replace: true });
+        return null;
       }
-    };
+
+      const { data: subs } = await supabase.from('clients').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
+      const { data: payoutsData } = await supabase.from('payouts').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false });
+
+      if (partner) {
+        setPartnerData({
+          ...partner,
+          activeUsers: (subs || []).filter(s => s.status === 'active').length,
+          paymentHistory: (payoutsData || []).map(p => ({
+            ...p,
+            period: p.period || new Date(p.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+          }))
+        });
+        setProfileForm({
+          fullName: partner.full_name || '',
+          whatsapp: partner.whatsapp || '',
+          bankName: partner.bank_name || '',
+          bankAccount: partner.bank_account || ''
+        });
+      }
+
+      setSubscribers(subs || []);
+      return partner;
+
+    } catch (err) {
+      console.error("Fetch Data Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let partnerSubscription = null;
@@ -158,19 +158,19 @@ const PartnerDashboard = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
-        
+
         const targetUser = session?.user || (isAdmin ? { email: 'admin@tokcer-ai.com', id: '81c19c28-9614-4a6d-b2f2-b8244c0ced29' } : null);
-        
+
         if (targetUser) {
           setUser(targetUser);
           const fetchedPartner = await fetchData(targetUser);
-          
+
           // 🏮 REAL-TIME SUBSCRIPTION (Section 3 Action Plan)
           if (fetchedPartner) {
             partnerSubscription = supabase
               .channel(`partner_${fetchedPartner.id}`)
-              .on('postgres_changes', 
-                { event: '*', schema: 'public', table: 'partners', filter: `id=eq.${fetchedPartner.id}` }, 
+              .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'partners', filter: `id=eq.${fetchedPartner.id}` },
                 (payload) => setPartnerData(prev => ({ ...prev, ...payload.new }))
               )
               .subscribe();
@@ -198,11 +198,11 @@ const PartnerDashboard = () => {
     try {
       let leaders = [];
       let totalClosings = 0;
-      
+
       if (leaderboardFilter === 'minggu_ini' || leaderboardFilter === 'minggu_lalu') {
         const { saturday, friday } = getWeekInfo();
         let start, end;
-        
+
         if (leaderboardFilter === 'minggu_ini') {
           start = saturday.toISOString();
           end = friday.toISOString();
@@ -214,16 +214,16 @@ const PartnerDashboard = () => {
           start = lastSaturday.toISOString();
           end = lastFriday.toISOString();
         }
-        
+
         const { data: clients } = await supabase
           .from('clients')
           .select('partner_id, plan')
           .eq('status', 'active')
           .gte('created_at', start)
           .lte('created_at', end);
-          
+
         const partnerIds = [...new Set((clients || []).map(c => c.partner_id).filter(Boolean))];
-        
+
         let partners = [];
         if (partnerIds.length > 0) {
           const { data } = await supabase
@@ -232,20 +232,20 @@ const PartnerDashboard = () => {
             .in('id', partnerIds);
           partners = data || [];
         }
-        
+
         const partnersMap = {};
         partners.forEach(p => {
           partnersMap[p.id] = p;
         });
-        
+
         const partnerScores = {};
         (clients || []).forEach(c => {
           if (!c.partner_id) return;
           const partner = partnersMap[c.partner_id];
           if (!partner) return;
-          
+
           const price = c.plan === 'pro' ? 499000 : c.plan === 'elite' ? 999000 : c.plan === 'ultimate' ? 1999000 : 0;
-          
+
           if (!partnerScores[c.partner_id]) {
             partnerScores[c.partner_id] = {
               full_name: partner.full_name,
@@ -257,7 +257,7 @@ const PartnerDashboard = () => {
           partnerScores[c.partner_id].total_omzet += price;
           partnerScores[c.partner_id].closings += 1;
         });
-        
+
         leaders = Object.values(partnerScores).sort((a, b) => b.total_omzet - a.total_omzet).slice(0, 10);
         totalClosings = clients ? clients.length : 0;
       } else if (leaderboardFilter === 'bulan_ini') {
@@ -265,21 +265,21 @@ const PartnerDashboard = () => {
         // Bulan Ini (26 - 25)
         let start = new Date(now.getFullYear(), now.getMonth() - 1, 26);
         let end = new Date(now.getFullYear(), now.getMonth(), 25, 23, 59, 59, 999);
-        
+
         if (now.getDate() >= 26) {
           start = new Date(now.getFullYear(), now.getMonth(), 26);
           end = new Date(now.getFullYear(), now.getMonth() + 1, 25, 23, 59, 59, 999);
         }
-        
+
         const { data: clients } = await supabase
           .from('clients')
           .select('partner_id, plan')
           .eq('status', 'active')
           .gte('created_at', start.toISOString())
           .lte('created_at', end.toISOString());
-          
+
         const partnerIds = [...new Set((clients || []).map(c => c.partner_id).filter(Boolean))];
-        
+
         let partners = [];
         if (partnerIds.length > 0) {
           const { data } = await supabase
@@ -288,20 +288,20 @@ const PartnerDashboard = () => {
             .in('id', partnerIds);
           partners = data || [];
         }
-        
+
         const partnersMap = {};
         partners.forEach(p => {
           partnersMap[p.id] = p;
         });
-        
+
         const partnerScores = {};
         (clients || []).forEach(c => {
           if (!c.partner_id) return;
           const partner = partnersMap[c.partner_id];
           if (!partner) return;
-          
+
           const price = c.plan === 'pro' ? 499000 : c.plan === 'elite' ? 999000 : c.plan === 'ultimate' ? 1999000 : 0;
-          
+
           if (!partnerScores[c.partner_id]) {
             partnerScores[c.partner_id] = {
               full_name: partner.full_name,
@@ -313,7 +313,7 @@ const PartnerDashboard = () => {
           partnerScores[c.partner_id].total_omzet += price;
           partnerScores[c.partner_id].closings += 1;
         });
-        
+
         leaders = Object.values(partnerScores).sort((a, b) => b.total_omzet - a.total_omzet).slice(0, 10);
         totalClosings = clients ? clients.length : 0;
       } else {
@@ -327,7 +327,7 @@ const PartnerDashboard = () => {
         leaders = data || [];
         totalClosings = 0; // Tidak dihitung untuk all-time
       }
-      
+
       setLeaderboardData(leaders);
       setTotalPeriodClosings(totalClosings);
     } catch (err) {
@@ -385,7 +385,7 @@ const PartnerDashboard = () => {
       let paymentUrl = null;
 
       // 2. FLOW MANUAL (TRANSFER)
-      if (onboardForm.paymentMethod === 'transfer') {
+      if (amount > 0 && onboardForm.paymentMethod === 'transfer') {
         if (!onboardForm.paymentProof) throw new Error("Harap upload bukti pembayaran.");
         const file = onboardForm.paymentProof;
         const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
@@ -394,9 +394,43 @@ const PartnerDashboard = () => {
         if (uploadError) throw uploadError;
         const { data: { publicUrl: url } } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
         publicUrl = url;
-      } 
-      // 3. FLOW OTOMATIS (MIDTRANS)
+      }
+      // 3. FLOW OTOMATIS (MIDTRANS / FREE)
       else {
+        if (amount === 0) {
+          // FREE PLAN (STARTER) BYPASS via midtrans-init
+          const { data: freeAccountData, error: freeError } = await supabase.functions.invoke('midtrans-init', {
+            body: {
+              plan_name: finalPlan,
+              amount: 0,
+              tokens: tokens,
+              is_sandbox: true,
+              user_data: {
+                email: onboardForm.email,
+                nama: onboardForm.shopName,
+                phone: onboardForm.whatsapp,
+                billing_cycle: billingCycle,
+                ref: partnerData?.full_name || 'Partner',
+                partner_id: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id)
+              }
+            }
+          });
+
+          if (freeError) throw new Error(`Gagal aktivasi akun gratis: ${freeError.message}`);
+
+          alert("Pendaftaran akun Gratis berhasil! Email akses telah dikirim ke calon user.");
+          setOnboardForm({
+            shopName: '',
+            email: '',
+            whatsapp: '',
+            package: 'starter',
+            paymentMethod: 'va',
+            paymentProof: null
+          });
+          setIsSubmitting(false);
+          return; // EXIT EARLY, don't insert into clients locally because the Edge Function did it
+        }
+
         // Panggil Edge Function midtrans-init
         const { data: midtrans, error: midError } = await supabase.functions.invoke('midtrans-init', {
           body: {
@@ -414,12 +448,12 @@ const PartnerDashboard = () => {
         });
 
         if (midError) throw new Error(`Midtrans Error: ${midError.message}`);
-        
+
         midtransOrderId = midtrans.orderId;
         paymentUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${midtrans.token}`;
       }
 
-      // 4. Catat ke Tabel Clients
+      // 4. Catat ke Tabel Clients (HANYA UNTUK TRANSFER & MIDTRANS)
       const { error: insertError } = await supabase.from('clients').insert([{
         partner_id: user.id === 'admin-bypass' ? null : (partnerData?.id || user.id),
         shop_name: onboardForm.shopName,
@@ -432,17 +466,17 @@ const PartnerDashboard = () => {
         midtrans_order_id: midtransOrderId,
         payment_url: paymentUrl,
         status: onboardForm.paymentMethod === 'transfer' ? 'pending' : 'waiting_payment',
-        ref: partnerData.full_name || 'Partner'
+        ref: partnerData?.full_name || 'Partner'
       }]);
 
       if (insertError) throw insertError;
 
-      const successMsg = onboardForm.paymentMethod === 'transfer' 
-        ? "Pendaftaran berhasil! Menunggu verifikasi admin." 
+      const successMsg = onboardForm.paymentMethod === 'transfer'
+        ? "Pendaftaran berhasil! Menunggu verifikasi admin."
         : "Link pembayaran telah dikirim ke email calon user!";
-      
+
       alert(successMsg);
-      
+
       setOnboardForm({
         shopName: '',
         email: '',
@@ -472,7 +506,7 @@ const PartnerDashboard = () => {
         bank_name: profileForm.bankName,
         bank_account: profileForm.bankAccount
       }).eq('id', user.id);
-      
+
       if (error) throw error;
       alert("Profil diperbarui!");
       fetchData(user);
@@ -535,7 +569,7 @@ const PartnerDashboard = () => {
   };
 
   const handleLogout = async () => {
-    if(window.confirm(t('confirmLogout') || 'Logout?')) {
+    if (window.confirm(t('confirmLogout') || 'Logout?')) {
       await supabase.auth.signOut();
       localStorage.clear();
       window.location.href = '/login';
@@ -550,9 +584,9 @@ const PartnerDashboard = () => {
       case 'leaderboard': return <LeaderboardTab {...commonProps} data={leaderboardData} countdown={countdown} leaderboardFilter={leaderboardFilter} setLeaderboardFilter={setLeaderboardFilter} totalPeriodClosings={totalPeriodClosings} />;
       case 'payment': return <PaymentTab {...commonProps} partnerData={partnerData} />;
       case 'support': return (
-        <SupportTab 
-          {...commonProps} 
-          supportTab={supportActiveTab} 
+        <SupportTab
+          {...commonProps}
+          supportTab={supportActiveTab}
           setSupportTab={setSupportActiveTab}
           supportForm={bugForm}
           setSupportForm={setBugForm}
@@ -564,15 +598,15 @@ const PartnerDashboard = () => {
       );
       case 'academy': return <AcademyTab {...commonProps} />;
       case 'profile': return (
-        <ProfileTab 
-          {...commonProps} 
+        <ProfileTab
+          {...commonProps}
           lang={lang}
           partnerData={partnerData}
           user={user}
           getTierColor={getTierColor}
-          profileForm={profileForm} 
-          setProfileForm={setProfileForm} 
-          handleUpdateProfile={handleUpdateProfile} 
+          profileForm={profileForm}
+          setProfileForm={setProfileForm}
+          handleUpdateProfile={handleUpdateProfile}
         />
       );
       case 'commissionScheme': return <CommissionSchemeTab />;
@@ -590,23 +624,23 @@ const PartnerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col lg:flex-row font-['Inter']">
-      <PartnerSidebar 
-        t={t} 
-        activeTab={activeMenu} 
-        setActiveTab={setActiveMenu} 
-        isMobileMenuOpen={isSidebarOpen} 
-        setIsMobileMenuOpen={setIsSidebarOpen} 
-        lang={lang} 
-        toggleLang={toggleLang} 
-        handleLogout={handleLogout} 
+      <PartnerSidebar
+        t={t}
+        activeTab={activeMenu}
+        setActiveTab={setActiveMenu}
+        isMobileMenuOpen={isSidebarOpen}
+        setIsMobileMenuOpen={setIsSidebarOpen}
+        lang={lang}
+        toggleLang={toggleLang}
+        handleLogout={handleLogout}
       />
       <div className="flex-1 flex flex-col min-h-screen">
-        <PartnerHeader 
-          t={t} 
-          partnerData={partnerData} 
-          activeTab={activeMenu} 
-          setActiveTab={setActiveMenu} 
-          setIsMobileMenuOpen={setIsSidebarOpen} 
+        <PartnerHeader
+          t={t}
+          partnerData={partnerData}
+          activeTab={activeMenu}
+          setActiveTab={setActiveMenu}
+          setIsMobileMenuOpen={setIsSidebarOpen}
         />
         <main className="flex-1 p-4 lg:p-8">
           {renderContent()}

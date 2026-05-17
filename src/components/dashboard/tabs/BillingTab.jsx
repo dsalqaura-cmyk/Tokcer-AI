@@ -97,8 +97,9 @@ const BillingTab = ({ profile, clientData, supabase, t }) => {
     }
   };
 
-  const isExpired = clientData?.status === 'expired' || (clientData?.expires_at && new Date(clientData.expires_at) < new Date());
-  const isNearExpiry = !isExpired && clientData?.expires_at && new Date(clientData.expires_at).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
+  const validExpiryDate = clientData?.expires_at || clientData?.expired_at;
+  const isExpired = clientData?.status === 'expired' || (validExpiryDate && new Date(validExpiryDate) < new Date());
+  const isNearExpiry = !isExpired && validExpiryDate && new Date(validExpiryDate).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
 
   return (
     <div className="space-y-6">
@@ -158,7 +159,7 @@ const BillingTab = ({ profile, clientData, supabase, t }) => {
                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Jatuh Tempo</p>
                 </div>
                 <p className={`text-xl font-bold ${isExpired ? 'text-red-500' : isNearExpiry ? 'text-amber-500' : 'text-emerald-500'}`}>
-                    {clientData?.expires_at ? new Date(clientData.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                    {validExpiryDate ? new Date(validExpiryDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                 </p>
             </div>
         </div>

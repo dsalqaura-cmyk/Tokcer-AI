@@ -197,29 +197,36 @@ const Dashboard = () => {
             }
 
             // 2. Ambil Config TikTok dari Database
-            const { data: config, error: configError } = await supabase
+            const { data: configs, error: configError } = await supabase
                 .from('ai_configs')
-                .select('value')
-                .eq('key', 'tiktok_app_id')
-                .maybeSingle();
+                .select('key, value')
+                .in('key', ['tiktok_app_id', 'tiktok_service_id']);
 
             if (configError) {
                 console.warn("DB Config Error, using fallback...");
             }
 
-            const appId = config?.value || import.meta.env.VITE_TIKTOK_APP_ID;
+            let appId = import.meta.env.VITE_TIKTOK_APP_ID;
+            let serviceId = null;
+
+            if (configs) {
+                const appConfig = configs.find(c => c.key === 'tiktok_app_id');
+                const serviceConfig = configs.find(c => c.key === 'tiktok_service_id');
+                if (appConfig) appId = appConfig.value;
+                if (serviceConfig) serviceId = serviceConfig.value;
+            }
             
-            if (!appId) {
-                alert("⚠️ App ID TikTok belum dikonfigurasi. Mohon isi di menu Admin.");
+            // TikTok Oauth memerlukan Service ID, bukan App Key. 
+            // Jika Service ID tidak ada, kita fallback menggunakan App Key dengan asumsi struktur URL beda
+            const finalIdForAuth = serviceId || appId;
+
+            if (!finalIdForAuth) {
+                alert("⚠️ App ID atau Service ID TikTok belum dikonfigurasi. Mohon isi di menu Admin.");
                 return;
             }
 
-            // 3. Redirect (Bypass ke Mock Page kalau ID-nya mock/placeholder atau ID fallback staging)
-            if (appId.includes('mock') || appId.includes('6db7a') || appId.includes('6js3f')) {
-                navigate('/tiktok-auth-mock');
-            } else {
-                window.location.href = getTikTokAuthUrl(appId);
-            }
+            // 3. Redirect langsung ke Halaman Otorisasi Resmi TikTok Shop (Production-Ready)
+            window.location.href = getTikTokAuthUrl(finalIdForAuth);
         } catch (err) {
             console.error("TikTok Auth Error:", err);
             // Jika database error, gunakan fallback dari .env agar tidak mati total
@@ -250,7 +257,7 @@ const Dashboard = () => {
             let prodQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
             let ordQuery = supabase.from('orders').select('*').order('order_date', { ascending: false });
 
-            const isAdmin = userId === 'admin-bypass' || currentUser?.email === 'admin@tokcer-ai.com';
+            const isAdmin = userId === 'admin-bypass';
 
             if (!isAdmin) {
                 prodQuery = prodQuery.eq('user_id', userId);
@@ -518,6 +525,8 @@ const Dashboard = () => {
         if (session.user.email === 'admin@tokcer-ai.com') {
             localStorage.setItem('tokcer_admin_auth', 'true');
             setProfile({
+                id: session.user.id,
+                email: session.user.email,
                 full_name: 'Administrator',
                 subscription_plan: 'ultimate',
                 tokens: 9999,
@@ -537,7 +546,7 @@ const Dashboard = () => {
             const plan = (clientData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
             const quotaMap = { 'demo': 30, 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
             const totalQuota = quotaMap[plan] ?? 50;
-            const activeTokens = prof?.tokens ?? prof?.ai_tokens ?? 0;
+            const activeTokens = prof?.ai_tokens ?? prof?.tokens ?? 0;
             
             setProfile({ 
                 ...(prof || {}), 
@@ -559,6 +568,8 @@ const Dashboard = () => {
         const adminUser = { email: 'admin@tokcer-ai.com', id: 'admin-bypass' };
         setUser(adminUser);
         setProfile({ 
+            id: 'admin-bypass',
+            email: 'admin@tokcer-ai.com',
             full_name: 'Administrator', 
             tokens: 9999, 
             role: 'admin',
@@ -1369,6 +1380,7 @@ const Dashboard = () => {
         profile={profile}
         user={user}
         handleLogout={handleLogout}
+        clientData={clientData}
       />
 
 

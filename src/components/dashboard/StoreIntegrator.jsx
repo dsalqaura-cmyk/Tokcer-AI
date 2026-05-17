@@ -17,7 +17,6 @@ const StoreIntegrator = ({ t, onBack }) => {
       color: 'bg-black', 
       desc: 'Kelola keranjang kuning dan live streaming data langsung dari Dashboard Tokcer AI.',
       status: 'Ready'
-    },
     }
   ];
 

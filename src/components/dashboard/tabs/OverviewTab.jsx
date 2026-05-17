@@ -55,18 +55,20 @@ const OverviewTab = ({
 
   // Jika admin dan filter 'Hari Ini' kosong, coba tampilkan semua data agar tidak terlihat blank
   let filteredOrders = getFilteredOrdersByTime(platformFilteredOrders, timeFilter);
-  if (filteredOrders.length === 0 && timeFilter === 'Hari Ini' && (profile?.role === 'admin' || profile?.email === 'admin@tokcer-ai.com')) {
+  if (filteredOrders.length === 0 && timeFilter === 'Hari Ini' && profile?.role === 'admin') {
       filteredOrders = platformFilteredOrders; // Fallback ke semua data untuk admin jika hari ini kosong
   }
 
   const totalRev = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const totalProfit = totalRev * 0.2;
   
-  // MOCK DATA FOR PRESENTATION
-  const convRate = totalRev > 0 ? 3.2 : 0; 
-  const tiktokLive = totalRev > 0 ? 142 : 0;
-  const instaLive = totalRev > 0 ? 85 : 0;
-  const totalVisitors = tiktokLive + instaLive;
+  const filteredTikTokOrders = filteredOrders.filter(o => (o.platform || '').toLowerCase() === 'tiktok');
+  const filteredShopeeOrders = filteredOrders.filter(o => (o.platform || '').toLowerCase() === 'shopee');
+
+  const tiktokGMV = filteredTikTokOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const shopeeGMV = filteredShopeeOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+
+  const averageOrderValue = filteredOrders.length > 0 ? Math.round(totalRev / filteredOrders.length) : 0;
 
   const healthScore = products.length > 0 
     ? Math.round((products.filter(p => p.stock > 0).length / products.length) * 100) 
@@ -97,6 +99,43 @@ const OverviewTab = ({
           <p className="text-xs text-zinc-400 mt-1">{t('monitorShop')}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto z-50">
+          {/* Admin Clean Dummy Data Button */}
+          {profile?.email === 'admin@tokcer-ai.com' && (
+            <button
+              onClick={async (e) => {
+                if (window.confirm("Bapak yakin ingin menghapus SELURUH data dummy (order, produk, koneksi) di akun admin Bapak? Tindakan ini 100% aman dan tidak memengaruhi akun user lain.")) {
+                  try {
+                    const target = e.currentTarget;
+                    if (target) target.disabled = true;
+                    
+                    const { supabase } = await import('../../../lib/supabase.js');
+                    
+                    // Delete orders, products, and marketplace connections for this admin user id
+                    const { error: e1 } = await supabase.from('orders').delete().eq('user_id', profile.id);
+                    const { error: e2 } = await supabase.from('products').delete().eq('user_id', profile.id);
+                    const { error: e3 } = await supabase.from('marketplace_connections').delete().eq('user_id', profile.id);
+                    
+                    if (e1 || e2 || e3) {
+                      alert("Gagal menghapus data: " + (e1?.message || e2?.message || e3?.message));
+                      if (target) target.disabled = false;
+                    } else {
+                      alert("Semua data dummy admin sukses dibersihkan! Halaman akan dimuat ulang.");
+                      window.location.reload();
+                    }
+                  } catch (err) {
+                    alert("Error: " + err.message);
+                    const target = e.currentTarget;
+                    if (target) target.disabled = false;
+                  }
+                }
+              }}
+              className="w-full sm:w-auto px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-400 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm uppercase tracking-wider"
+            >
+              <iconify-icon icon="solar:trash-bin-trash-bold" className="text-sm text-rose-500"></iconify-icon>
+              Bersihkan Dummy
+            </button>
+          )}
+
           {/* Platform Filter */}
           <div className="relative w-full sm:w-auto">
             <div
@@ -188,31 +227,17 @@ const OverviewTab = ({
 
       {/* Row 1: Top Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Live Visitors Card */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm">
+        {/* Total Orders Card */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-emerald-500/30 transition-all">
           <div className="flex items-center justify-between mb-6">
-             <div className="text-xs font-medium text-zinc-400">{t('visitors')}</div>
-             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+             <div className="text-xs font-medium text-zinc-400">Total Pesanan ({getFilterLabel()})</div>
+             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <iconify-icon icon="solar:bag-3-bold" className="text-lg text-emerald-500"></iconify-icon>
+             </div>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-zinc-400">
-                <iconify-icon icon="ri:tiktok-fill" className="text-lg"></iconify-icon>
-                <span className="text-[10px]">TikTok Live</span>
-              </div>
-              <div className="text-lg font-bold text-white">{tiktokLive}</div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-zinc-400">
-                <iconify-icon icon="ri:instagram-fill" className="text-lg text-pink-500"></iconify-icon>
-                <span className="text-[10px]">Insta Live</span>
-              </div>
-              <div className="text-lg font-bold text-white">{instaLive}</div>
-            </div>
-            <div className="pt-3 border-t border-zinc-800 flex items-center justify-between">
-               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Total</span>
-               <span className="text-sm font-bold text-zinc-600">{totalVisitors}</span>
-            </div>
+          <div className="text-3xl font-bold text-white tracking-tight mb-2">{filteredOrders.length}</div>
+          <div className="text-[10px] text-zinc-500 flex items-center gap-1">
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Volume transaksi terverifikasi API
           </div>
         </div>
 
@@ -233,12 +258,17 @@ const OverviewTab = ({
           </div>
         </div>
 
-        {/* Conversion Rate */}
+        {/* Average Order Value (AOV) Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden group shadow-sm hover:border-blue-500/30 transition-all">
-          <div className="text-xs font-medium text-zinc-400 mb-2">{t('convRate')}</div>
-          <div className={`text-3xl font-bold tracking-tight mb-2 ${convRate > 0 ? 'text-white' : 'text-zinc-600'}`}>{convRate}%</div>
-          <div className="text-[10px] text-zinc-600 flex items-center gap-1">
-             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> {t('basedOnVisitors')}
+          <div className="flex items-center justify-between mb-6">
+             <div className="text-xs font-medium text-zinc-400">Nilai Transaksi (AOV) ({getFilterLabel()})</div>
+             <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                <iconify-icon icon="solar:calculator-minimalistic-bold" className="text-lg text-blue-500"></iconify-icon>
+             </div>
+          </div>
+          <div className="text-2xl font-bold text-white tracking-tight mb-2">{formatIDR(averageOrderValue)}</div>
+          <div className="text-[10px] text-zinc-500 flex items-center gap-1">
+             <iconify-icon icon="solar:info-circle-linear"></iconify-icon> Rata-rata belanja per pesanan
           </div>
         </div>
 
@@ -303,28 +333,40 @@ const OverviewTab = ({
         </div>
 
         <div className="space-y-4">
-          {/* Live Traffic Reach Widget */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm">
+          {/* Platform Performance Widget */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm hover:border-orange-500/10 transition-all">
              <div className="flex items-center justify-between mb-6">
                 <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                   LIVE TRAFFIC REACH
+                   <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                   KINERJA PLATFORM
                 </h3>
              </div>
              <div className="space-y-4">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       <iconify-icon icon="ri:tiktok-fill" className="text-zinc-400"></iconify-icon>
-                       <span className="text-[10px] text-zinc-500">TikTok Live</span>
+                 <div className="flex flex-col gap-1 pb-3 border-b border-zinc-800/50">
+                    <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                          <iconify-icon icon="ri:tiktok-fill" className="text-zinc-400 text-sm"></iconify-icon>
+                          <span className="text-[10px] font-bold text-white">TikTok Shop</span>
+                       </div>
+                       <span className="text-[10px] text-zinc-400 font-semibold">{filteredTikTokOrders.length} Pesanan</span>
                     </div>
-                    <span className="text-sm font-bold text-white">{orders.length > 0 ? Math.floor((orders.length * 12) + (Math.random() * 20)) : 0}</span>
+                    <div className="flex justify-between items-center pl-6">
+                       <span className="text-[8px] text-zinc-500 font-medium">GMV Terverifikasi</span>
+                       <span className="text-xs font-bold text-emerald-400">{formatIDR(tiktokGMV)}</span>
+                    </div>
                  </div>
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       <iconify-icon icon="simple-icons:shopee" className="text-orange-500"></iconify-icon>
-                       <span className="text-[10px] text-zinc-500">Shopee Live</span>
+                 <div className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                          <iconify-icon icon="simple-icons:shopee" className="text-orange-500 text-sm"></iconify-icon>
+                          <span className="text-[10px] font-bold text-white">Shopee</span>
+                       </div>
+                       <span className="text-[10px] text-zinc-400 font-semibold">{filteredShopeeOrders.length} Pesanan</span>
                     </div>
-                    <span className="text-sm font-bold text-white">{orders.length > 0 ? Math.floor((orders.length * 7) + (Math.random() * 15)) : 0}</span>
+                    <div className="flex justify-between items-center pl-6">
+                       <span className="text-[8px] text-zinc-500 font-medium">GMV Terverifikasi</span>
+                       <span className="text-xs font-bold text-emerald-400">{formatIDR(shopeeGMV)}</span>
+                    </div>
                  </div>
              </div>
           </div>
