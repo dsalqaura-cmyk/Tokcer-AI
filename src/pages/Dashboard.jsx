@@ -1277,6 +1277,7 @@ const Dashboard = () => {
           <SupportTab 
             t={t}
             lang={lang}
+            profile={profile}
             supportSubmitted={supportSubmitted}
             setSupportSubmitted={setSupportSubmitted}
             setActiveMenu={setActiveMenu}

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 const SupportTab = ({ 
   t, 
   lang,
+  profile,
   supportSubmitted, 
   setSupportSubmitted, 
   setActiveMenu, 
@@ -20,6 +21,7 @@ const SupportTab = ({
   setSupportFilePreview, 
   isSubmittingSupport 
 }) => {
+  const isDemo = (profile?.subscription_plan || '').toLowerCase() === 'demo';
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -67,6 +69,165 @@ const SupportTab = ({
         <h2 className="text-2xl font-semibold text-white tracking-tight">{t('supportCenter')}</h2>
         <p className="text-xs text-zinc-400 mt-1">{t('howCanWeHelp') || (lang === 'id' ? 'Temukan jawaban atau hubungi kami.' : 'Find answers or contact us.')}</p>
       </header>
+
+      {/* === DEMO UPGRADE PRICING TABLE — Khusus Demo Account === */}
+      {isDemo && (
+        <div className="bg-gradient-to-br from-zinc-900 to-black border border-orange-500/30 rounded-3xl p-6 md:p-8 shadow-xl shadow-orange-500/5 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
+              <iconify-icon icon="solar:rocket-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
+            </div>
+            <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em]">Upgrade Akun Demo Anda</span>
+          </div>
+          <h3 className="text-xl font-black text-white mb-1">Buka Seluruh Potensi Tokcer AI</h3>
+          <p className="text-xs text-zinc-400 mb-8">Masa percobaan Demo Anda aktif. Pilih paket yang sesuai untuk melanjutkan tanpa batas.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            {/* === PAKET PRO === */}
+            <div className="relative bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-4 hover:border-zinc-600 transition-all group">
+              <div>
+                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1">Pro Edition</p>
+                <p className="text-3xl font-black text-white tracking-tight">Rp 299k<span className="text-sm font-medium text-zinc-500">/bln</span></p>
+              </div>
+              <div className="h-px bg-zinc-800"></div>
+              <ul className="space-y-2.5 flex-1">
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Simpan hingga <b className="text-white">10 SKU</b> HPP</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span><b className="text-white">200 AI Credits</b> / bulan</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Integrasi <b className="text-white">3 Toko</b></span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Naskah Video TikTok & Reels</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Export Laporan CSV</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-400">
+                  <iconify-icon icon="solar:close-circle-linear" className="text-zinc-600 text-base shrink-0"></iconify-icon>
+                  <span className="text-zinc-600">Compare Mode SKU</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-400">
+                  <iconify-icon icon="solar:close-circle-linear" className="text-zinc-600 text-base shrink-0"></iconify-icon>
+                  <span className="text-zinc-600">Market Intel & Riset Tren</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setActiveMenu('tab-billing')}
+                className="w-full mt-2 py-2.5 rounded-xl border border-zinc-700 text-xs font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white hover:border-zinc-600 transition-all"
+              >
+                Pilih Pro
+              </button>
+            </div>
+
+            {/* === PAKET ELITE (RECOMMENDED) === */}
+            <div className="relative bg-gradient-to-b from-orange-950/30 to-zinc-900/60 border-2 border-orange-500/60 rounded-2xl p-5 flex flex-col gap-4 shadow-lg shadow-orange-500/10">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg shadow-orange-500/30">⭐ PALING POPULER</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-orange-400 uppercase tracking-[0.2em] mb-1">Elite Edition</p>
+                <p className="text-3xl font-black text-white tracking-tight">Rp 799k<span className="text-sm font-medium text-zinc-500">/bln</span></p>
+              </div>
+              <div className="h-px bg-orange-500/20"></div>
+              <ul className="space-y-2.5 flex-1">
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Simpan SKU <b className="text-white">Tanpa Batas</b></span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span><b className="text-white">1.000 AI Credits</b> / bulan</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Integrasi <b className="text-white">10 Toko</b></span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Naskah Video TikTok & Reels</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Compare Mode <b className="text-white">(4 SKU)</b></span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Market Intel & Riset Tren</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-400">
+                  <iconify-icon icon="solar:close-circle-linear" className="text-zinc-600 text-base shrink-0"></iconify-icon>
+                  <span className="text-zinc-600">Bulk Import CSV (SKU Massal)</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setActiveMenu('tab-billing')}
+                className="w-full mt-2 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-500/20 active:scale-95"
+              >
+                Pilih Elite →
+              </button>
+            </div>
+
+            {/* === PAKET ULTIMATE === */}
+            <div className="relative bg-gradient-to-b from-indigo-950/30 to-zinc-900/60 border border-indigo-500/40 rounded-2xl p-5 flex flex-col gap-4 hover:border-indigo-500/60 transition-all group">
+              <div>
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Ultimate Edition</p>
+                <p className="text-3xl font-black text-white tracking-tight">Rp 1.999k<span className="text-sm font-medium text-zinc-500">/bln</span></p>
+              </div>
+              <div className="h-px bg-indigo-500/20"></div>
+              <ul className="space-y-2.5 flex-1">
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Simpan SKU <b className="text-white">Tanpa Batas</b></span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span><b className="text-white">3.000 AI Credits</b> / bulan</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Integrasi <b className="text-white">30 Toko</b></span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Naskah Video TikTok & Reels</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Compare Mode <b className="text-white">(4 SKU)</b></span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span>Market Intel & Riset Tren</span>
+                </li>
+                <li className="flex items-center gap-2 text-xs text-zinc-300">
+                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
+                  <span><b className="text-white">Bulk Import CSV</b> (SKU Massal)</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setActiveMenu('tab-billing')}
+                className="w-full mt-2 py-2.5 rounded-xl border border-indigo-500/50 text-xs font-bold text-indigo-300 hover:bg-indigo-950/50 hover:text-white hover:border-indigo-400 transition-all"
+              >
+                Pilih Ultimate
+              </button>
+            </div>
+
+          </div>
+
+          <p className="text-center text-[10px] text-zinc-600 mt-6">Semua paket sudah termasuk dukungan pelanggan prioritas & pembaruan fitur gratis selamanya.</p>
+        </div>
+      )}
+      {/* === END DEMO UPGRADE PRICING TABLE === */}
 
       {/* Search Bar */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8 shadow-sm">
