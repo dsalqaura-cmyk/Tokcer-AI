@@ -47,22 +47,49 @@ serve(async (req) => {
         throw new Error(data.message || 'Gagal menukar token dengan TikTok');
     }
 
-    const { access_token, refresh_token, access_token_expire_in, seller_name } = data.data;
+    const { access_token, refresh_token, access_token_expire_in, seller_name, open_id } = data.data;
 
-    // 3. Save to database
-    const { error: upsertError } = await supabaseClient
-        .from('connected_stores')
-        .upsert({
-            user_id: user_id,
-            platform: 'tiktok',
-            store_name: seller_name || 'TikTok Shop',
-            status: 'connected',
-            access_token: access_token,
-            refresh_token: refresh_token,
-            token_expires_at: new Date(Date.now() + access_token_expire_in * 1000).toISOString()
-        }, { onConflict: 'user_id, platform' })
+    // 3. Save to database (Idempotent: check for existing connection first)
+    const { data: existingConnection, error: findError } = await supabaseClient
+        .from('marketplace_connections')
+        .select('id')
+        .eq('user_id', user_id)
+        .eq('platform', 'tiktok')
+        .maybeSingle();
 
-    if (upsertError) throw new Error("Gagal menyimpan token ke database: " + upsertError.message)
+    if (findError) throw new Error("Gagal mencari koneksi lama: " + findError.message);
+
+    let dbResult;
+    const tokenExpiryDate = new Date(Date.now() + (access_token_expire_in || 0) * 1000).toISOString();
+
+    if (existingConnection?.id) {
+        dbResult = await supabaseClient
+            .from('marketplace_connections')
+            .update({
+                shop_name: seller_name || 'TikTok Shop',
+                shop_id: open_id || 'TTK' + Math.floor(1000 + Math.random() * 9000),
+                access_token: access_token,
+                refresh_token: refresh_token,
+                token_expiry: tokenExpiryDate,
+                sync_status: 'active'
+            })
+            .eq('id', existingConnection.id);
+    } else {
+        dbResult = await supabaseClient
+            .from('marketplace_connections')
+            .insert({
+                user_id: user_id,
+                platform: 'tiktok',
+                shop_name: seller_name || 'TikTok Shop',
+                shop_id: open_id || 'TTK' + Math.floor(1000 + Math.random() * 9000),
+                access_token: access_token,
+                refresh_token: refresh_token,
+                token_expiry: tokenExpiryDate,
+                sync_status: 'active'
+            });
+    }
+
+    if (dbResult.error) throw new Error("Gagal menyimpan token ke database: " + dbResult.error.message);
 
     return new Response(
       JSON.stringify({ success: true, store_name: seller_name }),

@@ -48,13 +48,39 @@ const TikTokMockAuth = () => {
     setIsAuthorizing(true);
     
     try {
-      const { error } = await supabase.from('marketplace_connections').insert([{
-        user_id: user.id,
-        platform: 'tiktok',
-        shop_name: discoveredShop.name,
-        shop_id: discoveredShop.id,
-        sync_status: 'active'
-      }]);
+      // Periksa apakah koneksi lama sudah ada agar tidak duplikat
+      const { data: existing, error: findError } = await supabase
+        .from('marketplace_connections')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('platform', 'tiktok')
+        .maybeSingle();
+
+      if (findError) throw findError;
+
+      let error;
+      if (existing?.id) {
+        const { error: updateError } = await supabase
+          .from('marketplace_connections')
+          .update({
+            shop_name: discoveredShop.name,
+            shop_id: discoveredShop.id,
+            sync_status: 'active'
+          })
+          .eq('id', existing.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('marketplace_connections')
+          .insert([{
+            user_id: user.id,
+            platform: 'tiktok',
+            shop_name: discoveredShop.name,
+            shop_id: discoveredShop.id,
+            sync_status: 'active'
+          }]);
+        error = insertError;
+      }
       
       if (error) throw error;
       
