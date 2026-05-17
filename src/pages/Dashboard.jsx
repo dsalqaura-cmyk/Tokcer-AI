@@ -30,6 +30,7 @@ const Dashboard = () => {
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [isSyncingStore, setIsSyncingStore] = useState(false);
   const [aiSubTab, setAiSubTab] = useState('content');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiFormat, setAiFormat] = useState('TikTok Video');
@@ -239,6 +240,29 @@ const Dashboard = () => {
             } else {
                 alert("Gagal menghubungi server: " + err.message);
             }
+        }
+    };
+
+    const handleSyncStore = async () => {
+        if (!user) return;
+        setIsSyncingStore(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('sync-marketplace', {
+                body: { user_id: user.id }
+            });
+            if (error) throw error;
+            if (data?.success === false) {
+                alert("Gagal Sinkronisasi: " + data.error);
+            } else {
+                alert(data?.message || "Sinkronisasi berhasil!");
+                // Muat ulang data visual pesanan & produk secara real-time
+                await fetchOperationalData(user.id, user);
+            }
+        } catch (err) {
+            console.error("Sync Store Error:", err);
+            alert("Gagal sinkronisasi: " + err.message);
+        } finally {
+            setIsSyncingStore(false);
         }
     };
 
@@ -1335,6 +1359,8 @@ const Dashboard = () => {
             onConnectShopee={handleConnectShopee}
             onConnectTikTok={handleConnectTikTok}
             connectedStores={marketplaceConnections}
+            onSyncStore={handleSyncStore}
+            isSyncingStore={isSyncingStore}
           />
         );
       default:
