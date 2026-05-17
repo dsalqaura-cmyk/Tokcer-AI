@@ -283,18 +283,35 @@ serve(async (req) => {
       };
     });
 
-    // Perform upsert of real orders to avoid duplicates
+    // Perform upsert of real orders to avoid duplicates and log errors
+    const syncResults = [];
     for (const ord of ordersToInsert) {
-      const { data: existing } = await supabaseClient
+      const { data: existing, error: selectErr } = await supabaseClient
         .from('orders')
         .select('id')
         .eq('order_number', ord.order_number)
         .maybeSingle();
 
+      if (selectErr) {
+        console.error(`Select error for order ${ord.order_number}:`, selectErr.message);
+      }
+
       if (existing) {
-        await supabaseClient.from('orders').update(ord).eq('id', existing.id);
+        const { error: updateErr } = await supabaseClient.from('orders').update(ord).eq('id', existing.id);
+        if (updateErr) {
+          console.error(`Update error for order ${ord.order_number}:`, updateErr.message);
+          syncResults.push({ order_number: ord.order_number, status: "failed", error: updateErr.message });
+        } else {
+          syncResults.push({ order_number: ord.order_number, status: "updated", amount: ord.total_amount, customer: ord.customer_name });
+        }
       } else {
-        await supabaseClient.from('orders').insert(ord);
+        const { error: insertErr } = await supabaseClient.from('orders').insert(ord);
+        if (insertErr) {
+          console.error(`Insert error for order ${ord.order_number}:`, insertErr.message);
+          syncResults.push({ order_number: ord.order_number, status: "failed", error: insertErr.message });
+        } else {
+          syncResults.push({ order_number: ord.order_number, status: "inserted", amount: ord.total_amount, customer: ord.customer_name });
+        }
       }
     }
 
@@ -307,8 +324,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Sinkronisasi sukses! Berhasil menarik ${ordersToInsert.length} data transaksi riil dari TikTok Shop.`,
-        source: "live"
+        message: `Sinkronisasi sukses! Berhasil memproses ${ordersToInsert.length} data transaksi riil dari TikTok Shop.`,
+        source: "live",
+        results: syncResults
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
