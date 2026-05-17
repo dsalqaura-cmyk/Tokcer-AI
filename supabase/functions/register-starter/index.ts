@@ -116,7 +116,11 @@ serve(async (req) => {
       email: email,
       password: generatedPassword,
       email_confirm: true,
-      user_metadata: { full_name: nama }
+      user_metadata: { 
+        full_name: nama,
+        platforms: platforms || [],
+        store_links: storeLinks || {}
+      }
     })
 
     let targetUserId = authData?.user?.id
