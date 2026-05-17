@@ -285,9 +285,15 @@ serve(async (req) => {
       const itemsList = o.line_items || [];
       const productSold = itemsList.map((li: any) => li.product_name || li.sku_name || "Produk TikTok").join(", ") || "Produk TikTok";
       
-      // TikTok Shop API v202309 returns order status in the 'status' field (e.g., 'COMPLETED', 'DELIVERED')
+      // TikTok Shop API v202309 returns order status in the 'status' field (e.g., 'COMPLETED', 'DELIVERED', 'CANCELLED')
       const tiktokStatus = o.status || o.order_status || "";
-      const isCompleted = (tiktokStatus === 'COMPLETED' || tiktokStatus === 'DELIVERED');
+      
+      let mappedStatus = 'pending';
+      if (tiktokStatus === 'COMPLETED' || tiktokStatus === 'DELIVERED') {
+        mappedStatus = 'completed';
+      } else if (tiktokStatus === 'CANCELLED') {
+        mappedStatus = 'cancelled';
+      }
       
       return {
         user_id: user_id,
@@ -295,7 +301,7 @@ serve(async (req) => {
         customer_name: productSold,
         platform: 'tiktok',
         total_amount: Number(o.payment?.total_amount || 0),
-        status: isCompleted ? 'completed' : 'pending',
+        status: mappedStatus,
         order_date: o.create_time ? new Date(Number(o.create_time) * 1000).toISOString() : new Date().toISOString()
       };
     });
