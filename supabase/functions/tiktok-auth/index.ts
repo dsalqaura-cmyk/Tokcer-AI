@@ -49,16 +49,22 @@ serve(async (req) => {
 
     const { access_token, refresh_token, access_token_expire_in, seller_name, open_id } = data.data;
 
-    // 3. Save to database (Idempotent: check for existing connection first)
-    const { data: existingConnections, error: findError } = await supabaseClient
-        .from('marketplace_connections')
-        .select('id')
-        .eq('user_id', user_id)
-        .eq('platform', 'tiktok')
-        .limit(1);
+    // 3. Save to database (Idempotent: check for existing connection for this specific shop first)
+    const targetShopId = open_id || '';
+    
+    let existingConnection = null;
+    if (targetShopId) {
+        const { data: existing, error: findError } = await supabaseClient
+            .from('marketplace_connections')
+            .select('id')
+            .eq('user_id', user_id)
+            .eq('platform', 'tiktok')
+            .eq('shop_id', targetShopId)
+            .maybeSingle();
 
-    if (findError) throw new Error("Gagal mencari koneksi lama: " + findError.message);
-    const existingConnection = existingConnections?.[0];
+        if (findError) throw new Error("Gagal mencari koneksi lama: " + findError.message);
+        existingConnection = existing;
+    }
 
     let dbResult;
     const tokenExpiryDate = new Date(Date.now() + (access_token_expire_in || 0) * 1000).toISOString();
@@ -68,7 +74,6 @@ serve(async (req) => {
             .from('marketplace_connections')
             .update({
                 shop_name: seller_name || 'TikTok Shop',
-                shop_id: open_id || 'TTK' + Math.floor(1000 + Math.random() * 9000),
                 access_token: access_token,
                 refresh_token: refresh_token,
                 token_expiry: tokenExpiryDate,
@@ -82,7 +87,7 @@ serve(async (req) => {
                 user_id: user_id,
                 platform: 'tiktok',
                 shop_name: seller_name || 'TikTok Shop',
-                shop_id: open_id || 'TTK' + Math.floor(1000 + Math.random() * 9000),
+                shop_id: targetShopId || 'TTK' + Math.floor(1000 + Math.random() * 9000),
                 access_token: access_token,
                 refresh_token: refresh_token,
                 token_expiry: tokenExpiryDate,
