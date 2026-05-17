@@ -55,7 +55,7 @@ const OverviewTab = ({
 
   // Jika admin dan filter 'Hari Ini' kosong, coba tampilkan semua data agar tidak terlihat blank
   let filteredOrders = getFilteredOrdersByTime(platformFilteredOrders, timeFilter);
-  if (filteredOrders.length === 0 && timeFilter === 'Hari Ini' && (profile?.role === 'admin' || profile?.email === 'admin@tokcer-ai.com')) {
+  if (filteredOrders.length === 0 && timeFilter === 'Hari Ini' && profile?.role === 'admin') {
       filteredOrders = platformFilteredOrders; // Fallback ke semua data untuk admin jika hari ini kosong
   }
 
