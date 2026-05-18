@@ -963,8 +963,8 @@ const Dashboard = () => {
       const { data: config } = await supabase
         .from('ai_configs')
         .select('*')
-        .eq('type', 'generator')
-        .single();
+        .eq('key', 'system_prompt_generator')
+        .maybeSingle();
 
       const targetLang = lang === 'id' ? 'Bahasa Indonesia' : 'English';
       let platformContext = "";
@@ -1001,7 +1001,7 @@ const Dashboard = () => {
         ? `\n\n⚠️ PERINGATAN PENTING BATAS PANJANG KONTEN: Batas maksimum respon Anda adalah ${computedMaxTokens} token. Anda WAJIB merencanakan dan membagi alur penulisan konten Anda agar SELESAI SECARA UTUH, TUNTAS, DAN RAPI di bawah batas ${computedMaxTokens} token ini. JANGAN MENULIS kalimat yang terlalu bertele-tele atau panjang yang dapat terpotong di tengah jalan. Pastikan paragraf atau poin penutup diselesaikan dengan tuntas (tidak ada kata atau kalimat yang menggantung di akhir).`
         : `\n\n⚠️ CRITICAL LIMITATION WARNING: Your maximum allowed response length is ${computedMaxTokens} tokens. You MUST plan and structure your response carefully so that it is COMPLETELY FINISHED, WHOLE, AND TUNTAS within this ${computedMaxTokens} tokens limit. DO NOT write excessively long or wordy paragraphs that will get brutally cut off. Ensure that all closing sentences, lists, or paragraphs are fully completed and neat (no half-finished words or dangling sentences at the end).`;
 
-      const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}${limitWarning}`;
+      const fullSystemPrompt = `${config?.value || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}${limitWarning}`;
       const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
 
       // 5. CALL AI ENGINE
@@ -1056,16 +1056,24 @@ const Dashboard = () => {
       const { data: config } = await supabase
         .from('ai_configs')
         .select('*')
-        .eq('type', 'market_analyst')
-        .single();
+        .eq('key', 'system_prompt_market_analyst')
+        .maybeSingle();
 
       const bizType = profile?.business_type || 'General E-commerce';
       
-      const systemPrompt = config?.system_prompt || `You are an elite Market Research Analyst for the Indonesian e-commerce market...`;
+      const systemPrompt = config?.value || `You are an elite Market Research Analyst for the Indonesian e-commerce market. Provide a deep, structured analysis covering niche definition, market demand & trends, competitive landscape, business viability & strategy, and a final verdict.`;
+      
+      const targetLang = lang === 'id' ? 'Bahasa Indonesia' : 'English';
+      const computedMaxTokens = 1024;
+      const limitWarning = lang === 'id'
+        ? `\n\n⚠️ PERINGATAN PENTING BATAS PANJANG KONTEN: Batas maksimum respon Anda adalah ${computedMaxTokens} token. Anda WAJIB merencanakan dan membagi alur analisis pasar Anda agar SELESAI SECARA UTUH, TUNTAS, DAN RAPI di bawah batas ${computedMaxTokens} token ini. JANGAN MENULIS kalimat yang terlalu bertele-tele atau analisis yang terpotong di tengah jalan. Pastikan kesimpulan akhir atau closing paragraph diselesaikan dengan tuntas (tidak ada kata atau kalimat yang menggantung di akhir).`
+        : `\n\n⚠️ CRITICAL LIMITATION WARNING: Your maximum allowed response length is ${computedMaxTokens} tokens. You MUST plan and structure your market analysis carefully so that it is COMPLETELY FINISHED, WHOLE, AND TUNTAS within this ${computedMaxTokens} tokens limit. DO NOT write excessively long paragraphs that will get cut off. Ensure that the final verdict or closing paragraph is fully completed and neat (no half-finished words or dangling sentences at the end).`;
+
+      const fullSystemPrompt = `${systemPrompt}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}.${limitWarning}`;
       
       // 3. Call Intelligence Engine (using master API key from .env automatically)
       const userQuery = `Analyze this niche/product: "${trendPrompt}" within my business category: ${bizType}`;
-      const { text: result, usage } = await callAiEngine(systemPrompt, userQuery, null, 2048, 0.5);
+      const { text: result, usage } = await callAiEngine(fullSystemPrompt, userQuery, null, computedMaxTokens, 0.5);
       setTrendResult(result);
 
       // 4. Log Usage (Production Database Compliant Column List)
