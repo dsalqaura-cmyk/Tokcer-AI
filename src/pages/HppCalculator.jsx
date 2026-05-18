@@ -5,6 +5,29 @@ import Sidebar from '../components/dashboard/Sidebar.jsx';
 import Header from '../components/dashboard/Header.jsx';
 import { dashboardTranslations } from '../locales/dashboardLocales.js';
 
+const DEFAULT_PLATFORM_FEES = {
+    shopee: {
+        fashion: { commission: 11, logistics: 5000, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 0 },
+        elektronik: { commission: 5, logistics: 5000, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 0 },
+        umum: { commission: 8, logistics: 5000, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 0 }
+    },
+    tiktok_shop: {
+        fashion: { commission: 6, logistics: 5055, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 2 },
+        elektronik: { commission: 4, logistics: 5055, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 2 },
+        umum: { commission: 5, logistics: 5055, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 2 }
+    },
+    tokopedia: {
+        fashion: { commission: 6.5, logistics: 5000, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 0 },
+        elektronik: { commission: 4, logistics: 5000, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 0 },
+        umum: { commission: 5.5, logistics: 5000, adminFlat: 1250, returnRate: 3, failedDelivery: 5000, komisiDinamis: 0 }
+    },
+    website: {
+        fashion: { commission: 2.5, logistics: 0, adminFlat: 0, returnRate: 0, failedDelivery: 0, komisiDinamis: 0 },
+        elektronik: { commission: 2.5, logistics: 0, adminFlat: 0, returnRate: 0, failedDelivery: 0, komisiDinamis: 0 },
+        umum: { commission: 2.5, logistics: 0, adminFlat: 0, returnRate: 0, failedDelivery: 0, komisiDinamis: 0 }
+    }
+};
+
 const HppCalculator = () => {
     const navigate = useNavigate();
     const [lang] = useState(localStorage.getItem('tokcer_lang') || 'id');
@@ -109,10 +132,15 @@ const HppCalculator = () => {
     // Auto-fill fees when platform/category changes
     useEffect(() => {
         const feeConfig = platformFees.find(f => f.platform_name === platform && f.category_name === category);
-        if (feeConfig) {
-            setKomisiOverride(feeConfig.commission_percent);
-            setLogistikFlat(feeConfig.logistics_fixed_fee);
-        }
+        const defaults = DEFAULT_PLATFORM_FEES[platform]?.[category] || { commission: 0, logistics: 0, adminFlat: 0, returnRate: 0, failedDelivery: 0, komisiDinamis: 0 };
+        
+        setKomisiOverride(feeConfig ? feeConfig.commission_percent : defaults.commission);
+        setLogistikFlat(feeConfig ? feeConfig.logistics_fixed_fee : 0); // Keep user inbound/subsidi logistics at 0 by default
+        setAdminFeeFlat(defaults.adminFlat);
+        setReturnRate(defaults.returnRate);
+        setFailedDeliveryFee(defaults.failedDelivery);
+        setKomisiDinamis(defaults.komisiDinamis);
+        setLogisticsServiceFee(feeConfig ? feeConfig.logistics_fixed_fee : defaults.logistics);
     }, [platform, category, platformFees]);
 
     const formatRp = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
