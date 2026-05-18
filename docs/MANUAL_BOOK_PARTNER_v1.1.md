@@ -1,4 +1,4 @@
-# 🤝 BUKU PANDUAN KEMITRAAN & OPERASIONAL PARTNER (V1)
+# 🤝 BUKU PANDUAN KEMITRAAN & OPERASIONAL PARTNER (V1.1 - MEI 2026)
 **TOKCERS AI — PLATFORM E-COMMERCE INTELLIGENCE**  
 *Panduan Lengkap Hak Akses, Registrasi Klien, Klaim Komisi, dan Manajemen Portofolio Mitra.*
 
