@@ -1123,23 +1123,34 @@ const Dashboard = () => {
     try {
       let attachmentUrl = null;
 
-      // 1. Upload File if exists
-      if (supportFile) {
-        const fileExt = supportFile.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        const filePath = `support-attachments/${fileName}`;
+      // 1. Upload File if exists (only applicable for bug reports)
+      if (supportType === 'bug' && supportFile) {
+        try {
+          const fileExt = supportFile.name.split('.').pop();
+          const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+          const filePath = `support-attachments/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('support-files')
-          .upload(filePath, supportFile);
+          const { error: uploadError } = await supabase.storage
+            .from('support-files')
+            .upload(filePath, supportFile);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('support-files')
-          .getPublicUrl(filePath);
-        
-        attachmentUrl = publicUrl;
+          const { data: { publicUrl } } = supabase.storage
+            .from('support-files')
+            .getPublicUrl(filePath);
+          
+          attachmentUrl = publicUrl;
+        } catch (uploadError) {
+          console.warn("Supabase Storage bucket upload failed, using secure Base64 fallback:", uploadError);
+          
+          // Secure Base64 Fallback (stores base64 string directly in attachment_url TEXT column)
+          attachmentUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(supportFile);
+          });
+        }
       }
 
       // 2. Insert Ticket to DB
