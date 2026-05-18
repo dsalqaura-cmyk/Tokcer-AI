@@ -109,7 +109,7 @@ const Pricing = ({ onOpenWaitlist }) => {
                 <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '7.139.000' : '649.000'}</span>
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '5.489' : '499'}</span>
+                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '5.489' : '499'}k</span>
                   <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
                 </div>
               </div>
@@ -137,7 +137,7 @@ const Pricing = ({ onOpenWaitlist }) => {
                 <span className="text-xs font-bold text-orange-800/60 line-through tracking-tighter">Rp {isYearly ? '13.739.000' : '1.249.000'}</span>
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-[10px] font-black text-orange-800 mb-1">RP</span>
-                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '10.989' : '999'}</span>
+                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '10.989' : '999'}k</span>
                   <span className="text-orange-600 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
                 </div>
               </div>
@@ -164,7 +164,7 @@ const Pricing = ({ onOpenWaitlist }) => {
                 <span className="text-xs font-bold text-zinc-600 line-through tracking-tighter">Rp {isYearly ? '27.489.000' : '2.499.000'}</span>
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-[10px] font-black text-zinc-600 mb-1">RP</span>
-                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '21.989' : '1.999'}</span>
+                  <span className="text-3xl font-black text-white tracking-tighter">{isYearly ? '21.989' : '1.999'}k</span>
                   <span className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">/{isYearly ? 'THN' : 'BLN'}</span>
                 </div>
               </div>
