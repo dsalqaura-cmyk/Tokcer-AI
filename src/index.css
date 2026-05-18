@@ -13,6 +13,16 @@
     max-width: 100vw;
     overflow-x: hidden;
   }
+  /* Hide Chrome, Safari, Edge, Opera number input spin buttons */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  /* Hide Firefox number input spin buttons */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
 }
 
 @layer components {
