@@ -68,6 +68,7 @@ const InternalSidebar = ({
             { id: 'ideas', label: 'Saran Fitur', icon: 'solar:lightbulb-bold-duotone', badge: ideas.filter(i => i.status === 'draft' || i.status === 'open').length || null },
             { id: 'insight', label: t('businessInsight'), icon: 'solar:graph-bold-duotone' },
             { id: 'ai-gen', label: t('aiStrategy'), icon: 'solar:magic-stick-bold-duotone' },
+            { id: 'viral-autopilot', label: 'Viral Auto-Pilot', icon: 'solar:videocamera-record-bold-duotone' },
             { id: 'token-audit', label: 'Token Audit & Billing', icon: 'solar:bill-list-bold-duotone' },
             { id: 'accounting', label: 'Accounting', icon: 'solar:calculator-bold-duotone' },
             { id: 'supabase', label: t('supabase'), icon: 'solar:database-bold-duotone' }

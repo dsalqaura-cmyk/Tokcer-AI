@@ -14,6 +14,7 @@ import PartnerSection from '../components/internal/sections/PartnerSection.jsx';
 import TicketSection from '../components/internal/sections/TicketSection.jsx';
 import IdeasSection from '../components/internal/sections/IdeasSection.jsx';
 import AiStrategySection from '../components/internal/sections/AiStrategySection.jsx';
+import ViralAutopilotSection from '../components/internal/sections/ViralAutopilotSection.jsx';
 import SupabaseSection from '../components/internal/sections/SupabaseSection.jsx';
 import PayoutSection from '../components/internal/sections/PayoutSection.jsx';
 import BusinessInsightSection from '../components/internal/sections/BusinessInsightSection.jsx';
@@ -499,6 +500,8 @@ const InternalDashboard = () => {
         return <IdeasSection t={t} ideas={ideas} fetchIdeas={fetchIdeas} />;
       case 'ai-gen':
         return <AiStrategySection t={t} aiConfig={aiConfig} setAiConfig={setAiConfig} handleSaveAiConfig={handleSaveAiConfig} aiHistory={aiHistory} fetchAiHistory={fetchAiHistory} aiLogs={aiLogs} />;
+      case 'viral-autopilot':
+        return <ViralAutopilotSection t={t} />;
       case 'insight':
         return <BusinessInsightSection t={t} />;
       case 'token-audit':
