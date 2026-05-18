@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 const SupportTab = ({ 
   t, 
   lang,
-  profile,
   supportSubmitted, 
   setSupportSubmitted, 
   setActiveMenu, 
@@ -23,7 +22,6 @@ const SupportTab = ({
   userTickets = [],
   isFetchingUserTickets = false
 }) => {
-  const isDemo = (profile?.subscription_plan || '').toLowerCase() === 'demo';
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -67,219 +65,12 @@ const SupportTab = ({
 
   return (
     <div className="relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="mb-8">
+      <header className="mb-4">
         <h2 className="text-2xl font-semibold text-white tracking-tight">{t('supportCenter')}</h2>
-        <p className="text-xs text-zinc-400 mt-1">{t('howCanWeHelp') || (lang === 'id' ? 'Temukan jawaban atau hubungi kami.' : 'Find answers or contact us.')}</p>
+        <p className="text-xs text-zinc-400 mt-1">{lang === 'id' ? 'Laporkan kendala teknis atau ajukan usulan fitur baru langsung ke tim developer kami.' : 'Report technical bugs or suggest new features directly to our developer team.'}</p>
       </header>
 
-      {/* === DEMO UPGRADE PRICING TABLE — Khusus Demo Account, hanya tampil di tab Pembayaran === */}
-      {isDemo && activeCategory === 'billing' && (
-        <div className="bg-gradient-to-br from-zinc-900 to-black border border-orange-500/30 rounded-3xl p-6 md:p-8 shadow-xl shadow-orange-500/5 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
-              <iconify-icon icon="solar:tag-price-bold-duotone" className="text-lg text-orange-500"></iconify-icon>
-            </div>
-            <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em]">Informasi Harga Paket</span>
-          </div>
-          <h3 className="text-xl font-black text-white mb-1">Pilih Paket yang Sesuai Kebutuhanmu</h3>
-          <p className="text-xs text-zinc-400 mb-8">Bandingkan fitur dan pilih paket terbaik untuk mengembangkan bisnis e-commerce Anda.</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-            {/* === PAKET PRO === */}
-            <div className="relative bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-4">
-              <div>
-                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1">Pro Edition</p>
-                <p className="text-3xl font-black text-white tracking-tight">Rp 499k<span className="text-sm font-medium text-zinc-500">/bln</span></p>
-              </div>
-              <div className="h-px bg-zinc-800"></div>
-              <ul className="space-y-2.5 flex-1">
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span><b className="text-white">300 AI Credits</b> / bulan</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Simpan hingga <b className="text-white">10 SKU</b> HPP</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>AI Generator (Deskripsi & Video)</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Export Laporan CSV</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-400">
-                  <iconify-icon icon="solar:close-circle-linear" className="text-zinc-600 text-base shrink-0"></iconify-icon>
-                  <span className="text-zinc-600">Compare Mode HPP</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-400">
-                  <iconify-icon icon="solar:close-circle-linear" className="text-zinc-600 text-base shrink-0"></iconify-icon>
-                  <span className="text-zinc-600">Market Intel & Riset Tren</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-400">
-                  <iconify-icon icon="solar:close-circle-linear" className="text-zinc-600 text-base shrink-0"></iconify-icon>
-                  <span className="text-zinc-600">Bulk Import CSV</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* === PAKET ELITE (RECOMMENDED) === */}
-            <div className="relative bg-gradient-to-b from-orange-950/30 to-zinc-900/60 border-2 border-orange-500/60 rounded-2xl p-5 flex flex-col gap-4 shadow-lg shadow-orange-500/10">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg shadow-orange-500/30">⭐ PALING POPULER</span>
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-orange-400 uppercase tracking-[0.2em] mb-1">Elite Edition</p>
-                <p className="text-3xl font-black text-white tracking-tight">Rp 999k<span className="text-sm font-medium text-zinc-500">/bln</span></p>
-              </div>
-              <div className="h-px bg-orange-500/20"></div>
-              <ul className="space-y-2.5 flex-1">
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span><b className="text-white">1.000 AI Credits</b> / bulan</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Simpan SKU <b className="text-white">Tanpa Batas</b></span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>AI Generator (Deskripsi & Video)</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Export Laporan CSV</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Compare Mode HPP</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Market Intel & Riset Tren</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-400">
-                  <iconify-icon icon="solar:close-circle-linear" className="text-zinc-600 text-base shrink-0"></iconify-icon>
-                  <span className="text-zinc-600">Bulk Import CSV</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* === PAKET ULTIMATE === */}
-            <div className="relative bg-gradient-to-b from-indigo-950/30 to-zinc-900/60 border border-indigo-500/40 rounded-2xl p-5 flex flex-col gap-4">
-              <div>
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Ultimate Edition</p>
-                <p className="text-3xl font-black text-white tracking-tight">Rp 1.999k<span className="text-sm font-medium text-zinc-500">/bln</span></p>
-              </div>
-              <div className="h-px bg-indigo-500/20"></div>
-              <ul className="space-y-2.5 flex-1">
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span><b className="text-white">Unlimited AI Credits</b></span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Simpan SKU <b className="text-white">Tanpa Batas</b></span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>AI Generator (Deskripsi & Video)</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Export Laporan CSV</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Compare Mode HPP</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span>Market Intel & Riset Tren</span>
-                </li>
-                <li className="flex items-center gap-2 text-xs text-zinc-300">
-                  <iconify-icon icon="solar:check-circle-bold" className="text-emerald-500 text-base shrink-0"></iconify-icon>
-                  <span><b className="text-white">Bulk Import CSV</b></span>
-                </li>
-              </ul>
-            </div>
-
-          </div>
-
-          <p className="text-center text-[10px] text-zinc-600 mt-6">Hubungi tim kami untuk informasi lebih lanjut dan proses pembayaran.</p>
-        </div>
-      )}
-      {/* === END DEMO UPGRADE PRICING TABLE === */}
-
-
-
-
-      {/* Search Bar */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8 shadow-sm">
-        <div className="relative">
-          <iconify-icon icon="solar:magnifer-linear" className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xl"></iconify-icon>
-          <input 
-            type="text" 
-            placeholder={t('searchHelp') || (lang === 'id' ? 'Cari bantuan...' : 'Search help...')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-black border border-zinc-800 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-orange-500 transition-all shadow-inner"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Categories Sidebar */}
-        <div className="lg:col-span-1 space-y-2">
-          <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4 px-2">{t('categories')}</h3>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-medium transition-all ${
-                activeCategory === cat.id 
-                  ? 'bg-orange-600 text-white shadow-md' 
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
-              }`}
-            >
-              <iconify-icon icon={cat.icon} className="text-lg"></iconify-icon>
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* FAQ List */}
-        <div className="lg:col-span-3 space-y-4">
-          <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4 px-2">{t('faq')}</h3>
-          {filteredFaqs.length > 0 ? filteredFaqs.map((faq, i) => (
-            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 hover:border-zinc-700 transition-all group">
-              <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                {faq.q}
-              </h4>
-              <p className="text-xs text-zinc-400 leading-relaxed ml-3.5">{faq.a}</p>
-            </div>
-          )) : (
-            <div className="py-20 text-center bg-zinc-900 border border-zinc-800 rounded-2xl border-dashed">
-              <iconify-icon icon="solar:document-text-linear" className="text-4xl text-zinc-700 mb-3"></iconify-icon>
-              <p className="text-sm text-zinc-500 italic">{t('noResults')}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3 mt-12 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800">
-          <iconify-icon icon="solar:pen-new-square-linear" className="text-xl text-orange-500"></iconify-icon>
-        </div>
-        <div>
-          <h3 className="text-sm font-bold text-white">{t('sendTicket') || (lang === 'id' ? 'Kirim Laporan' : 'Send Ticket')}</h3>
-          <p className="text-[10px] text-zinc-500">{t('ticketDesc') || (lang === 'id' ? 'Ada masalah atau saran? Beritahu kami.' : 'Have an issue or suggestion? Let us know.')}</p>
-        </div>
-      </div>
-
+      {/* Bug & Feature Selection Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Bug Report Option */}
         <div 
@@ -303,6 +94,16 @@ const SupportTab = ({
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">{t('suggestFeature')}</h3>
           <p className="text-xs text-zinc-500 leading-relaxed">{t('featureDesc')}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 mt-8 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800">
+          <iconify-icon icon="solar:pen-new-square-linear" className="text-xl text-orange-500"></iconify-icon>
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-white">{t('sendTicket') || (lang === 'id' ? 'Kirim Laporan' : 'Send Ticket')}</h3>
+          <p className="text-[10px] text-zinc-500">{t('ticketDesc') || (lang === 'id' ? 'Isi formulir di bawah ini secara lengkap untuk langsung diteruskan ke tim engineering kami.' : 'Fill out the form below to submit directly to our engineering team.')}</p>
         </div>
       </div>
 
