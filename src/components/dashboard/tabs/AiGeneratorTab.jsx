@@ -11,8 +11,10 @@ const AiGeneratorTab = ({
   setAiFormat, 
   isGenerating, 
   handleGenerateAI, 
-  aiResult 
+  aiResult,
+  profile
 }) => {
+  const isStarter = profile && (profile?.subscription_plan || 'starter').toLowerCase() === 'starter';
   return (
     <div className="relative z-10">
       {/* Header */}
@@ -56,7 +58,16 @@ const AiGeneratorTab = ({
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Video Content Group */}
-              <div className={`p-4 rounded-2xl border transition-all ${aiFormat.includes('Video') ? 'bg-orange-950/20 border-orange-500/50' : 'bg-black border-zinc-800'}`}>
+              <div className={`p-4 rounded-2xl border transition-all relative overflow-hidden ${isStarter ? 'opacity-45 border-zinc-800/80 bg-zinc-950/20 cursor-not-allowed select-none' : aiFormat.includes('Video') ? 'bg-orange-950/20 border-orange-500/50' : 'bg-black border-zinc-800'}`}>
+                {isStarter && (
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center text-center p-3">
+                    <div className="w-8 h-8 bg-amber-500/10 rounded-lg flex items-center justify-center mb-1 border border-amber-500/20">
+                      <iconify-icon icon="solar:lock-keyhole-bold-duotone" className="text-base text-amber-500"></iconify-icon>
+                    </div>
+                    <span className="text-[9px] font-black tracking-widest text-amber-400 uppercase">PRO PLAN ONLY</span>
+                    <p className="text-[7px] text-zinc-500 leading-tight mt-0.5 max-w-[120px]">Upgrade to PRO to unlock AI Video Scripts</p>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 mb-3">
                   <iconify-icon icon="solar:video-frame-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
                   <span className="text-xs font-bold text-white uppercase tracking-wider">{t('videoContent')}</span>
@@ -65,8 +76,9 @@ const AiGeneratorTab = ({
                   {['TikTok Video', 'Instagram Reels'].map(f => (
                     <button
                       key={f}
-                      onClick={() => setAiFormat(f)}
-                      className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left flex items-center justify-between ${aiFormat === f ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'}`}
+                      onClick={() => !isStarter && setAiFormat(f)}
+                      disabled={isStarter}
+                      className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left flex items-center justify-between ${aiFormat === f ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'} ${isStarter ? 'pointer-events-none' : ''}`}
                     >
                       {f}
                       {aiFormat === f && <iconify-icon icon="solar:check-circle-bold"></iconify-icon>}
