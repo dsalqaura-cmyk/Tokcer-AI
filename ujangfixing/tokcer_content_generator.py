@@ -38,6 +38,7 @@ def call_gemini_flash_for_umkm_tips(count_needed=10):
     prompt = f"""
     Tuliskan {count_needed} tips bisnis online, manajemen keuangan, marketing, dan operasional UMKM untuk penjual Indonesia.
     Setiap tips harus ditulis dengan gaya santai tapi sangat edukatif (panggil audiens dengan 'Sobat Tokcer' atau 'Juragan online').
+    PENTING: Di setiap akhir tips, arahkan audiens secara halus untuk mendaftar atau mencoba solusi gratis di www.tokcer-ai.com.
     Berikan respons dalam format JSON Array murni dengan struktur:
     [
       {{

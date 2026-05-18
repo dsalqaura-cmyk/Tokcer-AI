@@ -94,13 +94,18 @@ def render_viral_video(tips_id, title, content, prompt):
     video_filename = f"video_render_{tips_id}.mp4"
     print(f"\n[moviepy] Memulai perakitan video viral untuk Tips ID: {tips_id} ({title})")
     
+    # SYSTEMATIC VOICE OVER OUTRO - Standardized Conversion CTA
+    vo_outro = " Yuk juragan, langsung meluncur ke w-w-w dot tokcer strip a-i dot com untuk cobain GRATIS sekarang juga!"
+    full_audio_script = content + vo_outro
+    
     # 1. Render TTS Audio
-    generate_voiceover_edge_tts(content, "temp_vo.mp3")
+    generate_voiceover_edge_tts(full_audio_script, "temp_vo.mp3")
     
     # 2. Render Image Visual
     generate_visual_huggingface(prompt, "temp_bg.png")
     
-    # 3. Stitch & Overlay Subtitle Dinamis (Dyslexia CapCut style)
+    # 3. Stitch & Overlay Subtitle Dinamis (Dyslexia CapCut style) dengan Watermark logo
+    print("[moviepy] Menyisipkan visual watermark 'www.tokcer-ai.com'...")
     print("[moviepy] Menyisipkan audio, gambar, dan merender teks subtitle dinamis...")
     time.sleep(3) # Simulasi Rendering Video
     
@@ -122,10 +127,14 @@ def secure_tiktok_upload(video_path, caption):
         print(f"[KEAMANAN] ERROR: File '{COOKIE_FILE_PATH}' tidak ditemukan! Proses dihentikan demi keamanan.")
         return False
         
+    # SYSTEMATIC CAPTION OUTRO - Standardized Conversion CTA
+    caption_outro = "\n\n👉 Cobain GRATIS sekarang di: www.tokcer-ai.com (Klik link di bio profil kita!)"
+    full_caption = caption + caption_outro
+        
     print(f"[TikTok Uploader] Cookie terverifikasi aman. Mengunggah berkas: {video_path}...")
     time.sleep(3) # Simulasi proses upload request
     
-    print(f"[TikTok Uploader] BERHASIL! Video sukses tayang di akun {TARGET_TIKTOK_ACCOUNT} dengan caption: {caption}")
+    print(f"[TikTok Uploader] BERHASIL! Video sukses tayang di akun {TARGET_TIKTOK_ACCOUNT} dengan caption:\n{full_caption}")
     return True
 
 # =============================================================================
