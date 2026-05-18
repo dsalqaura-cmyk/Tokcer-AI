@@ -63,6 +63,8 @@ const Dashboard = () => {
   const [supportFilePreview, setSupportFilePreview] = useState(null);
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
   const [supportSubmitted, setSupportSubmitted] = useState(false);
+  const [userTickets, setUserTickets] = useState([]);
+  const [isFetchingUserTickets, setIsFetchingUserTickets] = useState(false);
   
   // Account Security States
   const [newPassword, setNewPassword] = useState('');
@@ -1169,6 +1171,31 @@ const Dashboard = () => {
     document.body.removeChild(link);
   };
 
+  const fetchUserTickets = async () => {
+    if (!user) return;
+    setIsFetchingUserTickets(true);
+    try {
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      setUserTickets(data || []);
+    } catch (err) {
+      console.error("Error fetching user tickets:", err);
+    } finally {
+      setIsFetchingUserTickets(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeMenu === 'tab-support' && user) {
+      fetchUserTickets();
+    }
+  }, [activeMenu, user]);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -1240,6 +1267,8 @@ const Dashboard = () => {
       setSupportDesc('');
       setSupportFile(null);
       setSupportFilePreview(null);
+      
+      fetchUserTickets();
     } catch (err) {
       console.error("Support Submission Error:", err);
       alert("❌ Gagal mengirim laporan: " + err.message);
@@ -1421,6 +1450,8 @@ const Dashboard = () => {
             setSupportFile={setSupportFile}
             setSupportFilePreview={setSupportFilePreview}
             isSubmittingSupport={isSubmittingSupport}
+            userTickets={userTickets}
+            isFetchingUserTickets={isFetchingUserTickets}
           />
         );
       case 'tab-account':

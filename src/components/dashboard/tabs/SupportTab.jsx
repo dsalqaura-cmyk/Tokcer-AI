@@ -18,7 +18,9 @@ const SupportTab = ({
   supportFilePreview, 
   setSupportFile, 
   setSupportFilePreview, 
-  isSubmittingSupport 
+  isSubmittingSupport,
+  userTickets = [],
+  isFetchingUserTickets = false
 }) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -120,6 +122,69 @@ const SupportTab = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* 🔽 SECTION RIWAYAT TIKET/LAPORAN USER 🔽 */}
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+              <iconify-icon icon="solar:history-bold-duotone" className="text-xl text-orange-500"></iconify-icon>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-tight">{lang === 'id' ? 'Status & Riwayat Laporan Anda' : 'Your Ticket Status & History'}</h3>
+              <p className="text-[10px] text-zinc-500">{lang === 'id' ? 'Pantau penyelesaian aduan atau request fitur Anda secara real-time.' : 'Monitor the progress of your bug reports or feature requests in real-time.'}</p>
+            </div>
+          </div>
+          <div className="bg-zinc-950 px-3.5 py-1.5 rounded-xl border border-zinc-800/80 flex items-center gap-2">
+            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Total: {userTickets?.length || 0}</span>
+          </div>
+        </div>
+
+        {isFetchingUserTickets ? (
+          <div className="py-12 flex flex-col items-center justify-center text-center">
+            <iconify-icon icon="solar:spinner-linear" className="text-3xl text-orange-500 animate-spin mb-3"></iconify-icon>
+            <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">{lang === 'id' ? 'Memuat riwayat...' : 'Loading history...'}</p>
+          </div>
+        ) : userTickets && userTickets.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {userTickets.map((ticket) => (
+              <div 
+                key={ticket.id} 
+                className="bg-zinc-950 p-5 rounded-2xl border border-zinc-850 hover:border-zinc-700 transition-all flex flex-col justify-between gap-4"
+              >
+                <div>
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${ticket.type === 'bug' ? 'bg-rose-500 animate-pulse' : 'bg-blue-400'}`}></span>
+                      <h4 className="text-xs font-bold text-white uppercase tracking-tight line-clamp-1">{ticket.title}</h4>
+                    </div>
+                    <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest shrink-0 ${
+                      ticket.status === 'resolved' 
+                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
+                        : ticket.status === 'closed' || ticket.status === 'rejected'
+                        ? 'bg-zinc-800 text-zinc-400 border border-zinc-750'
+                        : 'bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse'
+                    }`}>
+                      {ticket.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2">{ticket.description}</p>
+                </div>
+
+                <div className="flex justify-between items-center pt-3 border-t border-zinc-900 text-[9px] font-bold text-zinc-500">
+                  <span className="uppercase">TIPE: <span className={ticket.type === 'bug' ? 'text-rose-400' : 'text-blue-400'}>{ticket.type}</span></span>
+                  <span>{new Date(ticket.created_at).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 flex flex-col items-center justify-center text-center bg-zinc-950/60 rounded-2xl border border-dashed border-zinc-800">
+            <iconify-icon icon="solar:notes-linear" className="text-3xl text-zinc-700 mb-3"></iconify-icon>
+            <p className="text-xs text-zinc-500 font-medium">{lang === 'id' ? 'Belum ada laporan atau saran yang Anda kirim.' : 'You have not submitted any reports or suggestions yet.'}</p>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3 mt-12 mb-6">
