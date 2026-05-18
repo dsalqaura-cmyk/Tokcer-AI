@@ -96,6 +96,120 @@ const OverviewTab = ({
 
   const getFilterLabel = () => t(timeFilter);
 
+  // --- PREMIUM CUSTOM CHART METRICS & STATE ---
+  const [hoveredIdx, setHoveredIdx] = React.useState(null);
+
+  const formatIDRShort = (val) => {
+    if (val >= 1000000000) return `Rp ${(val / 1000000000).toFixed(1)} M`;
+    if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(1)} Jt`;
+    if (val >= 1000) return `Rp ${(val / 1000).toFixed(0)}rb`;
+    return `Rp ${val}`;
+  };
+
+  const getChartData = () => {
+    let buckets = [];
+    const now = new Date();
+
+    if (timeFilter === 'Hari Ini') {
+      const intervals = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
+      buckets = intervals.map(label => ({ label, omzet: 0, profit: 0, ordersCount: 0 }));
+
+      activeAndCompletedOrders.forEach(o => {
+        const dateStr = o.order_date || o.created_at;
+        if (!dateStr) return;
+        const d = new Date(dateStr);
+        const hr = d.getHours();
+        const bucketIndex = Math.min(Math.floor(hr / 3), 7);
+        buckets[bucketIndex].omzet += Number(o.total_amount || 0);
+        buckets[bucketIndex].ordersCount += 1;
+      });
+    } 
+    else if (timeFilter === 'Bulan Ini') {
+      const intervals = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'];
+      buckets = intervals.map(label => ({ label, omzet: 0, profit: 0, ordersCount: 0 }));
+
+      activeAndCompletedOrders.forEach(o => {
+        const dateStr = o.order_date || o.created_at;
+        if (!dateStr) return;
+        const d = new Date(dateStr);
+        const dateNum = d.getDate();
+        let bucketIndex = 3;
+        if (dateNum <= 7) bucketIndex = 0;
+        else if (dateNum <= 14) bucketIndex = 1;
+        else if (dateNum <= 21) bucketIndex = 2;
+        buckets[bucketIndex].omzet += Number(o.total_amount || 0);
+        buckets[bucketIndex].ordersCount += 1;
+      });
+    } 
+    else if (timeFilter === '1 Bulan Terakhir' || timeFilter === '2 Bulan Terakhir') {
+      const intervals = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'];
+      buckets = intervals.map(label => ({ label, omzet: 0, profit: 0, ordersCount: 0 }));
+
+      const totalDays = timeFilter === '1 Bulan Terakhir' ? 30 : 60;
+      const daysPerBucket = totalDays / 4;
+
+      activeAndCompletedOrders.forEach(o => {
+        const dateStr = o.order_date || o.created_at;
+        if (!dateStr) return;
+        const d = new Date(dateStr);
+        const diffTime = Math.abs(now - d);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays >= totalDays) return;
+        const bucketIndex = Math.min(Math.floor(diffDays / daysPerBucket), 3);
+        buckets[3 - bucketIndex].omzet += Number(o.total_amount || 0);
+        buckets[3 - bucketIndex].ordersCount += 1;
+      });
+    } 
+    else if (timeFilter === '3 Bulan Terakhir') {
+      const monthNamesIndo = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const currentMonthIndex = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      const targetMonths = [];
+      for (let i = 2; i >= 0; i--) {
+        const d = new Date(currentYear, currentMonthIndex - i, 1);
+        targetMonths.push({
+          monthIndex: d.getMonth(),
+          year: d.getFullYear(),
+          label: monthNamesIndo[d.getMonth()]
+        });
+      }
+
+      buckets = targetMonths.map(m => ({ label: m.label, omzet: 0, profit: 0, ordersCount: 0 }));
+
+      activeAndCompletedOrders.forEach(o => {
+        const dateStr = o.order_date || o.created_at;
+        if (!dateStr) return;
+        const d = new Date(dateStr);
+        const m = d.getMonth();
+        const y = d.getFullYear();
+
+        const bucketIndex = targetMonths.findIndex(tm => tm.monthIndex === m && tm.year === y);
+        if (bucketIndex !== -1) {
+          buckets[bucketIndex].omzet += Number(o.total_amount || 0);
+          buckets[bucketIndex].ordersCount += 1;
+        }
+      });
+    } 
+    else {
+      const intervals = ['Periode 1', 'Periode 2', 'Periode 3', 'Periode 4'];
+      buckets = intervals.map(label => ({ label, omzet: 0, profit: 0, ordersCount: 0 }));
+      activeAndCompletedOrders.forEach((o, idx) => {
+        const bucketIndex = idx % 4;
+        buckets[bucketIndex].omzet += Number(o.total_amount || 0);
+        buckets[bucketIndex].ordersCount += 1;
+      });
+    }
+
+    buckets.forEach(b => {
+      b.profit = b.omzet * 0.2;
+      b.margin = b.omzet > 0 ? 20 : 0;
+      b.aov = b.ordersCount > 0 ? Math.round(b.omzet / b.ordersCount) : 0;
+    });
+
+    return buckets;
+  };
+
   return (
     <div className="relative z-10 space-y-6 pb-12 animate-in fade-in duration-700">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
@@ -297,43 +411,236 @@ const OverviewTab = ({
 
       {/* Row 2: Charts & Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Revenue Chart Section */}
-        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
-            <div>
-              <div className="text-xs font-medium text-zinc-400 mb-1">{t('estProfit')} ({getFilterLabel()})</div>
-              <div className="text-3xl font-bold text-white tracking-tight">{formatIDR(totalProfit)}</div>
+        {/* Revenue & Profit Performance Chart Section */}
+        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between group hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
+          {/* Glowing Aura Effect */}
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-orange-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-orange-500/10 transition-all duration-500"></div>
+          
+          <div className="relative z-10 flex flex-col gap-6">
+            {/* Header Title */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-zinc-800/80 pb-4">
+              <div>
+                <h3 className="text-sm font-bold text-white tracking-tight">Performa Omzet & Profit</h3>
+                <p className="text-[10px] text-zinc-500 font-medium mt-0.5">Periode Aktif: {getFilterLabel()}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-400 bg-zinc-950/40 px-2 py-1 rounded-md border border-zinc-800/50">
+                  <div className="w-2 h-2 bg-orange-500 rounded-sm"></div>
+                  Omzet
+                </div>
+                <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-400 bg-zinc-950/40 px-2 py-1 rounded-md border border-zinc-800/50">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                  Profit
+                </div>
+              </div>
             </div>
-            <div className="text-right">
-              <div className="text-xs font-medium text-zinc-400 mb-1">{t('totOmzet')} ({getFilterLabel()})</div>
-              <div className="text-xl font-semibold text-zinc-300">{formatIDR(totalRev)}</div>
+
+            {/* KPI Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-950/40 p-3 rounded-xl border border-zinc-800/50">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Total Omzet</span>
+                <span className="text-sm font-bold text-white tracking-tight">{formatIDR(totalRev)}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Estimasi Profit</span>
+                <span className="text-sm font-bold text-emerald-400 tracking-tight">{formatIDR(totalProfit)}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Margin Profit</span>
+                <span className="text-sm font-bold text-amber-500 tracking-tight">{totalRev > 0 ? '20%' : '0%'}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Periode Terbaik</span>
+                <span className="text-sm font-bold text-white tracking-tight truncate">
+                  {totalRev > 0 ? (() => {
+                    const data = getChartData();
+                    const maxB = data.reduce((max, b) => b.omzet > max.omzet ? b : max, data[0] || { label: '-' });
+                    return maxB.label;
+                  })() : '-'}
+                </span>
+              </div>
+            </div>
+
+            {/* Main Visual Chart Body */}
+            <div className="relative h-64 w-full pt-4 mt-2">
+              {/* Dynamic Y-Axis Guidelines */}
+              <div className="absolute inset-x-0 top-0 bottom-8 flex flex-col justify-between pointer-events-none">
+                {[1, 2, 3].map((val, i) => {
+                  const data = getChartData();
+                  const maxVal = Math.max(...data.map(b => b.omzet), 10000);
+                  const stepVal = maxVal * (1 - i * 0.33);
+                  return (
+                    <div key={i} className="w-full flex items-center justify-between text-[8px] font-semibold text-zinc-600 relative h-0">
+                      <span className="bg-zinc-900 pr-2 z-10 shrink-0 select-none">{formatIDRShort(stepVal)}</span>
+                      <div className="w-full border-t border-zinc-800/80 border-dashed absolute inset-x-0 -z-0"></div>
+                    </div>
+                  );
+                })}
+                <div className="w-full flex items-center justify-between text-[8px] font-semibold text-zinc-600 relative h-0">
+                  <span className="bg-zinc-900 pr-2 z-10 shrink-0 select-none">Rp 0</span>
+                  <div className="w-full border-t border-zinc-800/80 border-dashed absolute inset-x-0 -z-0"></div>
+                </div>
+              </div>
+
+              {/* Dynamic SVG Trend Line (Profit) */}
+              <div className="absolute inset-x-0 bottom-8 h-48 pointer-events-none z-20">
+                {(() => {
+                  const data = getChartData();
+                  const maxVal = Math.max(...data.map(b => b.omzet), 10000);
+                  const N = data.length;
+                  if (N === 0) return null;
+
+                  const pts = data.map((b, i) => {
+                    const x = (i + 0.5) * (100 / N);
+                    const y = 100 - (b.profit / maxVal) * 80; // Reserve top space
+                    return { x, y };
+                  });
+
+                  const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x}% ${p.y}%`).join(' ');
+                  const areaD = `${pathD} L ${pts[pts.length - 1].x}% 100% L ${pts[0].x}% 100% Z`;
+
+                  return (
+                    <svg className="absolute inset-0 w-full h-full">
+                      <defs>
+                        <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#10b981" stopOpacity="0.1" />
+                          <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      {/* Shaded Area Under Line */}
+                      {totalRev > 0 && <path d={areaD} fill="url(#profitGrad)" />}
+                      {/* Stroke Line */}
+                      {totalRev > 0 && (
+                        <path 
+                          d={pathD} 
+                          fill="none" 
+                          stroke="#34d399" 
+                          strokeWidth="2.5" 
+                          strokeLinejoin="round" 
+                          strokeLinecap="round"
+                        />
+                      )}
+                    </svg>
+                  );
+                })()}
+              </div>
+
+              {/* Interactive Column Bars (Omzet) & Dots (Profit) */}
+              <div className="absolute inset-x-0 bottom-8 flex items-end justify-between h-48 z-30">
+                {getChartData().map((b, i) => {
+                  const data = getChartData();
+                  const maxVal = Math.max(...data.map(x => x.omzet), 10000);
+                  const barHeightPercent = maxVal > 0 ? (b.omzet / maxVal) * 80 : 5;
+                  const profitYPercent = maxVal > 0 ? (b.profit / maxVal) * 80 : 5;
+
+                  return (
+                    <div 
+                      key={i} 
+                      className="flex flex-col items-center gap-2 group relative h-full justify-end select-none"
+                      style={{ width: `${100 / data.length}%` }}
+                      onMouseEnter={() => setHoveredIdx(i)}
+                      onMouseLeave={() => setHoveredIdx(null)}
+                    >
+                      {/* Short Metric Display Above Bar */}
+                      {b.omzet > 0 && (
+                        <div className="text-[8px] font-bold text-orange-400 mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none select-none absolute bottom-full">
+                          {formatIDRShort(b.omzet)}
+                        </div>
+                      )}
+
+                      {/* Bar Container */}
+                      <div 
+                        className={`w-8 sm:w-10 rounded-t-lg transition-all duration-500 relative cursor-pointer ${
+                          hoveredIdx === i ? 'bg-orange-500 shadow-md shadow-orange-500/10' : 'bg-orange-600/30 hover:bg-orange-500/60'
+                        }`}
+                        style={{ height: `${Math.max(barHeightPercent, 5)}%` }}
+                      >
+                        {/* Dynamic Green Dot (Profit) */}
+                        {b.profit > 0 && (
+                          <div 
+                            className="absolute left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400 rounded-full border border-black shadow-lg shadow-emerald-400/40 z-40 transition-transform duration-300"
+                            style={{ 
+                              bottom: `calc(${profitYPercent / Math.max(barHeightPercent, 5) * 100}% - 4px)` 
+                            }}
+                          ></div>
+                        )}
+                      </div>
+
+                      {/* X-Axis Label */}
+                      <span className={`text-[9px] font-bold mt-1 transition-colors select-none ${hoveredIdx === i ? 'text-white' : 'text-zinc-500'}`}>
+                        {b.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Floating Tooltip Component */}
+              {hoveredIdx !== null && (() => {
+                const b = getChartData()[hoveredIdx];
+                if (!b) return null;
+                const N = getChartData().length;
+                return (
+                  <div 
+                    className="absolute z-50 bg-zinc-950/90 border border-zinc-800 rounded-xl p-3 shadow-2xl backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-200 select-none w-44"
+                    style={{ 
+                      left: `${((hoveredIdx + 0.5) * (100 / N))}%`,
+                      bottom: '95px',
+                      transform: 'translateX(-50%)'
+                    }}
+                  >
+                    {/* Glowing Tip */}
+                    <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-zinc-950 border-r border-b border-zinc-800 rotate-45"></div>
+                    
+                    <div className="flex flex-col gap-2">
+                      <div className="text-[10px] font-bold text-white border-b border-zinc-800 pb-1 flex justify-between">
+                        <span>{b.label}</span>
+                        <span className="text-[8px] uppercase tracking-wider text-orange-400 font-black">Detail</span>
+                      </div>
+                      <div className="flex flex-col gap-1 text-[9px] font-semibold">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Omzet:</span>
+                          <span className="text-white">{formatIDR(b.omzet)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Profit:</span>
+                          <span className="text-emerald-400">{formatIDR(b.profit)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Margin:</span>
+                          <span className="text-amber-500">{b.margin}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Pesanan:</span>
+                          <span className="text-white">{b.ordersCount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">AOV:</span>
+                          <span className="text-blue-400">{formatIDR(b.aov)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
-          <div className="relative h-64 w-full pt-4">
-             <div className="absolute inset-x-0 bottom-8 flex items-end justify-between h-48 px-8 border-b border-zinc-800 border-dashed">
-                {[1,2,3,4].map((v, i) => (
-                   <div key={i} className="flex flex-col items-center gap-2 w-16 group relative h-full justify-end">
-                      <div 
-                        className="w-8 bg-orange-600/40 rounded-t-sm group-hover:bg-orange-500 transition-all duration-500 relative"
-                        style={{ height: totalRev > 0 ? `${(totalRev * (0.1 + i*0.1) / (totalRev * 0.5)) * 100}%` : '10%' }}
-                      >
-                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400 rounded-full border border-black shadow-lg shadow-emerald-400/20" style={{ marginTop: '-4px' }}></div>
-                      </div>
-                      <span className="text-[10px] text-zinc-500 font-medium">Pt {v}</span>
-                   </div>
-                ))}
-             </div>
-             <div className="flex items-center gap-4 mt-12 text-[10px]">
-                <div className="flex items-center gap-1.5 text-zinc-400">
-                   <div className="w-3 h-3 bg-orange-600 rounded-sm"></div>
-                   {t('revenueLabel')}
-                </div>
-                <div className="flex items-center gap-1.5 text-zinc-400">
-                   <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
-                   {t('profitLabel')}
-                </div>
-             </div>
+          {/* AI Insight Box Card */}
+          <div className="mt-6 p-4 bg-orange-500/5 border border-orange-500/10 rounded-2xl flex items-start gap-3 relative overflow-hidden group hover:border-orange-500/20 transition-all duration-300">
+            <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 shrink-0">
+              <iconify-icon icon="solar:stars-bold-duotone" className="text-lg text-orange-400 animate-pulse"></iconify-icon>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-bold text-orange-400 uppercase tracking-widest">Intelligence Analysis</span>
+              <p className="text-[10px] text-zinc-400 leading-relaxed font-medium">
+                {totalRev > 0 ? (() => {
+                  const data = getChartData();
+                  const maxB = data.reduce((max, b) => b.omzet > max.omzet ? b : max, data[0] || { label: '-' });
+                  return `Omzet tertinggi terjadi pada ${maxB.label} sebesar ${formatIDR(maxB.omzet)}. Margin profit berada di 20%, menandakan performa masih sehat. Pertahankan HPP dan pantau biaya tambahan agar profit tidak turun.`;
+                })() : 'Insight belum tersedia karena data periode ini masih terbatas.'}
+              </p>
+            </div>
           </div>
         </div>
 
