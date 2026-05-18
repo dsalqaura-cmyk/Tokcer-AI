@@ -8,6 +8,38 @@ dotenv.config();
 const CONFIG_PATH = './config';
 const INPUT_PATH = './inputs';
 const OUTPUT_PATH = './outputs';
+const BUDGET_FILE = path.join(CONFIG_PATH, 'token_budget.json');
+
+// Helper to get or initialize daily token budget
+async function getOrInitBudget() {
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    if (await fs.exists(BUDGET_FILE)) {
+      const budget = await fs.readJson(BUDGET_FILE);
+      if (budget.last_updated === today) {
+        return budget;
+      }
+    }
+  } catch (err) {
+    // Ignore and recreate
+  }
+  
+  const newBudget = { 
+    last_updated: today, 
+    tokens_used_today: 0, 
+    daily_limit: 2048 
+  };
+  await fs.writeJson(BUDGET_FILE, newBudget, { spaces: 2 });
+  return newBudget;
+}
+
+// Helper to update daily token budget after a successful API call
+async function updateBudget(tokensUsed) {
+  const budget = await getOrInitBudget();
+  budget.tokens_used_today += tokensUsed;
+  await fs.writeJson(BUDGET_FILE, budget, { spaces: 2 });
+  console.log(`📊 [BUDGET GUARD] Penggunaan Token Harian: ${budget.tokens_used_today} / ${budget.daily_limit} (Terpakai Baru: +${tokensUsed})`);
+}
 
 // Helper to call AI API (OpenAI / DeepSeek Compatible)
 async function callAI(prompt, systemPrompt = '') {
@@ -20,6 +52,13 @@ async function callAI(prompt, systemPrompt = '') {
     return null;
   }
 
+  // 1. Check budget before making any API call
+  const budget = await getOrInitBudget();
+  if (budget.tokens_used_today >= budget.daily_limit) {
+    console.warn(`⚠️ [BUDGET GUARD] Batas penggunaan harian ${budget.daily_limit} token telah tercapai (${budget.tokens_used_today} terpakai). Eksekusi AI dibatalkan demi hemat biaya.`);
+    return null;
+  }
+
   try {
     const response = await axios.post(`${apiBase}/chat/completions`, {
       model: model,
@@ -27,7 +66,7 @@ async function callAI(prompt, systemPrompt = '') {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }
       ],
-      temperature: 0.7,
+      temperature: 0.2, // Low temperature for strictly stable and factual content
       max_tokens: 4000
     }, {
       headers: {
@@ -36,7 +75,15 @@ async function callAI(prompt, systemPrompt = '') {
       }
     });
 
-    return response.data.choices?.[0]?.message?.content || null;
+    const content = response.data.choices?.[0]?.message?.content || null;
+    const tokensUsed = response.data.usage?.total_tokens || 0;
+    
+    // 2. Update usage record
+    if (tokensUsed > 0) {
+      await updateBudget(tokensUsed);
+    }
+
+    return content;
   } catch (error) {
     const errorMsg = error.response?.data?.error?.message || error.message;
     console.error(`❌ [ERROR] AI Call Failed: ${errorMsg}`);
