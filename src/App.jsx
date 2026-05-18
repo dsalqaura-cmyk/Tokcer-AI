@@ -12,6 +12,7 @@ import TikTokMockAuth from './pages/TikTokMockAuth.jsx';
 import TikTokCallback from './pages/TikTokCallback.jsx';
 import HppCalculator from './pages/HppCalculator.jsx';
 import { TermsPage, PrivacyPage, RefundPage } from './pages/LegalPages.jsx';
+import FaqPage from './pages/FaqPage.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -131,6 +132,7 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/refund" element={<RefundPage />} />
+        <Route path="/faq" element={<FaqPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

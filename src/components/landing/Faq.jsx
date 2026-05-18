@@ -136,7 +136,7 @@ const Faq = () => {
   const isEn = lang === 'en';
 
   return (
-    <section id="faq" className="max-w-7xl mx-auto px-6 py-16 md:py-24 border-t border-zinc-800 relative">
+    <section id="faq" className="max-w-7xl mx-auto px-6 py-16 md:py-24 relative">
       <div className="text-center mb-12 md:mb-16">
         <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tighter">
           {isEn ? 'Frequently Asked Questions' : 'Pertanyaan yang Sering Diajukan'}

@@ -38,6 +38,7 @@ const Footer = () => {
             </div>
             
             <div className="flex flex-wrap justify-end gap-6 md:gap-8 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
               <a href="/privacy" className="hover:text-white transition-colors">{t('footerPrivacy')}</a>
               <a href="/terms" className="hover:text-white transition-colors">{t('footerTerms')}</a>
               <a href="/refund" className="hover:text-white transition-colors text-orange-500/80">Refund Policy</a>
