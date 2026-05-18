@@ -7,6 +7,7 @@ import Ecosystem from '../components/landing/Ecosystem.jsx';
 import Pricing from '../components/landing/Pricing.jsx';
 import Testimonial from '../components/landing/Testimonial.jsx';
 import AboutUs from '../components/landing/AboutUs.jsx';
+import Faq from '../components/landing/Faq.jsx';
 import WaitlistCTA from '../components/landing/WaitlistCTA.jsx';
 import Footer from '../components/Footer.jsx';
 import RegisterModal from '../components/modals/RegisterModal.jsx';
@@ -86,6 +87,9 @@ const Landing = () => {
 
         {/* === SECTION 7: About Us === */}
         <AboutUs />
+
+        {/* === SECTION 7.5: FAQ === */}
+        <Faq />
 
         {/* === SECTION 8: Final CTA === */}
         {/* <WaitlistCTA onOpenWaitlist={() => openRegister()} /> */}
