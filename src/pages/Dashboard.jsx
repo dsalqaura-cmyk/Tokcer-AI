@@ -21,6 +21,7 @@ import AdminTab from '../components/dashboard/tabs/AdminTab.jsx';
 import { dashboardTranslations } from '../locales/dashboardLocales.js';
 import { getShopeeAuthUrl } from '../utils/shopee.js';
 import { getTikTokAuthUrl } from '../utils/tiktok.js';
+import { getRealMarketIntel } from '../services/marketIntelService.js';
 
 
 const Dashboard = () => {
@@ -72,6 +73,9 @@ const Dashboard = () => {
   // Market Intel Dynamic States
   const [viralTopics, setViralTopics] = useState([]);
   const [liveSummary, setLiveSummary] = useState(null);
+  const [bestsellerProducts, setBestsellerProducts] = useState([]);
+  const [viralVideos, setViralVideos] = useState([]);
+  const [liveStreams, setLiveStreams] = useState([]);
   const [isFetchingTrends, setIsFetchingTrends] = useState(false);
 
   // Operational States (Inventory & Orders)
@@ -736,6 +740,17 @@ const Dashboard = () => {
     setAnalyticsInsight(null);
   }, [analyticsPlatform]);
 
+  useEffect(() => {
+    setViralTopics([]);
+    setLiveSummary(null);
+    setBestsellerProducts([]);
+    setViralVideos([]);
+    setLiveStreams([]);
+    if (activeMenu === 'tab-market') {
+      fetchGlobalMarketTrends();
+    }
+  }, [platformFilter, activeMenu]);
+
   const [adminClients, setAdminClients] = useState([]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);
 
@@ -1006,53 +1021,23 @@ const Dashboard = () => {
   const fetchGlobalMarketTrends = async () => {
     if (isFetchingTrends) return;
 
-    const today = new Date().toISOString().split('T')[0];
     setIsFetchingTrends(true);
 
     try {
       const bizType = profile?.business_type || 'General E-commerce';
 
-      // 1. CEK CACHE GLOBAL DI DATABASE (Berlaku untuk semua user)
-      const { data: existingLogs } = await supabase
-        .from('ai_usage_logs')
-        .select('response')
-        .eq('feature', 'global_market_trends')
-        .gte('created_at', today)
-        .not('response', 'eq', 'SUCCESS') // Abaikan log lama yang cuma isi "SUCCESS"
-        .order('created_at', { ascending: false })
-        .limit(1);
+      // Panggil modul servis terisolasi dengan zero-budget database cache
+      const data = await getRealMarketIntel({
+        platformFilter,
+        bizType,
+        userId: user?.id,
+        callAiEngine
+      });
 
-      if (existingLogs && existingLogs.length > 0) {
-        const cachedResult = existingLogs[0].response;
-        try {
-          const cleanJson = cachedResult.replace(/```json|```/g, '').trim();
-          const data = JSON.parse(cleanJson);
-          if (data.topics) setViralTopics(data.topics);
-          if (data.summary) setLiveSummary(data.summary);
-          setIsFetchingTrends(false);
-          return; // STOP DI SINI (Hemat kuota!)
-        } catch (e) {
-          console.error("Gagal parse cache JSON, memanggil AI baru...");
-        }
-      }
-
-      // 2. JIKA BELUM ADA CACHE, PANGGIL DEEPSEEK
-      const systemPrompt = `You are a Market Trend Scout for the Indonesian market...`;
-      const { text: result, usage } = await callAiEngine(systemPrompt, "Fetch current viral trends for " + bizType, null, 2048, 0.5);
-      
-      // Simpan jawaban asli ke database untuk dijadikan cache user lain
-      await supabase.from('ai_usage_logs').insert([{
-          user_id: user?.id || null,
-          feature: 'global_market_trends',
-          prompt: "Background Fetch: " + bizType,
-          response: result, // << SIMPAN HASIL ASLI!
-          tokens_used: 1
-      }]);
-
-      const cleanJson = result.replace(/```json|```/g, '').trim();
-      const data = JSON.parse(cleanJson);
-      
       if (data.topics) setViralTopics(data.topics);
+      if (data.products) setBestsellerProducts(data.products);
+      if (data.videos) setViralVideos(data.videos);
+      if (data.lives) setLiveStreams(data.lives);
       if (data.summary) setLiveSummary(data.summary);
 
     } catch (err) {
@@ -1321,6 +1306,9 @@ const Dashboard = () => {
             showPlatformDropdown={showPlatformDropdown}
             setShowPlatformDropdown={setShowPlatformDropdown}
             viralTopics={viralTopics}
+            bestsellerProducts={bestsellerProducts}
+            viralVideos={viralVideos}
+            liveStreams={liveStreams}
             trendCustomInput={trendCustomInput}
             setTrendCustomInput={setTrendCustomInput}
             isSearchingTrend={isSearchingTrend}

@@ -8,7 +8,10 @@ const MarketIntelTab = ({
   setShowPlatformDropdown, 
   showPlatformDropdown, 
   setPlatformFilter, 
-  viralTopics, 
+  viralTopics = [], 
+  bestsellerProducts = [],
+  viralVideos = [],
+  liveStreams = [],
   fetchGlobalMarketTrends, 
   trendCustomInput, 
   setTrendCustomInput, 
@@ -29,7 +32,7 @@ const MarketIntelTab = ({
 
   const plan = (profile?.subscription_plan || 'starter').toLowerCase();
   const isBasicLocked = profile && (plan === 'starter' || plan === 'pro');
-  const isUltimateLocked = profile && plan !== 'ultimate'; // POINT 3 & 4: Deep Analysis locked for Elite
+  const isUltimateLocked = profile && plan !== 'ultimate'; // Deep Analysis locked for Elite/Starter
 
   return (
     <div className="relative z-10 space-y-6">
@@ -239,9 +242,12 @@ const MarketIntelTab = ({
           );
         })()}
       </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column: Viral Topics & Bestselling Products */}
         <div className="space-y-6">
+          {/* Weekly Viral Topics */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
@@ -252,17 +258,17 @@ const MarketIntelTab = ({
             </div>
             <div className="space-y-4">
               {(viralTopics.length > 0 ? viralTopics : [
-                { topic: 'Old Money Aesthetic', platform: 'TikTok', trend_percent: '+142%', color_class: 'text-zinc-300' },
-                { topic: 'Skincare Barrier Repair', platform: 'Shopee', trend_percent: '+85%', color_class: 'text-orange-500' },
+                { topic: 'Baju Koko Modern Premium', platform: 'TikTok', trend_percent: '+142%', volume: '45K' },
+                { topic: 'Gamis Ceruty Syari', platform: 'Shopee', trend_percent: '+85%', volume: '62K' },
               ]).map((t, i) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-black border border-zinc-800 rounded-xl animate-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.color_class || (t.platform === 'TikTok' ? 'text-zinc-300' : t.platform === 'Shopee' ? 'text-orange-500' : 'text-teal-400')}`}>
-                    <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : 'simple-icons:shopee'}></iconify-icon>
+                    <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center ${t.platform === 'TikTok' ? 'text-zinc-300' : 'text-orange-500'}`}>
+                      <iconify-icon icon={t.platform === 'TikTok' ? 'ri:tiktok-fill' : 'simple-icons:shopee'}></iconify-icon>
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white">{t.topic}</div>
-                      <div className="text-[10px] text-zinc-500 capitalize">{t.platform} Trends</div>
+                      <div className="text-[10px] text-zinc-500 capitalize">{t.platform} Trends • {t.volume || '10K'} Pencarian</div>
                     </div>
                   </div>
                   <div className="text-xs font-black text-emerald-500">{t.trend_percent}</div>
@@ -270,10 +276,48 @@ const MarketIntelTab = ({
               ))}
             </div>
           </div>
+
+          {/* Top Bestselling Products Card (Dinamis & Riil!) */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
+                <iconify-icon icon="solar:cart-bold" className="text-emerald-500"></iconify-icon>
+                {lang === 'id' ? 'Produk Bestseller Riil' : 'Real Bestselling Products'}
+              </h3>
+              <span className="text-[10px] text-zinc-500 font-mono">SALES ENGINE</span>
+            </div>
+            <div className="space-y-4">
+              {bestsellerProducts.length > 0 ? (
+                bestsellerProducts.map((p, i) => (
+                  <div key={i} className="p-3 bg-black border border-zinc-800 rounded-xl flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${p.platform === 'TikTok' ? 'bg-zinc-800 text-zinc-300' : 'bg-orange-950/30 text-orange-500'}`}>
+                        <iconify-icon icon={p.platform === 'TikTok' ? 'ri:tiktok-fill' : 'simple-icons:shopee'} className="text-xl"></iconify-icon>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-white truncate">{p.name}</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">{p.price} • {p.platform} Shop</div>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-xs font-black text-emerald-500">{p.sales}</div>
+                      <div className="text-[9px] text-zinc-500 font-mono">{p.revenue}</div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-zinc-500 text-xs">
+                  <iconify-icon icon="solar:graph-down-linear" className="text-2xl mb-2"></iconify-icon>
+                  <div>Pilih platform filter oranye di atas untuk sinkronisasi Bestseller.</div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
+        {/* Right Column: Deep Analysis (Videos & Lives Spy) */}
         <div className="space-y-6 relative">
-          {/* ULTIMATE LOCK for Deep Analysis (Point 3 & 4) */}
+          {/* ULTIMATE LOCK for Deep Analysis */}
           {isUltimateLocked && (
             <div className="absolute inset-0 z-30 bg-zinc-950/40 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-zinc-800/50 shadow-xl overflow-hidden">
               <div className="text-center p-6 bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-800 shadow-xl max-w-xs animate-in zoom-in-95 duration-300">
@@ -282,7 +326,7 @@ const MarketIntelTab = ({
                 </div>
                 <h4 className="text-sm font-black text-white uppercase tracking-tight mb-1">Deep Analysis Locked</h4>
                 <p className="text-[10px] text-zinc-400 leading-relaxed mb-4">
-                  Analisis kompetitor mendalam & Price Tracker hanya tersedia untuk member **ULTIMATE**.
+                  Analisis kompetitor mendalam, TikTok Live Spy, & Video Conversion Tracker hanya tersedia untuk member **ULTIMATE**.
                 </p>
                 <button className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg active:scale-95 transition-all">
                   UPGRADE TO ULTIMATE
@@ -291,7 +335,7 @@ const MarketIntelTab = ({
             </div>
           )}
           
-          <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm h-full ${isUltimateLocked ? 'opacity-40 grayscale' : ''}`}>
+          <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm ${isUltimateLocked ? 'opacity-40 grayscale' : ''}`}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-semibold text-white uppercase tracking-widest flex items-center gap-2">
                 <iconify-icon icon="solar:chart-line-up-bold" className="text-indigo-500"></iconify-icon>
@@ -303,7 +347,41 @@ const MarketIntelTab = ({
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20"></div>
               </div>
             </div>
+
             <div className="space-y-5">
+              {/* Dynamic Video & Content Spy */}
+              {viralVideos.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">🎥 Viral Video Tracker</p>
+                  {viralVideos.map((v, i) => (
+                    <div key={i} className="p-3 bg-black border border-zinc-800 rounded-xl">
+                      <div className="text-xs font-bold text-white">{v.title}</div>
+                      <div className="flex justify-between items-center text-[10px] text-zinc-500 mt-1.5">
+                        <span>{v.creator} • {v.views}</span>
+                        <span className="text-emerald-500 font-bold">{v.conversion}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Dynamic Live Streaming Spy */}
+              {liveStreams.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">🎙️ Competitor Live Streams</p>
+                  {liveStreams.map((l, i) => (
+                    <div key={i} className="p-3 bg-black border border-zinc-800 rounded-xl flex justify-between items-center">
+                      <div>
+                        <div className="text-xs font-bold text-white truncate max-w-[180px] sm:max-w-[260px]">{l.title}</div>
+                        <div className="text-[10px] text-zinc-500 mt-0.5">{l.duration} • {l.viewers}</div>
+                      </div>
+                      <span className="text-xs font-black text-rose-500 shrink-0">{l.sales_est}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Competitor Price Tracker Analysis */}
               <div className="p-4 bg-indigo-600/10 border border-indigo-500/20 rounded-xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-2 opacity-5">
                   <iconify-icon icon="solar:graph-bold" className="text-4xl text-indigo-400"></iconify-icon>
@@ -327,7 +405,6 @@ const MarketIntelTab = ({
               </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
