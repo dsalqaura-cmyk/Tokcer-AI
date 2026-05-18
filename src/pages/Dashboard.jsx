@@ -45,7 +45,7 @@ const Dashboard = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [platformFilter, setPlatformFilter] = useState('all');
   const [showPlatformDropdown, setShowPlatformDropdown] = useState(false);
-  const [omzetTimeFilter, setOmzetTimeFilter] = useState('all');
+  const [omzetTimeFilter, setOmzetTimeFilter] = useState('Hari Ini');
   const [showOmzetTimeDropdown, setShowOmzetTimeDropdown] = useState(false);
   const [healthPlatform, setHealthPlatform] = useState('all');
   const [trendSampleKey, setTrendSampleKey] = useState(null);

@@ -16,7 +16,7 @@ const RevenueTab = ({
 }) => {
   // --- SAFETY CHECKS ---
   const safeOrders = Array.isArray(orders) ? orders : [];
-  const safeTimeFilter = omzetTimeFilter || 'all';
+  const safeTimeFilter = omzetTimeFilter || 'Hari Ini';
 
   // --- REAL DATA CALCULATIONS ---
   const filteredByPlatform = platformFilter === 'all' 
@@ -26,23 +26,13 @@ const RevenueTab = ({
   const getFilteredByTime = (data, filter) => {
     const today = new Date();
     today.setHours(0,0,0,0);
-    
-    if (filter === 'Today') {
+    if (filter === 'Hari Ini') {
       const todayStr = today.toISOString().split('T')[0];
-      return data.filter(o => (o.order_date || o.created_at || '').startsWith(todayStr));
-    } else if (filter === 'Yesterday') {
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
-      return data.filter(o => (o.order_date || o.created_at || '').startsWith(yesterdayStr));
-    } else if (filter === 'Week') {
-      const cutoff = new Date(today);
-      cutoff.setDate(cutoff.getDate() - 7);
       return data.filter(o => {
-        const dateStr = o.order_date || o.created_at;
-        return dateStr && new Date(dateStr) >= cutoff;
+        const dateStr = o.order_date || o.created_at || '';
+        return dateStr.startsWith(todayStr);
       });
-    } else if (filter === 'Month') {
+    } else if (filter === 'Bulan Ini') {
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
       return data.filter(o => {
@@ -51,9 +41,9 @@ const RevenueTab = ({
         const d = new Date(dateStr);
         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
       });
-    } else if (filter.includes('Month')) {
+    } else if (filter && filter.includes('Bulan Terakhir')) {
       const months = parseInt(filter);
-      const cutoff = new Date(today);
+      const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - months);
       return data.filter(o => {
         const dateStr = o.order_date || o.created_at;
@@ -142,27 +132,19 @@ const RevenueTab = ({
               className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-700 transition-colors w-full justify-between sm:justify-start shadow-sm"
             >
               <iconify-icon icon="solar:calendar-linear" className="text-orange-500"></iconify-icon>
-              {safeTimeFilter === 'all' ? t('omzetFilterAll') : (t(`omzetFilter${safeTimeFilter.charAt(0).toUpperCase() + safeTimeFilter.slice(1)}`) || safeTimeFilter)}
+              {t(safeTimeFilter)}
               <iconify-icon icon={showOmzetTimeDropdown ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'} className="text-zinc-500"></iconify-icon>
             </div>
             {showOmzetTimeDropdown && (
               <div className="absolute top-full right-0 mt-1 w-full sm:w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
-                {[
-                  ['all', t('omzetFilterAll')],
-                  ['Today', t('omzetFilterToday')],
-                  ['Yesterday', t('omzetFilterYesterday')],
-                  ['Week', t('omzetFilterWeek')],
-                  ['Month', t('omzetFilterMonth')],
-                  ['2Month', t('omzetFilter2Month')],
-                  ['3Month', t('omzetFilter3Month')],
-                ].map(([val, label]) => (
+                {['Hari Ini', 'Bulan Ini', '1 Bulan Terakhir', '2 Bulan Terakhir', '3 Bulan Terakhir'].map((option) => (
                   <div
-                    key={val}
-                    onClick={() => { setOmzetTimeFilter(val); setShowOmzetTimeDropdown(false); }}
-                    className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${omzetTimeFilter === val ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
+                    key={option}
+                    onClick={() => { setOmzetTimeFilter(option); setShowOmzetTimeDropdown(false); }}
+                    className={`px-4 py-2 text-xs cursor-pointer flex items-center justify-between transition-colors ${safeTimeFilter === option ? 'bg-orange-950/50 text-orange-500 font-medium' : 'text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
                   >
-                    {label}
-                    {omzetTimeFilter === val && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
+                    {t(option)}
+                    {safeTimeFilter === option && <iconify-icon icon="solar:check-circle-bold" className="text-sm"></iconify-icon>}
                   </div>
                 ))}
               </div>
