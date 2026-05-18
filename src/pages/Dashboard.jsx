@@ -703,6 +703,67 @@ const Dashboard = () => {
     }
   };
 
+  // 🔽 CUSTOM WRAPPERS FOR MUTUAL EXCLUSION OF DROPDOWNS 🔽
+  const handleSetShowPlatformDropdown = (val) => {
+    setShowPlatformDropdown(val);
+    if (val) {
+      setShowFilterDropdown(false);
+      setShowOmzetTimeDropdown(false);
+      setShowAnalyticsPlatformDropdown(false);
+    }
+  };
+
+  const handleSetShowFilterDropdown = (val) => {
+    setShowFilterDropdown(val);
+    if (val) {
+      setShowPlatformDropdown(false);
+      setShowOmzetTimeDropdown(false);
+      setShowAnalyticsPlatformDropdown(false);
+    }
+  };
+
+  const handleSetShowOmzetTimeDropdown = (val) => {
+    setShowOmzetTimeDropdown(val);
+    if (val) {
+      setShowPlatformDropdown(false);
+      setShowFilterDropdown(false);
+      setShowAnalyticsPlatformDropdown(false);
+    }
+  };
+
+  const handleSetShowAnalyticsPlatformDropdown = (val) => {
+    setShowAnalyticsPlatformDropdown(val);
+    if (val) {
+      setShowPlatformDropdown(false);
+      setShowFilterDropdown(false);
+      setShowOmzetTimeDropdown(false);
+    }
+  };
+
+  // 🔽 GLOBAL CLICK LISTENER FOR CLICK-OUTSIDE AUTO CLOSE 🔽
+  useEffect(() => {
+    const handleGlobalClickOutside = (e) => {
+      const relativeContainer = e.target.closest('.relative');
+      
+      // Every dropdown in Tokcer AI contains an arrow icon or is/contains the absolute menu
+      const isDropdownClick = relativeContainer && (
+        relativeContainer.querySelector('iconify-icon[icon*="alt-arrow-"]') ||
+        relativeContainer.querySelector('.absolute') ||
+        e.target.closest('.absolute')
+      );
+      
+      if (!isDropdownClick) {
+        setShowPlatformDropdown(false);
+        setShowFilterDropdown(false);
+        setShowOmzetTimeDropdown(false);
+        setShowAnalyticsPlatformDropdown(false);
+      }
+    };
+    
+    document.addEventListener('click', handleGlobalClickOutside, true);
+    return () => document.removeEventListener('click', handleGlobalClickOutside, true);
+  }, []);
+
   useEffect(() => {
     if (activeMenu === 'tab-analytics') {
       chargeDailyCredit('analytics').then(allowed => {
@@ -1207,11 +1268,11 @@ const Dashboard = () => {
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
             showFilterDropdown={showFilterDropdown}
-            setShowFilterDropdown={setShowFilterDropdown}
+            setShowFilterDropdown={handleSetShowFilterDropdown}
             platformFilter={platformFilter}
             setPlatformFilter={setPlatformFilter}
             showPlatformDropdown={showPlatformDropdown}
-            setShowPlatformDropdown={setShowPlatformDropdown}
+            setShowPlatformDropdown={handleSetShowPlatformDropdown}
             profile={profile}
             lang={lang}
             setActiveMenu={setActiveMenu}
@@ -1229,11 +1290,11 @@ const Dashboard = () => {
             platformFilter={platformFilter}
             setPlatformFilter={setPlatformFilter}
             showPlatformDropdown={showPlatformDropdown}
-            setShowPlatformDropdown={setShowPlatformDropdown}
+            setShowPlatformDropdown={handleSetShowPlatformDropdown}
             omzetTimeFilter={omzetTimeFilter}
             setOmzetTimeFilter={setOmzetTimeFilter}
             showOmzetTimeDropdown={showOmzetTimeDropdown}
-            setShowOmzetTimeDropdown={setShowOmzetTimeDropdown}
+            setShowOmzetTimeDropdown={handleSetShowOmzetTimeDropdown}
             handleDownloadReport={handleDownloadReport}
             handleImportOrders={handleImportOrders}
           />
@@ -1266,11 +1327,11 @@ const Dashboard = () => {
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
             showFilterDropdown={showFilterDropdown}
-            setShowFilterDropdown={setShowFilterDropdown}
+            setShowFilterDropdown={handleSetShowFilterDropdown}
             analyticsPlatform={analyticsPlatform}
             setAnalyticsPlatform={setAnalyticsPlatform}
             showAnalyticsPlatformDropdown={showAnalyticsPlatformDropdown}
-            setShowAnalyticsPlatformDropdown={setShowAnalyticsPlatformDropdown}
+            setShowAnalyticsPlatformDropdown={handleSetShowAnalyticsPlatformDropdown}
             lang={lang}
             orders={orders}
             products={products}
@@ -1289,7 +1350,7 @@ const Dashboard = () => {
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
             showFilterDropdown={showFilterDropdown}
-            setShowFilterDropdown={setShowFilterDropdown}
+            setShowFilterDropdown={handleSetShowFilterDropdown}
             orders={orders}
             healthInsight={healthInsight}
             isAnalyzingHealth={isAnalyzingHealth}
@@ -1320,7 +1381,7 @@ const Dashboard = () => {
             platformFilter={platformFilter}
             setPlatformFilter={setPlatformFilter}
             showPlatformDropdown={showPlatformDropdown}
-            setShowPlatformDropdown={setShowPlatformDropdown}
+            setShowPlatformDropdown={handleSetShowPlatformDropdown}
             viralTopics={viralTopics}
             bestsellerProducts={bestsellerProducts}
             viralVideos={viralVideos}
