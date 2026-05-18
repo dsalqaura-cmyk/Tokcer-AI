@@ -44,7 +44,18 @@ const Dashboard = () => {
   const [isSyncingStore, setIsSyncingStore] = useState(false);
   const [aiSubTab, setAiSubTab] = useState('content');
   const [aiPrompt, setAiPrompt] = useState('');
-  const [aiFormat, setAiFormat] = useState('TikTok Video');
+  const [aiFormat, setAiFormat] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('tokcer_cached_profile');
+      if (cached) {
+        const prof = JSON.parse(cached);
+        if ((prof?.subscription_plan || 'starter').toLowerCase() === 'starter') {
+          return 'Shopee Description';
+        }
+      }
+    } catch {}
+    return 'TikTok Video';
+  });
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiResult, setAiResult] = useState('');
   const [trendPrompt, setTrendPrompt] = useState('');
@@ -825,6 +836,15 @@ const Dashboard = () => {
   }, [analyticsPlatform]);
 
   useEffect(() => {
+    if (profile) {
+      const plan = (profile.subscription_plan || 'starter').toLowerCase();
+      if (plan === 'starter' && aiFormat.includes('Video')) {
+        setAiFormat('Shopee Description');
+      }
+    }
+  }, [profile, aiFormat]);
+
+  useEffect(() => {
     setViralTopics([]);
     setLiveSummary(null);
     setBestsellerProducts([]);
@@ -1429,6 +1449,7 @@ const Dashboard = () => {
             setAiResult={setAiResult}
             isGenerating={isGenerating}
             handleGenerateAI={handleGenerateAI}
+            profile={profile}
           />
         );
       case 'tab-market':
