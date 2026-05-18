@@ -218,6 +218,16 @@ const OverviewTab = ({
           <p className="text-xs text-zinc-400 mt-1">{t('monitorShop')}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto z-50">
+          {/* Tombol Unduh Manual Book */}
+          <a
+            href="/Manual_book_Tokcer_AI.pdf"
+            download="Manual_book_Tokcer_AI.pdf"
+            className="w-full sm:w-auto px-4 py-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/25 text-orange-400 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm uppercase tracking-wider"
+          >
+            <iconify-icon icon="solar:document-download-bold-duotone" className="text-sm text-orange-500"></iconify-icon>
+            Unduh Panduan
+          </a>
+
           {/* Admin Clean Dummy Data Button */}
           {profile?.email === 'admin@tokcer-ai.com' && (
             <button

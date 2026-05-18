@@ -566,6 +566,14 @@ const HppCalculator = () => {
                                 <h1 className="text-3xl font-black tracking-tighter uppercase text-white">HPP <span className="text-orange-500">& Margin</span> Explorer</h1>
                             </div>
                             <div className="flex flex-wrap items-center gap-3">
+                                <a 
+                                    href="/Panduan_Kalkulator_HPP_TokcerAI.pdf" 
+                                    download="Panduan_Kalkulator_HPP_TokcerAI.pdf"
+                                    className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase rounded-lg hover:border-orange-500 text-zinc-300 hover:text-white transition-all flex items-center gap-2 cursor-pointer"
+                                >
+                                    <iconify-icon icon="solar:document-download-bold-duotone" className="text-orange-500"></iconify-icon>
+                                    Unduh Panduan
+                                </a>
                                 <button onClick={() => handlePremiumFeature('bulk')} className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase rounded-lg hover:border-amber-500 transition-all flex items-center gap-2 group">
                                     <iconify-icon icon="solar:import-bold-duotone" className="text-amber-500"></iconify-icon>
                                     Bulk Import
