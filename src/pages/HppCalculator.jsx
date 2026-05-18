@@ -69,21 +69,21 @@ const HppCalculator = () => {
 
     const [platform, setPlatform] = useState('tokopedia');
     const [category, setCategory] = useState('umum');
-    const [komisiOverride, setKomisiOverride] = useState(null);
+    const [komisiOverride, setKomisiOverride] = useState(5.5); // Tokopedia-Umum preset default
     const [logistikFlat, setLogistikFlat] = useState(0);
     const [adsPersen, setAdsPersen] = useState(0);
     const [affiliatorPersen, setAffiliatorPersen] = useState(0);
-    const [adminFeeFlat, setAdminFeeFlat] = useState(0); // Default 0
+    const [adminFeeFlat, setAdminFeeFlat] = useState(1250); // Tokopedia-Umum preset default
 
     // New 2026 Specific States
     const [isPreorder, setIsPreorder] = useState(false);
     const [hasGmvMax, setHasGmvMax] = useState(false);
     const [hasGrowthXtra, setHasGrowthXtra] = useState(false);
     
-    const [komisiDinamis, setKomisiDinamis] = useState(0); // New 2026
-    const [logisticsServiceFee, setLogisticsServiceFee] = useState(0); // New 2026
-    const [returnRate, setReturnRate] = useState(0); // Default 0% return rate risk
-    const [failedDeliveryFee, setFailedDeliveryFee] = useState(0); // 1 June 2026 Prep
+    const [komisiDinamis, setKomisiDinamis] = useState(0); // Tokopedia-Umum preset default
+    const [logisticsServiceFee, setLogisticsServiceFee] = useState(5000); // Tokopedia-Umum preset default
+    const [returnRate, setReturnRate] = useState(3); // Default 3% return rate risk preset default
+    const [failedDeliveryFee, setFailedDeliveryFee] = useState(5000); // Rp 5.000 failed delivery fee preset default
 
     // Shopee Specific States
     const [isStarSeller, setIsStarSeller] = useState(false);
