@@ -50,7 +50,7 @@ const HppCalculator = () => {
     const [logistikFlat, setLogistikFlat] = useState(0);
     const [adsPersen, setAdsPersen] = useState(0);
     const [affiliatorPersen, setAffiliatorPersen] = useState(0);
-    const [adminFeeFlat, setAdminFeeFlat] = useState(1250); // Default Tokopedia/TikTok 2026
+    const [adminFeeFlat, setAdminFeeFlat] = useState(0); // Default 0
 
     // New 2026 Specific States
     const [isPreorder, setIsPreorder] = useState(false);
@@ -59,8 +59,8 @@ const HppCalculator = () => {
     
     const [komisiDinamis, setKomisiDinamis] = useState(0); // New 2026
     const [logisticsServiceFee, setLogisticsServiceFee] = useState(0); // New 2026
-    const [returnRate, setReturnRate] = useState(2); // Default 2% return rate risk
-    const [failedDeliveryFee, setFailedDeliveryFee] = useState(5000); // 1 June 2026 Prep
+    const [returnRate, setReturnRate] = useState(0); // Default 0% return rate risk
+    const [failedDeliveryFee, setFailedDeliveryFee] = useState(0); // 1 June 2026 Prep
 
     // Shopee Specific States
     const [isStarSeller, setIsStarSeller] = useState(false);
@@ -71,10 +71,10 @@ const HppCalculator = () => {
     const [exportFee, setExportFee] = useState(0);
     const [spaylaterTenor, setSpaylaterTenor] = useState(0); // 0, 2.5, 4
 
-    const [targetMargin, setTargetMargin] = useState(20);
+    const [targetMargin, setTargetMargin] = useState(0);
     const [hargaJualAktual, setHargaJualAktual] = useState(0);
     const [diskonVoucher, setDiskonVoucher] = useState(0);
-    const [estimasiOrder, setEstimasiOrder] = useState(200);
+    const [estimasiOrder, setEstimasiOrder] = useState(0);
 
     useEffect(() => {
         const init = async () => {
