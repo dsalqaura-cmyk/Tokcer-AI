@@ -29,8 +29,18 @@ const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('tab-dash');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [lang, setLang] = useState(localStorage.getItem('tokcer_lang') || 'id');
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+        const cached = sessionStorage.getItem('tokcer_cached_user');
+        return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
+  const [profile, setProfile] = useState(() => {
+    try {
+        const cached = sessionStorage.getItem('tokcer_cached_profile');
+        return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
   const [isSyncingStore, setIsSyncingStore] = useState(false);
   const [aiSubTab, setAiSubTab] = useState('content');
   const [aiPrompt, setAiPrompt] = useState('');
@@ -96,7 +106,12 @@ const Dashboard = () => {
 
   // System Briefing States
   const [systemBriefing, setSystemBriefing] = useState(null);
-  const [clientData, setClientData] = useState(null);
+  const [clientData, setClientData] = useState(() => {
+    try {
+        const cached = sessionStorage.getItem('tokcer_cached_client_data');
+        return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
   const [isFetchingBriefing, setIsFetchingBriefing] = useState(false);
 
   const t = (key) => dashboardTranslations[lang][key] || key;
@@ -551,14 +566,16 @@ const Dashboard = () => {
       
       if (session) {
         setUser(session.user);
+        sessionStorage.setItem('tokcer_cached_user', JSON.stringify(session.user));
         
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
         const { data: clientData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
         setClientData(clientData);
+        if (clientData) sessionStorage.setItem('tokcer_cached_client_data', JSON.stringify(clientData));
         
         if (session.user.email === 'admin@tokcer-ai.com') {
             localStorage.setItem('tokcer_admin_auth', 'true');
-            setProfile({
+            const adminProfile = {
                 id: session.user.id,
                 email: session.user.email,
                 full_name: 'Administrator',
@@ -567,7 +584,9 @@ const Dashboard = () => {
                 totalQuota: 3000,
                 isUnlimited: true,
                 planName: 'Ultimate'
-            });
+            };
+            setProfile(adminProfile);
+            sessionStorage.setItem('tokcer_cached_profile', JSON.stringify(adminProfile));
             setTimeFilter('Semua');
             fetchOperationalData(session.user.id, session.user);
             fetchMarketplaceConnections(session.user.id);
@@ -582,14 +601,16 @@ const Dashboard = () => {
             const totalQuota = quotaMap[plan] ?? 50;
             const activeTokens = prof?.ai_tokens ?? prof?.tokens ?? 0;
             
-            setProfile({ 
+            const calculatedProfile = { 
                 ...(prof || {}), 
                 subscription_plan: plan,
                 tokens: activeTokens, 
                 totalQuota: totalQuota,
                 isUnlimited: plan === 'ultimate',
                 planName: plan.charAt(0).toUpperCase() + plan.slice(1)
-            });
+            };
+            setProfile(calculatedProfile);
+            sessionStorage.setItem('tokcer_cached_profile', JSON.stringify(calculatedProfile));
         }
         // [TARJO FIX]: Nonaktifkan pembuatan draf toko otomatis agar default-nya bersih kosong tanpa toko
         // const metadata = session.user.user_metadata;
@@ -869,6 +890,7 @@ const Dashboard = () => {
         await supabase.auth.signOut();
         localStorage.removeItem('tokcer_admin_auth');
         localStorage.removeItem('tokcer_cache_analytics_' + user?.id + '_' + new Date().toISOString().split('T')[0]);
+        sessionStorage.clear();
         window.location.href = '/login';
     }
   };
