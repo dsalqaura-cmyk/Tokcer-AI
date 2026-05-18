@@ -30,9 +30,8 @@ const Sidebar = ({
     }
 
     const permissions = {
-      // 'tab-ai': ['pro', 'elite', 'ultimate'],
-      // 'tab-health': ['pro', 'elite', 'ultimate'],
-      // 'tab-market': ['elite', 'ultimate'],
+      'tab-health': ['pro', 'elite', 'ultimate'],
+      'tab-market': ['elite', 'ultimate'],
     };
 
     if (permissions[tab] && !permissions[tab].includes(plan)) return true;
