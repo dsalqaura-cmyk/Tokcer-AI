@@ -33,11 +33,31 @@ const HppCalculator = () => {
     const [lang] = useState(localStorage.getItem('tokcer_lang') || 'id');
     const t = (key) => dashboardTranslations[lang]?.[key] || key;
 
-    const [user, setUser] = useState(null);
-    const [profile, setProfile] = useState(null);
+    const [user, setUser] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('tokcer_cached_user');
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
+    });
+    const [profile, setProfile] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('tokcer_cached_profile');
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
+    });
+    const [clientData, setClientData] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('tokcer_cached_client_data');
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
+    });
     const [platformFees, setPlatformFees] = useState([]);
     const [savedCount, setSavedCount] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(() => {
+        const cachedUser = sessionStorage.getItem('tokcer_cached_user');
+        const cachedProfile = sessionStorage.getItem('tokcer_cached_profile');
+        return !(cachedUser && cachedProfile);
+    });
 
     // Demo expiry check — dihitung SEBELUM conditional return agar tidak melanggar Rules of Hooks
     const isDemoExpired = useMemo(() => {
@@ -111,14 +131,41 @@ const HppCalculator = () => {
             
             if (session) {
                 setUser(session.user);
-                const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-                setProfile(prof);
+                sessionStorage.setItem('tokcer_cached_user', JSON.stringify(session.user));
+                
+                const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+                const { data: cData } = await supabase.from('clients').select('*').ilike('email', session.user.email?.toLowerCase().trim()).maybeSingle();
+                setClientData(cData);
+                if (cData) sessionStorage.setItem('tokcer_cached_client_data', JSON.stringify(cData));
+                
+                if (prof || cData) {
+                    const plan = (cData?.plan || prof?.subscription_plan || 'starter').toLowerCase();
+                    const quotaMap = { 'demo': 30, 'starter': 50, 'pro': 300, 'elite': 1000, 'ultimate': 3000 };
+                    const totalQuota = quotaMap[plan] ?? 50;
+                    const activeTokens = prof?.ai_tokens ?? prof?.tokens ?? 0;
+                    
+                    const calculatedProfile = { 
+                        ...(prof || {}), 
+                        subscription_plan: plan,
+                        tokens: activeTokens, 
+                        totalQuota: totalQuota,
+                        isUnlimited: plan === 'ultimate',
+                        planName: plan.charAt(0).toUpperCase() + plan.slice(1)
+                    };
+                    setProfile(calculatedProfile);
+                    sessionStorage.setItem('tokcer_cached_profile', JSON.stringify(calculatedProfile));
+                } else {
+                    setProfile(prof);
+                    if (prof) sessionStorage.setItem('tokcer_cached_profile', JSON.stringify(prof));
+                }
 
                 // Fetch saved SKU count
                 const { count } = await supabase.from('sku_calculations').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id);
                 setSavedCount(count || 0);
             } else if (isAdminAuth) {
-                setProfile({ subscription_plan: 'ultimate', tokens: 999999 });
+                const adminProfile = { subscription_plan: 'ultimate', tokens: 999999, isUnlimited: true };
+                setProfile(adminProfile);
+                sessionStorage.setItem('tokcer_cached_profile', JSON.stringify(adminProfile));
                 setSavedCount(0);
             }
 
@@ -537,6 +584,7 @@ const HppCalculator = () => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         localStorage.removeItem('tokcer_admin_auth');
+        sessionStorage.clear();
         navigate('/login');
     };
 
@@ -572,6 +620,7 @@ const HppCalculator = () => {
                 profile={profile}
                 user={user}
                 handleLogout={handleLogout}
+                clientData={clientData}
             />
 
             <input 
