@@ -67,21 +67,21 @@ const HppCalculator = () => {
     const [biayaLain, setBiayaLain] = useState(0);
     const [biayaInbound, setBiayaInbound] = useState(0);
 
-    const [platform, setPlatform] = useState('tokopedia');
+    const [platform, setPlatform] = useState('tiktok_shop');
     const [category, setCategory] = useState('umum');
-    const [komisiOverride, setKomisiOverride] = useState(5.5); // Tokopedia-Umum preset default
+    const [komisiOverride, setKomisiOverride] = useState(5); // TikTok Shop Umum preset default (5%)
     const [logistikFlat, setLogistikFlat] = useState(0);
     const [adsPersen, setAdsPersen] = useState(0);
     const [affiliatorPersen, setAffiliatorPersen] = useState(0);
-    const [adminFeeFlat, setAdminFeeFlat] = useState(1250); // Tokopedia-Umum preset default
+    const [adminFeeFlat, setAdminFeeFlat] = useState(1250); // TikTok Shop Umum preset default
 
     // New 2026 Specific States
     const [isPreorder, setIsPreorder] = useState(false);
     const [hasGmvMax, setHasGmvMax] = useState(false);
     const [hasGrowthXtra, setHasGrowthXtra] = useState(false);
     
-    const [komisiDinamis, setKomisiDinamis] = useState(0); // Tokopedia-Umum preset default
-    const [logisticsServiceFee, setLogisticsServiceFee] = useState(5000); // Tokopedia-Umum preset default
+    const [komisiDinamis, setKomisiDinamis] = useState(2); // TikTok Shop Umum preset default (Promo Xtra 2%)
+    const [logisticsServiceFee, setLogisticsServiceFee] = useState(5055); // TikTok Shop Umum preset default (Rp 5.055)
     const [returnRate, setReturnRate] = useState(3); // Default 3% return rate risk preset default
     const [failedDeliveryFee, setFailedDeliveryFee] = useState(5000); // Rp 5.000 failed delivery fee preset default
 
@@ -766,7 +766,7 @@ const HppCalculator = () => {
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Pilih Platform</label>
                                                     <div className="flex gap-2 p-1 bg-black/40 border border-zinc-800 rounded-xl overflow-x-auto">
-                                                        {['tokopedia', 'tiktok_shop', 'shopee', 'website'].map(p => (
+                                                        {['tiktok_shop', 'shopee', 'website'].map(p => (
                                                             <button key={p} onClick={() => setPlatform(p)} className={`flex-1 min-w-[80px] py-2 text-[10px] font-black uppercase rounded-lg transition-all ${platform === p ? 'bg-zinc-800 text-white border border-zinc-700' : 'text-zinc-600 hover:text-zinc-400'}`}>
                                                                 {p.replace('_', ' ')}
                                                             </button>
