@@ -173,9 +173,7 @@ const BusinessInsightSection = ({ t }) => {
           feature: 'executive_summary_analysis',
           prompt: prompt,
           response: aiResult,
-          input_tokens: usage.prompt_tokens,
-          output_tokens: usage.completion_tokens,
-          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+          tokens_used: 1
       }]);
       let aiNotes = { 
         financial_health: [], 

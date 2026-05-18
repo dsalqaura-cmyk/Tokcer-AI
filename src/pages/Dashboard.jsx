@@ -830,16 +830,30 @@ const Dashboard = () => {
     const isAdmin = profile?.role === 'admin';
     
     // 1. SECURE TOKEN DEDUCTION (PRE-AI CALL)
+    let shouldDeductCredit = false;
     if (!isAdmin) {
         const lastPrompt = (localStorage.getItem('tokcer_last_prompt') || '').trim().toLowerCase();
         const currentPrompt = (aiPrompt || '').trim().toLowerCase();
+        const userPlan = (profile?.subscription_plan || 'starter').toLowerCase();
         
-        // 🛡️ TARJO LOGIC: Cek kesamaan topik (kopi vs kopi susu = masih 1 topik)
-        // Jika prompt baru mengandung prompt lama, atau prompt lama mengandung prompt baru, anggap topik sama.
+        // Cek kesamaan topik
         const isSimilar = lastPrompt && (currentPrompt.includes(lastPrompt) || lastPrompt.includes(currentPrompt));
-        const isNewTopic = !isSimilar;
+        shouldDeductCredit = true; // Default bayar untuk topik baru
 
-        if (isNewTopic) {
+        if (isSimilar) {
+            if (userPlan === 'starter') {
+                // Starter: Hanya format deskripsi teks (Shopee & TikTok Shop Description) yang gratis.
+                const isTextFormat = aiFormat.includes('Description') || aiFormat.includes('Deskripsi') || aiFormat.includes('Caption');
+                if (isTextFormat) {
+                    shouldDeductCredit = false; // Gratis!
+                }
+            } else {
+                // Pro, Elite, Ultimate, Demo, dll: Format teks dan video semuanya gratis (share 1 token).
+                shouldDeductCredit = false; // Gratis!
+            }
+        }
+
+        if (shouldDeductCredit) {
             // Pre-check state
             if (!profile || (profile.tokens || 0) < 1) {
                 setAiResult("⚠️ Maaf, sisa token AI Anda habis. Silakan hubungi admin untuk top-up.");
@@ -912,16 +926,13 @@ const Dashboard = () => {
       
       setAiResult(result);
 
-      // 4. Log Usage
+      // 4. Log Usage (Production Database Compliant Column List)
       await supabase.from('ai_usage_logs').insert([{
           user_id: user?.id || null,
           feature: 'content_generator',
           prompt: userMessage,
           response: result,
-          tokens_used: (isAdmin || localStorage.getItem('tokcer_last_prompt') === aiPrompt) ? 0 : 1,
-          input_tokens: usage.prompt_tokens,
-          output_tokens: usage.completion_tokens,
-          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+          tokens_used: shouldDeductCredit ? 1 : 0
       }]);
 
     } catch (e) {
@@ -941,12 +952,12 @@ const Dashboard = () => {
         setTrendResult('');
 
     try {
-      // 1. Hardened Token Deduction (RPC)
+      // 1. Hardened Token Deduction (RPC Daily Tax Enabled)
       const isAdmin = localStorage.getItem('tokcer_admin_auth') === 'true';
       if (!isAdmin) {
           const { data: deductData, error: deductError } = await supabase.rpc('rpc_deduct_token', {
               p_user_id: user.id,
-              p_feature: 'market_intel_analysis',
+              p_feature: 'daily_access_market_intel_analysis',
               p_amount: 1
           });
 
@@ -974,14 +985,13 @@ const Dashboard = () => {
       const { text: result, usage } = await callAiEngine(systemPrompt, userQuery, null, 2048, 0.5);
       setTrendResult(result);
 
+      // 4. Log Usage (Production Database Compliant Column List)
       await supabase.from('ai_usage_logs').insert([{
           user_id: user?.id || null,
           feature: 'market_intel_analysis_complete',
           prompt: userQuery,
           response: result,
-          input_tokens: usage.prompt_tokens,
-          output_tokens: usage.completion_tokens,
-          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+          tokens_used: 1
       }]);
 
       // Token usage already logged and deducted by RPC above
@@ -1036,9 +1046,7 @@ const Dashboard = () => {
           feature: 'global_market_trends',
           prompt: "Background Fetch: " + bizType,
           response: result, // << SIMPAN HASIL ASLI!
-          input_tokens: usage.prompt_tokens,
-          output_tokens: usage.completion_tokens,
-          cost_usd: (usage.prompt_tokens * 0.00000014) + (usage.completion_tokens * 0.00000028)
+          tokens_used: 1
       }]);
 
       const cleanJson = result.replace(/```json|```/g, '').trim();
