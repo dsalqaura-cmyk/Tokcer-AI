@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 
 const TicketSection = ({ 
@@ -6,6 +6,7 @@ const TicketSection = ({
   tickets,
   fetchTickets
 }) => {
+  const [previewImage, setPreviewImage] = useState(null);
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       const { error } = await supabase
@@ -61,15 +62,13 @@ const TicketSection = ({
                               {t_item.type?.toUpperCase()}
                             </p>
                             {t_item.attachment_url && (
-                              <a 
-                                href={t_item.attachment_url} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="flex items-center gap-1.5 text-[9px] font-black text-orange-500 uppercase tracking-widest hover:text-orange-400 transition-all bg-orange-500/5 px-2 py-1 rounded-lg border border-orange-500/10"
+                              <button 
+                                onClick={() => setPreviewImage(t_item.attachment_url)}
+                                className="flex items-center gap-1.5 text-[9px] font-black text-orange-500 uppercase tracking-widest hover:text-orange-400 transition-all bg-orange-500/5 px-2.5 py-1.5 rounded-lg border border-orange-500/10"
                               >
                                 <iconify-icon icon="solar:paperclip-linear"></iconify-icon>
                                 VIEW SCREENSHOT
-                              </a>
+                              </button>
                             )}
                           </div>
                        </div>
@@ -106,6 +105,42 @@ const TicketSection = ({
             )}
           </div>
        </div>
+
+      {/* Screenshot Preview Modal (Glassmorphism & Secure) */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            className="relative max-w-4xl w-full bg-zinc-950/90 rounded-3xl border border-zinc-800 p-4 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex justify-between items-center pb-3 border-b border-zinc-900/80 mb-3">
+              <div className="flex items-center gap-2">
+                <iconify-icon icon="solar:image-line" className="text-orange-500 text-lg"></iconify-icon>
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Attachment Screenshot Preview</span>
+              </div>
+              <button 
+                onClick={() => setPreviewImage(null)}
+                className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
+              >
+                <iconify-icon icon="solar:close-circle-bold" className="text-lg"></iconify-icon>
+              </button>
+            </div>
+            
+            {/* High Res Image Container */}
+            <div className="flex justify-center items-center bg-black/60 rounded-2xl p-1 overflow-auto max-h-[75vh]">
+              <img 
+                src={previewImage} 
+                alt="Screenshot Preview" 
+                className="max-w-full max-h-[72vh] object-contain rounded-xl select-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
