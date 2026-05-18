@@ -118,43 +118,63 @@ Pusat kendali akun personal Anda dan gerbang pemasaran digital Anda.
 Program kemitraan Tokcer AI menerapkan sistem insentif yang sangat transparan dan menguntungkan. Komisi dibayarkan dalam bentuk **Nilai Nominal Rupiah Tetap (Flat IDR)** per klien per bulan berdasarkan Paket Langganan klien dan Kategori Tier keaktifan Anda.
 
 ### **A. Kriteria Penentuan Tier Kemitraan**
-Tier kemitraan Anda dievaluasi secara dinamis setiap bulan berdasarkan jumlah klien aktif di bawah jaringan referral Anda:
+Tier kemitraan Anda dievaluasi secara dinamis pada tanggal 1 setiap bulan berdasarkan performa bulan sebelumnya:
 
-1.  **Bronze Partner:** Minimal **3 Klien Aktif** (berlangganan paket apa saja).
-2.  **Silver Partner:** Minimal **5 Klien Aktif** (berlangganan apa saja) **DAN** minimal **2 Klien** di antaranya berlangganan Paket **Elite** atau **Ultimate**.
-3.  **Gold Partner:** Minimal **8 Klien Aktif** (berlangganan apa saja) **DAN** minimal **2 Klien** di antaranya berlangganan Paket **Elite** atau **Ultimate**.
-4.  **Platinum Partner:** Minimal **15 Klien Aktif** (berlangganan apa saja) **DAN** minimal **5 Klien** di antaranya berlangganan Paket **Elite** atau **Ultimate**.
+1.  **Bronze Partner:** Minimal **3 closing aktif** (berlangganan paket apa saja).
+2.  **Silver Partner:** Minimal **5 closing aktif** (berlangganan apa saja) **DAN** minimal **2 pendaftaran paket Elite** per kuartal (*quarter*).
+3.  **Gold Partner:** Minimal **8 closing aktif** (berlangganan apa saja) **DAN** minimal **2 pendaftaran paket Elite** per bulan.
+4.  **Platinum Partner:** Minimal **15 closing aktif** (berlangganan apa saja) **DAN** minimal **5 pendaftaran paket Elite** per bulan.
 
 > [!NOTE]
 > Program kemitraan resmi dimulai langsung dari **Bronze Partner**. Partner yang saat ini memiliki kurang dari 3 klien aktif belum masuk ke dalam kualifikasi tier komisi mingguan.
 
 ---
 
-### **B. Nilai Komisi Tetap Bulanan (Flat Commission Rates)**
+### **B. Nilai Komisi Tetap Bulanan (Flat Commission Rates / Revenue Share)**
 Komisi bulanan yang Anda terima untuk setiap klien aktif (berlangganan Bulanan/Monthly) adalah sebagai berikut:
 
 | Paket Klien | Tier Bronze | Tier Silver | Tier Gold | Tier Platinum |
 | :--- | :--- | :--- | :--- | :--- |
-| **PRO Edition** | **Rp 100.000** | **Rp 120.000** | **Rp 140.000** | **Rp 150.000** |
-| **ELITE Edition** | **Rp 150.000** | **Rp 180.000** | **Rp 220.000** | **Rp 270.000** |
+| **PRO Edition** | **Rp 100.000** | **Rp 100.000** | **Rp 100.000** | **Rp 100.000** |
+| **ELITE Edition** | **Rp 119.600** | **Rp 149.600** | **Rp 179.500** | **Rp 199.400** |
 | **ULTIMATE Edition** | **Rp 200.000** | **Rp 240.000** | **Rp 300.000** | **Rp 360.000** |
 
 ---
 
-### **C. Bonus Ekstra & Insentif Kinerja**
+### **C. Bonus Ekstra & Insentif Kinerja (Performance Bonus - 6 Komponen)**
 
-#### **1. Volume Milestone Bonus (Bonus Prestasi Bulanan)**
-Jika dalam bulan berjalan Anda berhasil mendaftarkan sejumlah klien baru (dihitung per siklus periode tanggal 26 hingga 25), Anda berhak mendapatkan bonus pencapaian satu kali (*one-time bonus*):
+Selain bagi hasil bulanan (Revenue Share), Anda berhak mengklaim **6 Komponen Bonus Kinerja** berikut yang ditambahkan langsung ke saldo pencairan komisi Anda:
+
+#### **1. Weekly Top 1 Bonus**
+*   **Pemicu:** Meraih nilai closing omzet tertinggi di antara seluruh partner nasional dalam siklus 1 minggu berjalan.
+*   **Nilai Bonus:** **+ Rp 300.000** per minggu pencapaian.
+
+#### **2. Volume Milestone Bonus (Siklus Bulanan)**
+Dihitung berdasarkan kumulatif pendaftaran klien baru dalam siklus bulanan berjalan (periode tanggal 26 hingga 25):
 *   Pendaftaran minimal **5 Klien Baru**: Bonus **Rp 150.000**
-*   Pendaftaran minimal **10 Klien Baru**: Bonus **Rp 350.000**
-*   Pendaftaran minimal **15 Klien Baru**: Bonus **Rp 750.000**
+*   Pendaftaran minimal **10 Klien Baru**: Bonus tambahan **Rp 350.000** (total akumulasi **Rp 500.000**)
+*   Pendaftaran minimal **15 Klien Baru**: Bonus tambahan **Rp 750.000** (total akumulasi **Rp 1.250.000**)
 
-#### **2. Yearly Plan Performance Bonus (Insentif Paket Tahunan)**
-Jika klien Anda mendaftar Paket Tahunan (*Yearly Cycle*), Anda akan menerima pembayaran komisi langsung di muka pada bulan penutupan transaksi sebesar **11 bulan nilai komisi dasar** ditambah **Bonus Kinerja Tahunan**:
+#### **3. Annual Plan Performance Bonus (Insentif Paket Tahunan)**
+Jika klien referral Anda mendaftar Paket Tahunan (*Yearly Cycle*), Anda akan menerima pembayaran komisi langsung di muka pada bulan penutupan transaksi sebesar **11 bulan nilai komisi dasar** ditambah **Bonus Kinerja Tahunan**:
 *   Klien langganan **PRO (Yearly)**: Bonus Tahunan **Rp 100.000** + *(Rate x 11)*
 *   Klien langganan **ELITE (Yearly)**: Bonus Tahunan **Rp 250.000** + *(Rate x 11)*
 *   Klien langganan **ULTIMATE (Yearly)**: Bonus Tahunan **Rp 500.000** + *(Rate x 11)*
 *(Catatan: Setelah komisi tahunan dibayarkan penuh di muka, sisa bulan berjalan pada tahun tersebut ditandai sebagai PROCESSED).*
+
+#### **4. Tier Upgrade Bonus**
+*   **Pemicu:** Klien di bawah referral Anda menaikkan level paket langganannya di tengah masa aktif.
+*   **Nilai Bonus:**
+    *   Upgrade dari **Pro ke Elite**: Bonus **+ Rp 150.000**
+    *   Upgrade dari **Elite ke Ultimate**: Bonus **+ Rp 300.000**
+
+#### **5. Fast Start Bonus (Khusus Partner Baru)**
+*   **Pemicu:** Berhasil melakukan minimal **3 closing pertama** dalam kurun waktu **30 hari pertama sejak onboarding** terdaftar sebagai partner.
+*   **Nilai Bonus:** **+ Rp 300.000** (pembayaran satu kali/*one-time*).
+
+#### **6. Consistency Bonus (Bonus Ketekunan)**
+*   **Pemicu:** Berhasil melakukan minimal **5 closing per bulan selama 3 bulan berturut-turut**.
+*   **Nilai Bonus:** **+ Rp 300.000** (dibayarkan penuh pada akhir bulan ke-3).
 
 ---
 
@@ -162,10 +182,10 @@ Jika klien Anda mendaftar Paket Tahunan (*Yearly Cycle*), Anda akan menerima pem
 Jika status Anda saat ini adalah **Gold Partner** (memiliki total 10 Klien Aktif, dengan 3 Klien Ultimate, 2 Klien Elite, dan 5 Klien Pro):
 
 1.  **3 Klien Ultimate:** 3 Klien x Rp 300.000 = Rp 900.000
-2.  **2 Klien Elite:** 2 Klien x Rp 220.000 = Rp 440.000
-3.  **5 Klien Pro:** 5 Klien x Rp 140.000 = Rp 700.000
-*   **Total Komisi Berulang Bulanan Anda:** Rp 2.040.000 per Bulan.
-*(Ditambah Bonus Volume Milestone jika ada pendaftaran klien baru di bulan tersebut!)*
+2.  **2 Klien Elite:** 2 Klien x Rp 179.500 = Rp 359.000
+3.  **5 Klien Pro:** 5 Klien x Rp 100.000 = Rp 500.000
+*   **Total Komisi Berulang Bulanan Anda:** Rp 1.759.000 per Bulan.
+*(Nilai ini akan ditambah jika Anda mengaktifkan salah satu dari 6 komponen Performance Bonus di atas!)*
 
 ---
 
