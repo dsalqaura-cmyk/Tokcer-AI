@@ -927,16 +927,21 @@ const Dashboard = () => {
             .replace("Fokus pada 'USP' produk secara cepat, buat kesan urgensi/kelangkaan, dan arahkan ke keranjang kuning.", "Focus on the product's USP quickly, create a sense of urgency/scarcity, and direct to the yellow basket.");
       }
 
-      const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}`;
-      const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
-
       // 3. Tentukan Max Tokens Dinamis (Biar Hemat)
       let computedMaxTokens = 1024; // Standard Video/Reels
       if (aiFormat.includes('Description') || aiFormat.includes('Deskripsi') || aiFormat.includes('Caption')) {
         computedMaxTokens = 500;
       }
 
-      // 4. CALL AI ENGINE
+      // 4. Tambahkan Instruksi Batasan Token yang Rapi (Biar Kalimat Tidak Terpotong)
+      const limitWarning = lang === 'id'
+        ? `\n\n⚠️ PERINGATAN PENTING BATAS PANJANG KONTEN: Batas maksimum respon Anda adalah ${computedMaxTokens} token. Anda WAJIB merencanakan dan membagi alur penulisan konten Anda agar SELESAI SECARA UTUH, TUNTAS, DAN RAPI di bawah batas ${computedMaxTokens} token ini. JANGAN MENULIS kalimat yang terlalu bertele-tele atau panjang yang dapat terpotong di tengah jalan. Pastikan paragraf atau poin penutup diselesaikan dengan tuntas (tidak ada kata atau kalimat yang menggantung di akhir).`
+        : `\n\n⚠️ CRITICAL LIMITATION WARNING: Your maximum allowed response length is ${computedMaxTokens} tokens. You MUST plan and structure your response carefully so that it is COMPLETELY FINISHED, WHOLE, AND TUNTAS within this ${computedMaxTokens} tokens limit. DO NOT write excessively long or wordy paragraphs that will get brutally cut off. Ensure that all closing sentences, lists, or paragraphs are fully completed and neat (no half-finished words or dangling sentences at the end).`;
+
+      const fullSystemPrompt = `${config?.system_prompt || ''}\n\nATURAN KHUSUS: Respon WAJIB dalam ${targetLang}. ${platformContext}${limitWarning}`;
+      const userMessage = `Buat konten untuk produk berikut:\n\n${aiPrompt}\n\nPastikan konten berbeda dari sebelumnya (variatif) dan sangat spesifik untuk format ${aiFormat}.`;
+
+      // 5. CALL AI ENGINE
       const { text: result, usage } = await callAiEngine(fullSystemPrompt, userMessage, null, computedMaxTokens, 0.8);
       
       setAiResult(result);
