@@ -6,14 +6,14 @@ const Pricing = ({ onOpenWaitlist }) => {
   const [isYearly, setIsYearly] = useState(false);
 
   const starterFeatures = [
-    <><strong>50</strong> Generasi Konten AI / Bulan</>,
+    <><strong>50</strong> Generate Konten AI / Bulan</>,
     <>Integrasi <strong>1</strong> Toko Marketplace</>,
     <>Dashboard Analitik Seller Dasar</>,
     <>Generator Deskripsi Produk AI</>
   ];
 
   const proFeatures = [
-    <><strong>300</strong> Generasi Konten AI / Bulan</>,
+    <><strong>300</strong> Generate Konten AI / Bulan</>,
     <>Integrasi <strong>3</strong> Toko Marketplace</>,
     <>Dashboard Analitik Seller Dasar</>,
     <>Generator Deskripsi Produk AI</>,
@@ -22,7 +22,7 @@ const Pricing = ({ onOpenWaitlist }) => {
   ];
 
   const eliteFeatures = [
-    <><strong>1.000</strong> Generasi Konten AI / Bulan</>,
+    <><strong>1.000</strong> Generate Konten AI / Bulan</>,
     <>Maksimal Integrasi <strong>10</strong> Toko Marketplace</>,
     <><strong>Dashboard Analitik Seller Lengkap</strong></>,
     <>Generator Deskripsi Produk AI</>,
@@ -33,7 +33,7 @@ const Pricing = ({ onOpenWaitlist }) => {
   ];
 
   const ultimateFeatures = [
-    <><strong>Unlimited</strong> Generasi Konten AI / Bulan</>,
+    <><strong>Unlimited</strong> Generate Konten AI / Bulan</>,
     <>Integrasi Toko <strong>Unlimited</strong></>,
     <>Dashboard Analitik Seller Lengkap</>,
     <>Generator Deskripsi Produk AI</>,

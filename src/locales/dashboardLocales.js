@@ -62,7 +62,7 @@ export const dashboardTranslations = {
     marketIntelTitle: "Intelijen Pasar",
     peak: "Puncak",
     quota: "Sisa Kuota AI Generator",
-    quotaDesc: "Anda memiliki sisa 42 generasi konten bulan ini.",
+    quotaDesc: "Anda memiliki sisa 42 generate konten bulan ini.",
     tiktokIntegrate: "Integrasi TikTok Shop",
     tiktokIntegrateDesc: "Token API TikTok Shop Anda akan kedaluwarsa dalam 3 hari. Segera perbarui.",
     specialPromo: "Promo Spesial",
