@@ -160,13 +160,13 @@ const AboutUs = () => {
           <div className="animate-marquee flex gap-16 items-center">
             {/* Slide group 1 */}
             <div className="flex gap-16 items-center justify-around shrink-0 min-w-full">
-              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+              <div className="h-12 flex items-center justify-center transition-all duration-300 hover:scale-[1.05]">
                 <img src={partnerN} alt="Partner Node" className="h-9 md:h-10 object-contain" />
               </div>
-              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+              <div className="h-12 flex items-center justify-center transition-all duration-300 hover:scale-[1.05]">
                 <img src={partnerLbs} alt="Partner LBS" className="h-8 md:h-9 object-contain" />
               </div>
-              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+              <div className="h-12 flex items-center justify-center opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-[1.05]">
                 <div className="flex items-center gap-2 text-zinc-500 font-bold tracking-tighter text-sm uppercase">
                   <iconify-icon icon="solar:hashtag-square-linear" className="text-xl"></iconify-icon>
                   <span>Your Brand Here</span>
@@ -175,13 +175,13 @@ const AboutUs = () => {
             </div>
             {/* Slide group 2 (Duplicate for infinite seamless scrolling) */}
             <div className="flex gap-16 items-center justify-around shrink-0 min-w-full" aria-hidden="true">
-              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+              <div className="h-12 flex items-center justify-center transition-all duration-300 hover:scale-[1.05]">
                 <img src={partnerN} alt="Partner Node" className="h-9 md:h-10 object-contain" />
               </div>
-              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+              <div className="h-12 flex items-center justify-center transition-all duration-300 hover:scale-[1.05]">
                 <img src={partnerLbs} alt="Partner LBS" className="h-8 md:h-9 object-contain" />
               </div>
-              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+              <div className="h-12 flex items-center justify-center opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-[1.05]">
                 <div className="flex items-center gap-2 text-zinc-500 font-bold tracking-tighter text-sm uppercase">
                   <iconify-icon icon="solar:hashtag-square-linear" className="text-xl"></iconify-icon>
                   <span>Your Brand Here</span>
