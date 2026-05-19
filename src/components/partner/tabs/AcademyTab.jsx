@@ -17,6 +17,32 @@ const AcademyTab = ({
         <p className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em]">{t('academyDesc')}</p>
       </div>
 
+      {/* Partner Guide Download Card */}
+      <div className="bg-gradient-to-r from-orange-600/10 via-amber-600/5 to-transparent border border-orange-500/20 rounded-[32px] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+        <div className="flex items-center gap-6 relative z-10">
+          <div className="w-16 h-16 bg-orange-500/20 rounded-2xl flex items-center justify-center border border-orange-500/30 shrink-0 group-hover:scale-110 transition-transform">
+            <iconify-icon icon="solar:document-bold-duotone" className="text-4xl text-orange-500"></iconify-icon>
+          </div>
+          <div className="space-y-2 text-center md:text-left">
+            <h3 className="text-white font-black text-lg uppercase tracking-wider">{t('academyGuideDownloadTitle')}</h3>
+            <p className="text-zinc-400 text-xs max-w-2xl leading-relaxed">
+              {t('academyGuideDownloadDesc')}
+            </p>
+          </div>
+        </div>
+        <div className="relative z-10 w-full md:w-auto flex justify-center">
+          <a 
+            href="/Tokcer_AI_Partner_Guide.pdf"
+            download="Tokcer_AI_Partner_Guide.pdf"
+            className="w-full md:w-auto bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-4.5 rounded-2xl shadow-lg shadow-orange-600/15 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+          >
+            <iconify-icon icon="solar:download-minimalistic-bold" className="text-base"></iconify-icon>
+            {t('academyGuideDownloadBtn')}
+          </a>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {academyItems.map((item, idx) => (
           <div key={idx} className="group bg-zinc-900/40 backdrop-blur-md border border-zinc-800/50 p-8 rounded-[32px] cursor-not-allowed opacity-70">
