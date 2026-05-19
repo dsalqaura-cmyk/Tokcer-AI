@@ -1,5 +1,7 @@
 import React from 'react';
 import { useLandingTranslation } from '../../hooks/useLandingTranslation.js';
+import partnerN from '../../assets/partner_n.png';
+import partnerLbs from '../../assets/partner_lbs.png';
 
 const AboutUs = () => {
   const { t } = useLandingTranslation();
@@ -124,6 +126,68 @@ const AboutUs = () => {
             <p className="text-sm text-zinc-400 leading-relaxed">
               {t('aboutTeamCTORole')}
             </p>
+          </div>
+        </div>
+      </section>
+      
+      <section id="about-us-partners" className="w-full max-w-3xl mx-auto px-6 py-16 border-t border-zinc-800">
+        <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-8 flex items-center gap-2">
+          <iconify-icon icon="solar:handshake-linear" className="text-base"></iconify-icon>
+          {t('aboutPartnersTag')}
+        </p>
+        
+        {/* Infinite scrolling marquee container */}
+        <div className="relative w-full overflow-hidden py-4 mask-gradient">
+          <style>{`
+            @keyframes marquee {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-marquee {
+              display: flex;
+              width: max-content;
+              animation: marquee 15s linear infinite;
+            }
+            .animate-marquee:hover {
+              animation-play-state: paused;
+            }
+            .mask-gradient {
+              mask-image: linear-gradient(to right, transparent, white 20%, white 80%, transparent);
+              -webkit-mask-image: linear-gradient(to right, transparent, white 20%, white 80%, transparent);
+            }
+          `}</style>
+          
+          <div className="animate-marquee flex gap-16 items-center">
+            {/* Slide group 1 */}
+            <div className="flex gap-16 items-center justify-around shrink-0 min-w-full">
+              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <img src={partnerN} alt="Partner Node" className="h-9 md:h-10 object-contain" />
+              </div>
+              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <img src={partnerLbs} alt="Partner LBS" className="h-8 md:h-9 object-contain" />
+              </div>
+              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <div className="flex items-center gap-2 text-zinc-500 font-bold tracking-tighter text-sm uppercase">
+                  <iconify-icon icon="solar:hashtag-square-linear" className="text-xl"></iconify-icon>
+                  <span>Your Brand Here</span>
+                </div>
+              </div>
+            </div>
+            {/* Slide group 2 (Duplicate for infinite seamless scrolling) */}
+            <div className="flex gap-16 items-center justify-around shrink-0 min-w-full" aria-hidden="true">
+              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <img src={partnerN} alt="Partner Node" className="h-9 md:h-10 object-contain" />
+              </div>
+              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <img src={partnerLbs} alt="Partner LBS" className="h-8 md:h-9 object-contain" />
+              </div>
+              <div className="h-12 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <div className="flex items-center gap-2 text-zinc-500 font-bold tracking-tighter text-sm uppercase">
+                  <iconify-icon icon="solar:hashtag-square-linear" className="text-xl"></iconify-icon>
+                  <span>Your Brand Here</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
