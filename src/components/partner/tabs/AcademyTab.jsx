@@ -31,13 +31,13 @@ const AcademyTab = ({
             </p>
           </div>
         </div>
-        <div className="relative z-10 w-full md:w-auto flex justify-center">
+        <div className="relative z-10 w-full md:w-auto flex justify-center shrink-0">
           <a 
             href="/Tokcer_AI_Partner_Guide.pdf"
             download="Tokcer_AI_Partner_Guide.pdf"
-            className="w-full md:w-auto bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-4.5 rounded-2xl shadow-lg shadow-orange-600/15 hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+            className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2"
           >
-            <iconify-icon icon="solar:download-minimalistic-bold" className="text-base"></iconify-icon>
+            <iconify-icon icon="solar:download-minimalistic-bold" className="text-lg"></iconify-icon>
             {t('academyGuideDownloadBtn')}
           </a>
         </div>
