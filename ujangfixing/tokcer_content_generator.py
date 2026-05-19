@@ -1,11 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 =============================================================================
 TOKCER AI - INFINITE CONTENT GENERATOR (Standalone AI Studio Replenisher)
 =============================================================================
-Fungsi: Mengisi kembali bank template konten secara otomatis menggunakan Gemini 1.5 Flash
-Biaya Operasional: Rp 0,- (100% Free API Tier)
+Fungsi: Mengisi kembali bank template konten secara otomatis menggunakan DeepSeek API
+Target: Supabase Staging Database (Tabel viral_templates)
+Biaya Operasional: Rp 0,- (Free/Included Staging Token Credits)
 Author: Tarjo (Developer) & Udin (Analyst)
 =============================================================================
 """
@@ -16,78 +17,218 @@ import time
 import json
 import random
 import datetime
+import requests
 
-# Mock Supabase & Google AI Studio Connection
-GEMINI_FREE_API_KEY = "AIzaSyFakeKey_GeminiFreeTier_Rp0"
+# Import tema resmi Tokcer AI
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+try:
+    from tokcer_themes import TEMA_365, get_tema
+except ImportError:
+    # Fallback if imported from parent folder
+    from ujangfixing.tokcer_themes import TEMA_365, get_tema
 
+# =============================================================================
+# 1. LOAD CONFIGURATIONS FROM ENV
+# =============================================================================
+def load_env():
+    env_vars = {}
+    # Coba baca .env (root) atau .env.staging
+    paths = [".env", ".env.staging", "../.env", "../.env.staging"]
+    for path in paths:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        env_vars[k.strip()] = v.strip().replace('"', '').replace("'", "")
+            break
+    return env_vars
+
+ENV = load_env()
+SUPABASE_URL = ENV.get("VITE_SUPABASE_URL", "https://gejccutabxtyxsveczvd.supabase.co")
+SUPABASE_ANON_KEY = ENV.get("VITE_SUPABASE_ANON_KEY", "")
+DEEPSEEK_API_KEY = ENV.get("VITE_DEEPSEEK_API_KEY", "")
+
+# Header otentikasi Supabase
+HEADERS = {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+    "Content-Type": "application/json"
+}
+
+# =============================================================================
+# 2. SUPABASE HELPER FUNCTIONS
+# =============================================================================
 def get_unused_content_count():
     """
-    Simulasi SQL: SELECT COUNT(*) FROM public.viral_templates WHERE used = FALSE;
+    Mengambil jumlah tips yang belum digunakan (used = false) dari database staging.
     """
-    # Mengembalikan sisa konten tiruan untuk simulasi
-    return 3 
+    url = f"{SUPABASE_URL}/rest/v1/viral_templates?used=eq.false&select=id"
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        if res.status_code == 200:
+            return len(res.json())
+        else:
+            print(f"[Warning] Gagal mengambil unused count. Status: {res.status_code}, Res: {res.text}")
+    except Exception as e:
+        print(f"[Warning] Exception get_unused_content_count: {e}")
+    return 0
 
-def call_gemini_flash_for_umkm_tips(count_needed=10):
+def get_total_content_count():
     """
-    Memanggil Google AI Studio Gemini 1.5 Flash API secara gratis untuk 
-    memproduksi tips UMKM baru dengan kualitas tinggi dan prompt gambar estetik.
+    Mengambil jumlah keseluruhan tips di database untuk menghitung offset rotasi tema.
     """
-    print(f"\n[Gemini 1.5 Flash] Sisa konten menipis! Meminta {count_needed} konten bisnis UMKM baru...")
-    
-    # Prompt Rekayasa Konten (Prompt Engineering) agar Gemini mengembalikan JSON murni
-    prompt = f"""
-    Tuliskan {count_needed} tips bisnis online, manajemen keuangan, marketing, dan operasional UMKM untuk penjual Indonesia.
-    Setiap tips harus ditulis dengan gaya santai tapi sangat edukatif (panggil audiens dengan 'Sobat Tokcer' atau 'Juragan online').
-    PENTING: Di setiap akhir tips, arahkan audiens secara halus untuk mendaftar atau mencoba solusi gratis di www.tokcer-ai.com.
-    Berikan respons dalam format JSON Array murni dengan struktur:
-    [
-      {{
-        "tips_title": "Judul tips pendek menarik",
-        "tips_content": "Isi tips suara voiceover 2-3 kalimat yang mengalir lancar.",
-        "visual_prompt": "Prompt visual estetik bahasa inggris untuk background image Hugging Face."
-      }}
-    ]
-    Jangan berikan pembuka atau penutup markdown, langsung JSON array murni.
-    """
-    
-    # Simulasi respons super cerdas dari Gemini 1.5 Flash (0% Halusinasi)
-    time.sleep(3) # Simulasi Latensi API
-    mock_gemini_json_response = [
-        {
-            "tips_title": "Trik Kemasan Cantik",
-            "tips_content": "Juragan online, jangan pernah sepelekan kemasan paket kiriman kamu! Paket yang dibungkus dengan pita rapi dan wangi akan memberikan efek kejutan yang menyenangkan bagi pembeli. Pembeli yang bahagia akan rela berbaik hati memposting unboxing paket tokomu gratis di media sosial!",
-            "visual_prompt": "A warm cinematic shot of a beautifully wrapped cardboard box package with a soft rustic orange ribbon on top, soft focus office desk background"
-        },
-        {
-            "tips_title": "Rahasia Follow-up Keranjang",
-            "tips_content": "Sobat Tokcer! Banyak pembeli memasukkan barang ke keranjang tapi lupa membayar. Lakukan trik ini: kirimkan chat ramah tiga puluh menit kemudian dengan memberikan voucher diskon khusus yang berlaku hanya untuk satu jam ke depan. Ini menstimulus pembeli untuk segera check-out pesanan!",
-            "visual_prompt": "An aesthetic flatlay of a modern phone showing checkout screen, warm lights, dynamic flatlay photography"
-        }
-    ]
-    
-    print(f"[Gemini 1.5 Flash] Sukses memproduksi {len(mock_gemini_json_response)} tips UMKM bermutu tinggi!")
-    return mock_gemini_json_response
+    url = f"{SUPABASE_URL}/rest/v1/viral_templates?select=id"
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        if res.status_code == 200:
+            return len(res.json())
+        else:
+            print(f"[Warning] Gagal mengambil total count. Status: {res.status_code}")
+    except Exception as e:
+        print(f"[Warning] Exception get_total_content_count: {e}")
+    return 0
 
+# =============================================================================
+# 3. AI EXPANSION LOGIC (DEEPSEEK API COMPLIANT)
+# =============================================================================
+def call_deepseek_to_expand_theme(theme_text):
+    """
+    Memanggil DeepSeek API secara aman untuk mengekspansi tema mentah dari TEMA_365
+    menjadi naskah video TikTok edukatif yang mematuhi pedoman branding:
+    - Pembukaan WAJIB "Hai Seller, [Hook]"
+    - Dilarang keras menggunakan kata "juragan"
+    - Persis 4 kalimat dipisahkan tanda titik (.) agar spliter video generator bekerja rapi.
+    """
+    if not DEEPSEEK_API_KEY:
+        print("[Error] VITE_DEEPSEEK_API_KEY tidak ditemukan di environment!")
+        return None
+
+    print(f"\n[DeepSeek] Mengekspansi tema: '{theme_text}'...")
+
+    system_prompt = (
+        "Kamu adalah Copywriter Senior spesialis e-commerce Indonesia. "
+        "Tugasmu adalah membuat naskah video edukasi singkat untuk UMKM / online seller Indonesia. "
+        "Bahasa harus santai, meyakinkan, edukatif, dan bebas dari kata 'juragan' (JANGAN pernah gunakan kata 'juragan'). "
+        "Sapa audiens dengan panggilan 'Sobat Tokcer' atau 'Seller'."
+    )
+
+    user_message = f"""
+Kembangkan tema konten berikut: "{theme_text}" menjadi konten edukasi UMKM Tokcer AI.
+
+Aturan Penulisan Naskah (tips_content):
+1. Harus terdiri dari PERSIS 4 kalimat pendek, masing-masing dipisahkan oleh tanda titik (.). Jangan gunakan pemisah kalimat lain seperti tanda seru (!) atau tanya (?) di akhir kalimat, gunakan titik saja agar pembacaan poster rapi.
+2. Kalimat ke-1 WAJIB dimulai dengan kata: "Hai Seller, " lalu diikuti oleh hook penarik perhatian (misalnya: "Hai Seller, pernah gak ngerasa omzet toko rame tapi pas cek rekening kok tipis?").
+3. Kalimat ke-2 dan ke-3 berisi tips edukasi konkret, solutif, dan ringkas mengenai tema tersebut.
+4. Kalimat ke-4 WAJIB berupa Call to Action (CTA) persis seperti ini: "Yuk Seller, langsung meluncur ke website Tokcer A-I untuk cobain gratis sekarang juga!"
+5. JANGAN PERNAH menggunakan kata "juragan" atau "Juragan online". Ganti semuanya dengan "Seller" atau "seller".
+
+Format Keluaran:
+Wajib kembalikan response berupa JSON objek murni dengan struktur:
+{{
+  "tips_title": "Judul tips pendek menarik (maksimal 5 kata)",
+  "tips_content": "Tuliskan 4 kalimat naskah suara voiceover di sini sesuai aturan di atas.",
+  "visual_prompt": "Prompt visual estetik dalam bahasa Inggris untuk background image generator Hugging Face/Pillow."
+}}
+
+Jangan berikan markdown block pembuka/penutup seperti ```json, langsung JSON objek mentah saja.
+"""
+
+    url = "https://api.deepseek.com/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "deepseek-chat",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ],
+        "max_tokens": 1024,
+        "temperature": 0.3
+    }
+
+    try:
+        res = requests.post(url, headers=headers, json=payload, timeout=20)
+        if res.status_code == 200:
+            result_text = res.json()["choices"][0]["message"]["content"].strip()
+            # Pembersihan jika model tetap memberikan markdown blocks
+            if result_text.startswith("```"):
+                result_text = result_text.replace("```json", "").replace("```", "").strip()
+            
+            parsed = json.loads(result_text)
+            
+            # Double check compliance
+            content = parsed.get("tips_content", "")
+            if "juragan" in content.lower():
+                print("[Sanitization] Terdeteksi kata terlarang 'juragan'! Mengganti otomatis...")
+                content = content.replace("Juragan", "Seller").replace("juragan", "seller")
+                parsed["tips_content"] = content
+                
+            # Pastikan sapaan "Hai Seller" ada
+            if not content.startswith("Hai Seller"):
+                print("[Sanitization] Sapaan pembuka tidak dimulai dengan 'Hai Seller'! Memperbaiki...")
+                # Cari kalimat pertama dan paksa
+                sentences = content.split(".")
+                sentences[0] = "Hai Seller, " + sentences[0].replace("Hai Seller,", "").replace("Hai Seller", "").strip()
+                parsed["tips_content"] = ".".join(sentences)
+
+            return parsed
+        else:
+            print(f"[Error] Gagal memanggil DeepSeek API. Status: {res.status_code}, Res: {res.text}")
+    except Exception as e:
+        print(f"[Error] Exception saat memanggil DeepSeek API: {e}")
+    return None
+
+# =============================================================================
+# 4. REPLENISHER WORKER RUNNER
+# =============================================================================
 def replenish_bank_templates():
-    sisa_konten = get_unused_content_count()
-    print(f"[Replenisher] Memeriksa stok bank konten... Sisa saat ini: {sisa_konten} buah.")
-    
-    # Threshold stok menipis (di bawah 5)
-    if sisa_konten < 5:
-        konten_baru = call_gemini_flash_for_umkm_tips(10)
-        
-        print("\n[Replenisher] Memasukkan konten baru ke Supabase Staging Database:")
-        for idx, item in enumerate(konten_baru):
-            print(f" -> Menyimpan [{item['tips_title']}] ke public.viral_templates...")
-            # SQL: INSERT INTO public.viral_templates (tips_title, tips_content, visual_prompt) VALUES (...)
-        
-        print("\n[Replenisher] Sukses! Bank konten staging terisi penuh kembali.")
+    if not SUPABASE_ANON_KEY:
+        print("[Error] SUPABASE_ANON_KEY tidak ditemukan. Mohon cek file .env Anda!")
+        return
+
+    unused_cnt = get_unused_content_count()
+    print(f"[Replenisher] Stok bank konten saat ini: {unused_cnt} buah.")
+
+    # Threshold pengisian: di bawah 5 tips
+    if unused_cnt < 5:
+        count_needed = 10 - unused_cnt
+        print(f"[Replenisher] Stok menipis! Mempersiapkan pembuatan {count_needed} konten bisnis baru...")
+
+        total_cnt = get_total_content_count()
+        new_tips_list = []
+
+        for i in range(count_needed):
+            theme_idx = (total_cnt + i) % len(TEMA_365)
+            theme_text = TEMA_365[theme_idx]
+            print(f" -> [Hari ke-{total_cnt + i + 1}] Memproses Tema Indeks {theme_idx}: '{theme_text}'")
+            
+            tips_data = call_deepseek_to_expand_theme(theme_text)
+            if tips_data:
+                new_tips_list.append(tips_data)
+                # Jeda sejenak untuk menghindari rate limits
+                time.sleep(1)
+
+        if new_tips_list:
+            print(f"\n[Replenisher] Mengirimkan {len(new_tips_list)} tips baru ke Supabase Staging...")
+            url = f"{SUPABASE_URL}/rest/v1/viral_templates"
+            try:
+                res = requests.post(url, headers=HEADERS, json=new_tips_list, timeout=15)
+                if res.status_code in [200, 201]:
+                    print("🎉 SUKSES! Bank konten staging berhasil diperbarui.")
+                else:
+                    print(f"❌ GAGAL menyimpan data ke Supabase. Status: {res.status_code}, Res: {res.text}")
+            except Exception as e:
+                print(f"❌ Exception saat menyimpan data ke Supabase: {e}")
     else:
-        print("[Replenisher] Stok konten masih melimpah. Tidak perlu memanggil API.")
+        print("[Replenisher] Stok konten masih mencukupi. Tidak perlu pemanggilan AI.")
 
 def main():
     print("=" * 60)
-    print("  TOKCER AI - INFINITE CONTENT REPLENISHER WORKER (STAGING)")
+    print("      TOKCER AI - AUTO-REPLENISHER SYSTEM STARTED")
     print("=" * 60)
     replenish_bank_templates()
 
