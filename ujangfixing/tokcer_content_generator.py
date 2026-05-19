@@ -90,23 +90,75 @@ def get_total_content_count():
         print(f"[Warning] Exception get_total_content_count: {e}")
     return 0
 
+## =============================================================================
+# 3. AI EXPANSION LOGIC (PRIMARY: GEMINI 1.5 FLASH / FALLBACK: DEEPSEEK)
 # =============================================================================
-# 3. AI EXPANSION LOGIC (DEEPSEEK API COMPLIANT)
-# =============================================================================
-def call_deepseek_to_expand_theme(theme_text):
+def call_gemini_to_expand_theme(theme_text, api_key):
     """
-    Memanggil DeepSeek API secara aman untuk mengekspansi tema mentah dari TEMA_365
-    menjadi naskah video TikTok edukatif yang mematuhi pedoman branding:
-    - Pembukaan WAJIB "Hai Seller, [Hook]"
-    - Dilarang keras menggunakan kata "juragan"
-    - Persis 4 kalimat dipisahkan tanda titik (.) agar spliter video generator bekerja rapi.
+    Memanggil Google AI Studio Gemini 1.5 Flash API (0-Cost Free Tier)
+    untuk mengekspansi tema menjadi naskah 4 kalimat terstruktur.
     """
-    if not DEEPSEEK_API_KEY:
-        print("[Error] VITE_DEEPSEEK_API_KEY tidak ditemukan di environment!")
-        return None
+    print(f"[Gemini 1.5 Flash] Mengekspansi tema: '{theme_text}' (0-Cost)...")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    headers = {"Content-Type": "application/json"}
+    
+    prompt = f"""
+Kamu adalah Copywriter Senior spesialis e-commerce Indonesia.
+Tugasmu adalah membuat naskah video edukasi singkat untuk UMKM / online seller Indonesia.
+Bahasa harus santai, meyakinkan, edukatif, dan bebas dari kata 'juragan' (JANGAN pernah gunakan kata 'juragan').
+Sapa audiens dengan panggilan 'Sobat Tokcer' atau 'Seller'.
 
-    print(f"\n[DeepSeek] Mengekspansi tema: '{theme_text}'...")
+Kembangkan tema konten berikut: "{theme_text}" menjadi konten edukasi UMKM Tokcer AI.
 
+Aturan Penulisan Naskah (tips_content):
+1. Harus terdiri dari PERSIS 4 kalimat pendek, masing-masing dipisahkan oleh tanda titik (.). Jangan gunakan pemisah kalimat lain seperti tanda seru (!) atau tanya (?) di akhir kalimat, gunakan titik saja agar pembacaan poster rapi.
+2. Kalimat ke-1 WAJIB dimulai dengan kata: "Hai Seller, " lalu diikuti oleh hook penarik perhatian (misalnya: "Hai Seller, pernah gak ngerasa omzet toko rame tapi pas cek rekening kok tipis?").
+3. Kalimat ke-2 dan ke-3 berisi tips edukasi konkret, solutif, dan ringkas mengenai tema tersebut.
+4. Kalimat ke-4 WAJIB berupa Call to Action (CTA) persis seperti ini: "Yuk Seller, langsung meluncur ke website Tokcer A-I untuk cobain gratis sekarang juga!"
+5. JANGAN PERNAH menggunakan kata "juragan" atau "Juragan online". Ganti semuanya dengan "Seller" atau "seller".
+
+Format Keluaran:
+Wajib kembalikan response berupa JSON objek murni dengan struktur:
+{{
+  "tips_title": "Judul tips pendek menarik (maksimal 5 kata)",
+  "tips_content": "Tuliskan 4 kalimat naskah suara voiceover di sini sesuai aturan di atas.",
+  "visual_prompt": "Prompt visual estetik dalam bahasa Inggris untuk background image generator Hugging Face/Pillow."
+}}
+
+Jangan berikan markdown block pembuka/penutup seperti ```json, langsung JSON objek mentah saja.
+"""
+    
+    payload = {
+        "contents": [{
+            "parts": [{
+                "text": prompt
+            }]
+        }],
+        "generationConfig": {
+            "responseMimeType": "application/json"
+        }
+    }
+    
+    try:
+        res = requests.post(url, headers=headers, json=payload, timeout=25)
+        if res.status_code == 200:
+            result_json = res.json()
+            result_text = result_json["candidates"][0]["content"]["parts"][0]["text"].strip()
+            # Pembersihan jika model tetap memberikan markdown blocks
+            if result_text.startswith("```"):
+                result_text = result_text.replace("```json", "").replace("```", "").strip()
+            return json.loads(result_text)
+        else:
+            print(f"[Gemini Error] HTTP Status: {res.status_code}, Res: {res.text}")
+    except Exception as e:
+        print(f"[Gemini Exception] Gagal memproses: {e}")
+    return None
+
+def call_deepseek_to_expand_theme(theme_text, api_key):
+    """
+    Memanggil DeepSeek API sebagai fallback jika API Key Gemini tidak diset.
+    """
+    print(f"[DeepSeek] Mengekspansi tema: '{theme_text}' (Fallback)...")
     system_prompt = (
         "Kamu adalah Copywriter Senior spesialis e-commerce Indonesia. "
         "Tugasmu adalah membuat naskah video edukasi singkat untuk UMKM / online seller Indonesia. "
@@ -137,7 +189,7 @@ Jangan berikan markdown block pembuka/penutup seperti ```json, langsung JSON obj
 
     url = "https://api.deepseek.com/chat/completions"
     headers = {
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     payload = {
@@ -154,32 +206,51 @@ Jangan berikan markdown block pembuka/penutup seperti ```json, langsung JSON obj
         res = requests.post(url, headers=headers, json=payload, timeout=20)
         if res.status_code == 200:
             result_text = res.json()["choices"][0]["message"]["content"].strip()
-            # Pembersihan jika model tetap memberikan markdown blocks
             if result_text.startswith("```"):
                 result_text = result_text.replace("```json", "").replace("```", "").strip()
-            
-            parsed = json.loads(result_text)
-            
-            # Double check compliance
-            content = parsed.get("tips_content", "")
-            if "juragan" in content.lower():
-                print("[Sanitization] Terdeteksi kata terlarang 'juragan'! Mengganti otomatis...")
-                content = content.replace("Juragan", "Seller").replace("juragan", "seller")
-                parsed["tips_content"] = content
-                
-            # Pastikan sapaan "Hai Seller" ada
-            if not content.startswith("Hai Seller"):
-                print("[Sanitization] Sapaan pembuka tidak dimulai dengan 'Hai Seller'! Memperbaiki...")
-                # Cari kalimat pertama dan paksa
-                sentences = content.split(".")
-                sentences[0] = "Hai Seller, " + sentences[0].replace("Hai Seller,", "").replace("Hai Seller", "").strip()
-                parsed["tips_content"] = ".".join(sentences)
-
-            return parsed
+            return json.loads(result_text)
         else:
-            print(f"[Error] Gagal memanggil DeepSeek API. Status: {res.status_code}, Res: {res.text}")
+            print(f"[DeepSeek Error] HTTP Status: {res.status_code}, Res: {res.text}")
     except Exception as e:
-        print(f"[Error] Exception saat memanggil DeepSeek API: {e}")
+        print(f"[DeepSeek Exception] Gagal memproses: {e}")
+    return None
+
+def call_ai_to_expand_theme(theme_text):
+    """
+    Fungsi gerbang utama penentu pemanggilan AI. Mencari key Gemini (VITE_GEMINI_API_KEY)
+    terlebih dahulu untuk 0-cost, lalu fallback ke DeepSeek jika Gemini tidak diset.
+    """
+    gemini_key = ENV.get("VITE_GEMINI_API_KEY") or ENV.get("GEMINI_API_KEY")
+    deepseek_key = ENV.get("VITE_DEEPSEEK_API_KEY") or ENV.get("DEEPSEEK_API_KEY")
+    
+    parsed = None
+    if gemini_key:
+        parsed = call_gemini_to_expand_theme(theme_text, gemini_key)
+    elif deepseek_key:
+        print("[Warning] Kunci Gemini (VITE_GEMINI_API_KEY) tidak ditemukan.")
+        print("[Warning] Menggunakan fallback DeepSeek Staging Key untuk sementara.")
+        print("[Warning] Harap tambahkan API Key Gemini gratis dari Google AI Studio ke .env.staging agar tetap Rp 0,-.")
+        parsed = call_deepseek_to_expand_theme(theme_text, deepseek_key)
+    else:
+        print("[Error] Tidak ada API Key Gemini maupun DeepSeek yang ditemukan di environment!")
+        return None
+
+    if parsed:
+        # Double check compliance
+        content = parsed.get("tips_content", "")
+        if "juragan" in content.lower():
+            print("[Sanitization] Terdeteksi kata terlarang 'juragan'! Mengganti otomatis...")
+            content = content.replace("Juragan", "Seller").replace("juragan", "seller")
+            parsed["tips_content"] = content
+            
+        # Pastikan sapaan "Hai Seller" ada
+        if not content.startswith("Hai Seller"):
+            print("[Sanitization] Sapaan pembuka tidak dimulai dengan 'Hai Seller'! Memperbaiki...")
+            sentences = content.split(".")
+            sentences[0] = "Hai Seller, " + sentences[0].replace("Hai Seller,", "").replace("Hai Seller", "").strip()
+            parsed["tips_content"] = ".".join(sentences)
+
+        return parsed
     return None
 
 # =============================================================================
@@ -206,10 +277,9 @@ def replenish_bank_templates():
             theme_text = TEMA_365[theme_idx]
             print(f" -> [Hari ke-{total_cnt + i + 1}] Memproses Tema Indeks {theme_idx}: '{theme_text}'")
             
-            tips_data = call_deepseek_to_expand_theme(theme_text)
+            tips_data = call_ai_to_expand_theme(theme_text)
             if tips_data:
                 new_tips_list.append(tips_data)
-                # Jeda sejenak untuk menghindari rate limits
                 time.sleep(1)
 
         if new_tips_list:
