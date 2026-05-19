@@ -218,7 +218,7 @@ Jangan berikan markdown block pembuka/penutup seperti ```json, langsung JSON obj
 def call_ai_to_expand_theme(theme_text):
     """
     Fungsi gerbang utama penentu pemanggilan AI. Mencari key Gemini (VITE_GEMINI_API_KEY)
-    terlebih dahulu untuk 0-cost, lalu fallback ke DeepSeek jika Gemini tidak diset.
+    terlebih dahulu, lalu fallback ke DeepSeek jika Gemini tidak diset.
     """
     gemini_key = ENV.get("VITE_GEMINI_API_KEY") or ENV.get("GEMINI_API_KEY")
     deepseek_key = ENV.get("VITE_DEEPSEEK_API_KEY") or ENV.get("DEEPSEEK_API_KEY")
@@ -227,12 +227,10 @@ def call_ai_to_expand_theme(theme_text):
     if gemini_key:
         parsed = call_gemini_to_expand_theme(theme_text, gemini_key)
     elif deepseek_key:
-        print("[Warning] Kunci Gemini (VITE_GEMINI_API_KEY) tidak ditemukan.")
-        print("[Warning] Menggunakan fallback DeepSeek Staging Key untuk sementara.")
-        print("[Warning] Harap tambahkan API Key Gemini gratis dari Google AI Studio ke .env.staging agar tetap Rp 0,-.")
+        print(f"[AI Generator] Menggunakan DeepSeek Staging Key bawaan...")
         parsed = call_deepseek_to_expand_theme(theme_text, deepseek_key)
     else:
-        print("[Error] Tidak ada API Key Gemini maupun DeepSeek yang ditemukan di environment!")
+        print("[Error] Tidak ada API Key yang ditemukan di environment!")
         return None
 
     if parsed:
