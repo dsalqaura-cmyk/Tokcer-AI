@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import { injectInternalLinks } from './linker.js';
 
 dotenv.config();
 
@@ -41,21 +42,60 @@ async function updateBudget(tokensUsed) {
   console.log(`📊 [BUDGET GUARD] Penggunaan Token Harian: ${budget.tokens_used_today} / ${budget.daily_limit} (Terpakai Baru: +${tokensUsed})`);
 }
 
-// Helper to call AI API (OpenAI / DeepSeek Compatible)
+// Helper to call AI API (OpenAI / DeepSeek Compatible / Gemini Free Tier)
 async function callAI(prompt, systemPrompt = '') {
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
   const apiKey = process.env.AI_API_KEY;
   const apiBase = process.env.AI_API_BASE || 'https://api.deepseek.com'; // Default ke DeepSeek
   const model = process.env.AI_MODEL || 'deepseek-chat';
-
-  if (!apiKey || apiKey === 'your_api_key_here') {
-    console.error('❌ [ERROR] AI_API_KEY belum diisi di file .env!');
-    return null;
-  }
 
   // 1. Check budget before making any API call
   const budget = await getOrInitBudget();
   if (budget.tokens_used_today >= budget.daily_limit) {
     console.warn(`⚠️ [BUDGET GUARD] Batas penggunaan harian ${budget.daily_limit} token telah tercapai (${budget.tokens_used_today} terpakai). Eksekusi AI dibatalkan demi hemat biaya.`);
+    return null;
+  }
+
+  // Jika ada Gemini Key, gunakan Gemini 1.5 Flash (Rp 0,- Free Tier)
+  if (geminiKey && geminiKey !== 'your_api_key_here') {
+    try {
+      console.log(`🤖 [Gemini 1.5 Flash] Menggunakan model Gemini Free Tier (Rp 0)...`);
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+      
+      // Menggabungkan system prompt ke dalam content
+      const fullText = systemPrompt ? `${systemPrompt}\n\nUSER PROMPT:\n${prompt}` : prompt;
+      
+      const response = await axios.post(url, {
+        contents: [{
+          parts: [{
+            text: fullText
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.2
+        }
+      }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const content = response.data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      // Estimasi token kasar (1 kata ≈ 1.3 token) untuk budget guard harian
+      const wordCount = fullText.split(/\s+/).length + (content ? content.split(/\s+/).length : 0);
+      const estimatedTokens = Math.ceil(wordCount * 1.3);
+      
+      if (estimatedTokens > 0) {
+        await updateBudget(estimatedTokens);
+      }
+      return content;
+    } catch (error) {
+      const errorMsg = error.response?.data?.error?.message || error.message;
+      console.error(`❌ [Gemini Error] Call Failed: ${errorMsg}`);
+      console.log(`🔄 Mengalihkan ke fallback DeepSeek/OpenAI...`);
+    }
+  }
+
+  if (!apiKey || apiKey === 'your_api_key_here') {
+    console.error('❌ [ERROR] AI_API_KEY atau GEMINI_API_KEY belum diisi!');
     return null;
   }
 
@@ -95,9 +135,18 @@ async function runPipeline() {
   console.log('🚀 [TOKCER AEO] Memulai Pipeline GEO Engine...');
 
   try {
-    // 1. Load Knowledge
+    // 1. Load Knowledge & Keywords Map
     const brandVoice = await fs.readFile(path.join(CONFIG_PATH, 'brand_guidelines.md'), 'utf-8');
     const targetPersona = await fs.readFile(path.join(CONFIG_PATH, 'target_persona.md'), 'utf-8');
+    
+    let keywordMap = {};
+    const keywordsPath = path.join(CONFIG_PATH, 'keywords_map.json');
+    if (await fs.exists(keywordsPath)) {
+      keywordMap = await fs.readJson(keywordsPath);
+      console.log(`🔗 [Agent 4] Kamus kata kunci tautan internal berhasil dimuat (${Object.keys(keywordMap).length} kata kunci).`);
+    } else {
+      console.warn(`⚠️ [Agent 4] File ${keywordsPath} tidak ditemukan. Pengait internal dinonaktifkan.`);
+    }
 
     // 2. Read Inputs
     const files = await fs.readdir(INPUT_PATH);
@@ -136,9 +185,13 @@ async function runPipeline() {
       );
       if (!finalBlog) continue;
 
+      // -- PHASE D: PROGRAMMATIC INTERNAL LINKING --
+      console.log('🔗 [Agent 4] Menyuntikkan Tautan Internal secara cerdas...');
+      const blogWithLinks = injectInternalLinks(finalBlog, keywordMap);
+
       // 3. Save Results
       const outputFileName = `GEO_${file}`;
-      await fs.writeFile(path.join(OUTPUT_PATH, outputFileName), finalBlog);
+      await fs.writeFile(path.join(OUTPUT_PATH, outputFileName), blogWithLinks);
       console.log(`✅ BERHASIL! Hasil disimpan ke: /outputs/${outputFileName}`);
     }
 
